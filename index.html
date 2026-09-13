@@ -290,7 +290,7 @@
     position:absolute; inset:0;
     pointer-events:none;
     z-index:500;
-    background:linear-gradient(200deg, rgba(23,20,52,.58), rgba(41,28,58,.42));
+    background:linear-gradient(200deg, rgba(110,52,54,.34), rgba(168,96,58,.24));
     opacity:0;
     transition:opacity 1.1s ease;
   }
@@ -349,6 +349,7 @@
     transition:opacity 1.1s ease;
   }
   .stage.is-night .lamp-glow{ opacity:.85; }
+  .stage.is-night .piece.lamp-off .lamp-glow{ opacity:.16; }
   .piece-inner img{
     position:relative;
     width:100%; height:auto;
@@ -764,7 +765,7 @@
   // If a filename ever changes on GitHub, update its src here to match.
   var ASSET_BASE = 'backgrounds/';
   var BACKGROUNDS = [
-    { id:'sunlit-living-room-big-window',   name:'Sunlit Living Room — Big Window',    src:ASSET_BASE+'backgrounds_sunlit-living-room_01.svg' },
+    { id:'sunlit-living-room-big-window',   name:'Sunlit Living Room — Big Window',    src:ASSET_BASE+'backgrounds_sunlit-living-room_01.svg', nightSrc:ASSET_BASE+'backgrounds_sunlit-living-room_01_dawn.svg' },
     { id:'sunlit-living-room-twin-windows', name:'Sunlit Living Room — Twin Windows',  src:ASSET_BASE+'backgrounds_sunlit-living-room_02.svg' },
     { id:'modern-living-room',              name:'Modern Living Room',                 src:ASSET_BASE+'backgrounds_modern_living_room.svg' },
     { id:'classic-living-room',             name:'Classic Living Room',                src:ASSET_BASE+'backgrounds_classic_living_room.svg' },
@@ -941,7 +942,8 @@
   }
   function applyBackground(){
     var bg = getBackground(state.activeBackground);
-    stage.style.backgroundImage = "url('"+bg.src+"')";
+    var src = (state.isNight && bg.nightSrc) ? bg.nightSrc : bg.src;
+    stage.style.backgroundImage = "url('"+src+"')";
   }
 
   /* ---------------- render: tray ---------------- */
@@ -997,6 +999,7 @@
     stage.classList.toggle('is-night', state.isNight);
     daynightToggle.classList.toggle('night', state.isNight);
     daynightToggle.setAttribute('aria-pressed', state.isNight ? 'true' : 'false');
+    applyBackground();
   });
 
   /* ---------------- placing from tray ---------------- */
@@ -1054,7 +1057,7 @@
   }
 
   function addPiece(item, xPct, yPct){
-    var piece = { uid:'p'+(state.uidCounter++), assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, rotation:0, z:state.nextZ++ };
+    var piece = { uid:'p'+(state.uidCounter++), assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, rotation:0, z:state.nextZ++, lampOn:true };
     state.placed.push(piece);
     renderPiece(piece, true);
     selectPiece(piece.uid);
@@ -1065,7 +1068,7 @@
   function renderPiece(piece, animate){
     var asset = getAsset(piece.assetId);
     var el = document.createElement('div');
-    el.className = 'piece';
+    el.className = 'piece' + (asset.category==='lighting' && !piece.lampOn ? ' lamp-off' : '');
     el.dataset.uid = piece.uid;
     el.style.left = piece.x + '%';
     el.style.top = piece.y + '%';
@@ -1119,7 +1122,7 @@
     selectPiece(uid);
     var piece = getPiece(uid);
     var rect = stage.getBoundingClientRect();
-    moveDrag = { pointerId:e.pointerId, uid:uid, el:el, rect:rect, startX:e.clientX, startY:e.clientY, startPctX:piece.x, startPctY:piece.y };
+    moveDrag = { pointerId:e.pointerId, uid:uid, el:el, rect:rect, startX:e.clientX, startY:e.clientY, startPctX:piece.x, startPctY:piece.y, moved:false };
     el.classList.add('dragging');
     try{ el.setPointerCapture(e.pointerId); }catch(err){}
     el.addEventListener('pointermove', onMoveMove);
@@ -1128,6 +1131,7 @@
   }
   function onMoveMove(e){
     if (!moveDrag || e.pointerId!==moveDrag.pointerId) return;
+    if (Math.abs(e.clientX-moveDrag.startX) > 4 || Math.abs(e.clientY-moveDrag.startY) > 4) moveDrag.moved = true;
     var piece = getPiece(moveDrag.uid);
     var dxPct = (e.clientX - moveDrag.startX) / moveDrag.rect.width * 100;
     var dyPct = (e.clientY - moveDrag.startY) / moveDrag.rect.height * 100;
@@ -1139,6 +1143,14 @@
   }
   function onMoveEnd(e){
     if (!moveDrag || e.pointerId!==moveDrag.pointerId) return;
+    if (!moveDrag.moved){
+      var piece = getPiece(moveDrag.uid);
+      var asset = getAsset(piece.assetId);
+      if (asset.category === 'lighting'){
+        piece.lampOn = !piece.lampOn;
+        moveDrag.el.classList.toggle('lamp-off', !piece.lampOn);
+      }
+    }
     moveDrag.el.classList.remove('dragging');
     moveDrag.el.removeEventListener('pointermove', onMoveMove);
     moveDrag.el.removeEventListener('pointerup', onMoveEnd);
@@ -1239,7 +1251,7 @@
     if (action==='front'){ piece.z = state.nextZ++; pieceEl(piece.uid).style.zIndex = piece.z; }
     if (action==='back'){ piece.z = --state.minZ; pieceEl(piece.uid).style.zIndex = piece.z; }
     if (action==='duplicate'){
-      var copy = { uid:'p'+(state.uidCounter++), assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, rotation:piece.rotation, z:state.nextZ++ };
+      var copy = { uid:'p'+(state.uidCounter++), assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, rotation:piece.rotation, z:state.nextZ++, lampOn:piece.lampOn };
       state.placed.push(copy);
       renderPiece(copy, true);
       selectPiece(copy.uid);
