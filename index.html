@@ -497,6 +497,30 @@
     pointer-events:none;
   }
 
+  /* mute toggle */
+  .mute-toggle{
+    position:fixed;
+    top:14px; left:50%;
+    transform:translateX(-50%);
+    width:38px; height:38px;
+    border-radius:50%;
+    background:var(--glass-bg-strong);
+    backdrop-filter:blur(14px) saturate(160%);
+    -webkit-backdrop-filter:blur(14px) saturate(160%);
+    border:1px solid var(--glass-border);
+    box-shadow:0 6px 16px rgba(20,15,10,.25);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    z-index:7000;
+    color:var(--ink);
+    padding:0;
+  }
+  .mute-toggle:hover{ background:var(--paper-light); }
+  .mute-toggle svg{ width:16px; height:16px; }
+  .mute-toggle .icon-muted{ display:none; }
+  .mute-toggle.muted .icon-unmuted{ display:none; }
+  .mute-toggle.muted .icon-muted{ display:block; }
+
   /* drag ghost */
   .drag-ghost{
     position:fixed; top:0; left:0;
@@ -663,6 +687,14 @@
 
 <div class="drag-ghost" id="dragGhost"><img id="dragGhostImg" alt=""></div>
 
+<audio id="bgMusic" loop preload="none">
+  <source src="audio/MainTrack.mp3" type="audio/mpeg">
+</audio>
+<button class="mute-toggle" id="muteToggle" type="button" aria-label="Mute or unmute music" aria-pressed="false">
+  <svg class="icon-unmuted" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v4h3l4 3V5L7 8H4Z"/><path d="M13.5 7.2a3.6 3.6 0 0 1 0 5.6"/><path d="M15.7 5a6.6 6.6 0 0 1 0 10"/></svg>
+  <svg class="icon-muted" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v4h3l4 3V5L7 8H4Z"/><path d="M13 8l4 4M17 8l-4 4"/></svg>
+</button>
+
 <!-- ============================================================
      RESULTS OVERLAY
 ============================================================ -->
@@ -800,10 +832,18 @@
   var changeRoomBtn = document.getElementById('changeRoomBtn');
   var dragGhost = document.getElementById('dragGhost');
   var dragGhostImg = document.getElementById('dragGhostImg');
+  var bgMusic = document.getElementById('bgMusic');
+  var muteToggle = document.getElementById('muteToggle');
   var resultsOverlay = document.getElementById('resultsOverlay');
   var resultsBars = document.getElementById('resultsBars');
 
   /* ---------------- screen navigation ---------------- */
+  muteToggle.addEventListener('click', function(){
+    bgMusic.muted = !bgMusic.muted;
+    muteToggle.classList.toggle('muted', bgMusic.muted);
+    muteToggle.setAttribute('aria-pressed', bgMusic.muted ? 'true' : 'false');
+  });
+
   function showScreen(name){
     Object.keys(screens).forEach(function(key){
       var isTitle = key === 'title';
@@ -814,6 +854,7 @@
 
   document.getElementById('titleStartBtn').addEventListener('click', function(){
     showScreen('picker');
+    bgMusic.play().catch(function(){});
   });
   document.getElementById('pickerBackBtn').addEventListener('click', function(){
     showScreen('title');
