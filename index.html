@@ -284,6 +284,25 @@
   }
   .stage-hint.hidden{ opacity:0; }
 
+  /* ambient dust motes — purely decorative, drift slowly through the room */
+  .dust-mote{
+    position:absolute;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,240,210,.95), rgba(255,240,210,0) 72%);
+    pointer-events:none;
+    z-index:400;
+    opacity:0;
+    animation-name:motesDrift;
+    animation-timing-function:linear;
+    animation-iteration-count:infinite;
+  }
+  @keyframes motesDrift{
+    0%   { transform:translate(0,0); opacity:0; }
+    12%  { opacity:.5; }
+    88%  { opacity:.5; }
+    100% { transform:translate(var(--drift-x,18px), var(--drift-y,-160px)); opacity:0; }
+  }
+
   .stage-vignette-top{
     position:absolute; left:0; right:0;
     pointer-events:none;
@@ -366,6 +385,22 @@
   }
   .stage.lamps-lit .lamp-glow{ opacity:.85; }
   .stage.lamps-lit .piece.lamp-off .lamp-glow{ opacity:.16; }
+  @keyframes lampBreathe{ 0%,100%{ opacity:.78; } 50%{ opacity:.92; } }
+  .stage.lamps-lit .piece:not(.lamp-off) .lamp-glow{ animation:lampBreathe 3.4s ease-in-out infinite; }
+
+  /* gentle plant sway — pivots from the base, like it's rooted in a pot,
+     not the center */
+  @keyframes plantSway{
+    0%   { transform:rotate(-1.3deg); }
+    50%  { transform:rotate(1.3deg); }
+    100% { transform:rotate(-1.3deg); }
+  }
+  .piece[data-category="plants"] .piece-inner{
+    transform-origin:50% 100%;
+    animation:plantSway 6s ease-in-out infinite;
+    animation-duration:var(--sway-duration, 6s);
+    animation-delay:var(--sway-delay, 0s);
+  }
   .piece-inner img{
     position:relative;
     width:100%; height:auto;
@@ -1213,6 +1248,11 @@
       (asset.category==='lighting' && !piece.lampOn ? ' lamp-off' : '') +
       (piece.flipped ? ' flipped' : '');
     el.dataset.uid = piece.uid;
+    el.dataset.category = asset.category;
+    if (asset.category === 'plants'){
+      el.style.setProperty('--sway-duration', (5 + Math.random()*2.4).toFixed(2)+'s');
+      el.style.setProperty('--sway-delay', (Math.random()*-6).toFixed(2)+'s');
+    }
     el.style.left = piece.x + '%';
     el.style.top = piece.y + '%';
     el.style.width = piece.width + '%';
@@ -1515,6 +1555,26 @@
     showScreen('picker');
   });
 
+  /* ---------------- ambient dust motes ---------------- */
+  function createDustMotes(){
+    var count = 13;
+    for (var i=0;i<count;i++){
+      var mote = document.createElement('div');
+      mote.className = 'dust-mote';
+      var size = 2 + Math.random()*3.5;
+      mote.style.width = size+'px';
+      mote.style.height = size+'px';
+      mote.style.left = (Math.random()*100)+'%';
+      mote.style.top = (30+Math.random()*65)+'%';
+      mote.style.setProperty('--drift-x', (Math.random()*40-20).toFixed(0)+'px');
+      mote.style.setProperty('--drift-y', (-(90+Math.random()*110)).toFixed(0)+'px');
+      var duration = 14 + Math.random()*14;
+      mote.style.animationDuration = duration.toFixed(1)+'s';
+      mote.style.animationDelay = (Math.random()*-duration).toFixed(1)+'s';
+      stage.appendChild(mote);
+    }
+  }
+
   /* ---------------- init ---------------- */
   document.querySelector('.title-bg').style.backgroundImage = "url('"+BACKGROUNDS[0].src+"')";
   renderRoomGrid();
@@ -1524,6 +1584,7 @@
   renderTray();
   updateHint();
   setTrayOpen(state.trayOpen);
+  createDustMotes();
 
 })();
 </script>
