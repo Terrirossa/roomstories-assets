@@ -251,6 +251,7 @@
   }
   .stage-bg-layer{
     position:absolute; inset:0;
+    z-index:-1000;
     background-size:cover;
     background-position:center;
     opacity:0;
@@ -286,6 +287,7 @@
   .stage-vignette-top{
     position:absolute; left:0; right:0;
     pointer-events:none;
+    z-index:-999;
     top:0; height:130px;
     background:linear-gradient(180deg, rgba(20,15,10,.35), rgba(20,15,10,0));
   }
@@ -371,7 +373,9 @@
     object-fit:contain;
     pointer-events:none;
     filter:drop-shadow(0 10px 14px rgba(30,22,14,.30));
+    transition:transform .2s ease;
   }
+  .piece.flipped .piece-inner img{ transform:scaleX(-1); }
   .piece-outline{
     position:absolute; inset:0;
     border-radius:6px;
@@ -745,6 +749,9 @@
   <button type="button" data-action="duplicate" title="Duplicate" aria-label="Duplicate">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="7" width="9" height="10" rx="1.6"/><path d="M7 7V4.6A1.6 1.6 0 0 1 8.6 3H16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-2.4"/></svg>
   </button>
+  <button type="button" data-action="flip" title="Mirror left/right" aria-label="Mirror left/right">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v14" stroke-dasharray="2 2"/><path d="M6 7 3 10l3 3"/><path d="M14 7l3 3-3 3"/></svg>
+  </button>
   <div class="divider"></div>
   <button type="button" class="danger" data-action="delete" title="Delete" aria-label="Delete">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12"/><path d="M8 6V4.6A1 1 0 0 1 9 3.6h2a1 1 0 0 1 1 1V6"/><path d="M5.5 6 6.3 16a1 1 0 0 0 1 .9h5.4a1 1 0 0 0 1-.9L14.5 6"/></svg>
@@ -853,6 +860,34 @@
     { id:'vase-otto-black', name:'Otto Vase Black', category:'decor', defaultWidth:6, material:'Ceramic', type:'Glazed', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_vase_otto_black.svg' },
     { id:'vase-otto-white', name:'Otto Vase White', category:'decor', defaultWidth:6, material:'Ceramic', type:'Glazed', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_vase_otto_white.svg' },
     { id:'zuzu-plant', name:'Zuzu Plant', category:'plants', defaultWidth:13, material:'Plant', type:'Pothos', style1:'Organic', style2:'Modern', src:ITEMS_BASE+'items_zuzu_plant.svg' },
+    { id:'book-collection-big', name:'Book Collection Big', category:'decor', defaultWidth:13, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_Book_collection_big.svg' },
+    { id:'book-collection-small', name:'Book Collection Small', category:'decor', defaultWidth:6, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_Book_collection_small.svg' },
+    { id:'blooming-flowers', name:'Blooming Flowers', category:'plants', defaultWidth:6, material:'Plant', type:'Flower', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_blooming_flowers.svg' },
+    { id:'bockstack-01', name:'Bookstack 01', category:'decor', defaultWidth:6, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_bockstack_01.svg' },
+    { id:'bockstack-02', name:'Bookstack 02', category:'decor', defaultWidth:6, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_bockstack_02.svg' },
+    { id:'book-stack-standing', name:'Standing Book Stack', category:'decor', defaultWidth:6, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_book_stack_standing.svg' },
+    { id:'chandelier-ana', name:'Ana Chandelier', category:'lighting', defaultWidth:13, material:'Metal', type:'Brass', style1:'Vintage', style2:'Vintage', src:ITEMS_BASE+'items_chandelier_ana.svg' },
+    { id:'chandelier-irina', name:'Irina Chandelier', category:'lighting', defaultWidth:13, material:'Metal', type:'Chrome', style1:'Organic', style2:'Eclectic', src:ITEMS_BASE+'items_chandelier_irina.svg' },
+    { id:'chandelier-kiki', name:'Kiki Chandelier', category:'lighting', defaultWidth:13, material:'Metal', type:'Black Iron', style1:'Modern', style2:'Vintage', src:ITEMS_BASE+'items_chandelier_kiki.svg' },
+    { id:'couch-benji-black', name:'Benji Couch Black', category:'seating', defaultWidth:22, material:'Leather', type:'Black', style1:'Modern', style2:'Industrial', src:ITEMS_BASE+'items_couch_benji_black.svg' },
+    { id:'couch-benji-brown', name:'Benji Couch Brown', category:'seating', defaultWidth:22, material:'Leather', type:'Brown', style1:'Modern', style2:'Industrial', src:ITEMS_BASE+'items_couch_benji_brown.svg' },
+    { id:'couch-kira', name:'Kira Couch', category:'seating', defaultWidth:22, material:'Fabric', type:'Bouclé', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_couch_kira.svg' },
+    { id:'couchtable-marble-elle-light', name:'Elle Coffee Table Light', category:'tables', defaultWidth:13, material:'Marble', type:'Carrara', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_couchtable_marble_elle_light.svg' },
+    { id:'couchtable-marble-elle-medium', name:'Elle Coffee Table Medium', category:'tables', defaultWidth:13, material:'Marble', type:'Calacatta', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_couchtable_marble_elle_medium.svg' },
+    { id:'couchtable-saskia', name:'Saskia Coffee Table', category:'tables', defaultWidth:13, material:'Wood', type:'Medium', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'items_couchtable_saskia.svg' },
+    { id:'deco-knot', name:'Deco Knot', category:'decor', defaultWidth:6, material:'Rattan', type:'Natural', style1:'Bohemian', style2:'Organic', src:ITEMS_BASE+'items_deco_knot.svg' },
+    { id:'fruit-bowl-oranges', name:'Fruit Bowl with Oranges', category:'decor', defaultWidth:6, material:'Ceramic', type:'Glazed', style1:'Cozy', style2:'Organic', src:ITEMS_BASE+'items_fruit_bowl_oranges.svg' },
+    { id:'globe', name:'Decorative Globe', category:'decor', defaultWidth:6, material:'Ceramic', type:'Glazed', style1:'Traditional', style2:'Vintage', src:ITEMS_BASE+'items_globe.svg' },
+    { id:'painting-livia', name:'Livia Painting', category:'wall-art', defaultWidth:13, material:'Canvas', type:'Oil', style1:'Traditional', style2:'Eclectic', src:ITEMS_BASE+'items_painting_livia.svg' },
+    { id:'paper-lamp', name:'Paper Lamp', category:'lighting', defaultWidth:13, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'items_paper_lamp.svg' },
+    { id:'rug-jannis', name:'Jannis Rug', category:'rugs', defaultWidth:22, material:'Fabric', type:'Wool', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_rug_jannis.svg' },
+    { id:'rug-jonah', name:'Jonah Rug', category:'rugs', defaultWidth:22, material:'Fabric', type:'Wool', style1:'Bohemian', style2:'Eclectic', src:ITEMS_BASE+'items_rug_jonah.svg' },
+    { id:'sideboard-timo', name:'Timo Sideboard', category:'storage', defaultWidth:22, material:'Wood', type:'Painted', style1:'Scandinavian', style2:'Modern', src:ITEMS_BASE+'items_sideboard_timo.svg' },
+    { id:'standig-lamp-jens', name:'Jens Standing Lamp', category:'lighting', defaultWidth:22, material:'Metal', type:'Black Iron', style1:'Industrial', style2:'Modern', src:ITEMS_BASE+'items_standig_lamp_jens.svg' },
+    { id:'standing-lamp-kai', name:'Kai Standing Lamp', category:'lighting', defaultWidth:22, material:'Metal', type:'Steel', style1:'Mid-Century', style2:'Traditional', src:ITEMS_BASE+'items_standing_lamp_kai.svg' },
+    { id:'stone-couchtable-iris', name:'Iris Stone Coffee Table', category:'tables', defaultWidth:13, material:'Marble', type:'Carrara', style1:'Rustic', style2:'Organic', src:ITEMS_BASE+'items_stone_couchtable_iris.svg' },
+    { id:'travertine-couchtable-sara', name:'Sara Travertine Coffee Table', category:'tables', defaultWidth:13, material:'Marble', type:'Travertine', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_travertine_couchtable_sara.svg' },
+    { id:'wallart-tulipa', name:'Tulipa Wall Art', category:'wall-art', defaultWidth:13, material:'Canvas', type:'Print', style1:'Organic', style2:'Modern', src:ITEMS_BASE+'items_wallart_tulipa.svg' },
   ];
 
   var CATEGORIES = [
@@ -860,6 +895,7 @@
     { id:'tables', label:'Tables' },
     { id:'storage', label:'Storage' },
     { id:'lighting', label:'Lighting' },
+    { id:'rugs', label:'Rugs' },
     { id:'wall-art', label:'Wall Art' },
     { id:'plants', label:'Plants' },
     { id:'decor', label:'Decor' },
@@ -1162,7 +1198,7 @@
   }
 
   function addPiece(item, xPct, yPct){
-    var piece = { uid:'p'+(state.uidCounter++), assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, rotation:0, z:state.nextZ++, lampOn:true };
+    var piece = { uid:'p'+(state.uidCounter++), assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, rotation:0, z:state.nextZ++, lampOn:true, flipped:false };
     state.placed.push(piece);
     renderPiece(piece, true);
     selectPiece(piece.uid);
@@ -1173,7 +1209,9 @@
   function renderPiece(piece, animate){
     var asset = getAsset(piece.assetId);
     var el = document.createElement('div');
-    el.className = 'piece' + (asset.category==='lighting' && !piece.lampOn ? ' lamp-off' : '');
+    el.className = 'piece' +
+      (asset.category==='lighting' && !piece.lampOn ? ' lamp-off' : '') +
+      (piece.flipped ? ' flipped' : '');
     el.dataset.uid = piece.uid;
     el.style.left = piece.x + '%';
     el.style.top = piece.y + '%';
@@ -1355,8 +1393,9 @@
     var action = btn.dataset.action;
     if (action==='front'){ piece.z = state.nextZ++; pieceEl(piece.uid).style.zIndex = piece.z; }
     if (action==='back'){ piece.z = --state.minZ; pieceEl(piece.uid).style.zIndex = piece.z; }
+    if (action==='flip'){ piece.flipped = !piece.flipped; pieceEl(piece.uid).classList.toggle('flipped', piece.flipped); }
     if (action==='duplicate'){
-      var copy = { uid:'p'+(state.uidCounter++), assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, rotation:piece.rotation, z:state.nextZ++, lampOn:piece.lampOn };
+      var copy = { uid:'p'+(state.uidCounter++), assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, rotation:piece.rotation, z:state.nextZ++, lampOn:piece.lampOn, flipped:piece.flipped };
       state.placed.push(copy);
       renderPiece(copy, true);
       selectPiece(copy.uid);
