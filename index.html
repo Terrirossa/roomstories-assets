@@ -298,8 +298,8 @@
   }
   @keyframes motesDrift{
     0%   { transform:translate(0,0); opacity:0; }
-    12%  { opacity:.5; }
-    88%  { opacity:.5; }
+    12%  { opacity:.82; }
+    88%  { opacity:.82; }
     100% { transform:translate(var(--drift-x,18px), var(--drift-y,-160px)); opacity:0; }
   }
   /* at night the same motes become slow-blinking fireflies instead of a
@@ -327,8 +327,8 @@
     top:-30%; left:-45%;
     width:95%; height:160%;
     border-radius:50%;
-    background:radial-gradient(ellipse, rgba(35,30,45,.16), rgba(35,30,45,0) 70%);
-    filter:blur(55px);
+    background:radial-gradient(ellipse, rgba(35,30,45,.32), rgba(35,30,45,0) 70%);
+    filter:blur(40px);
     pointer-events:none;
     z-index:-500;
     animation:cloudDrift 75s ease-in-out infinite alternate;
@@ -345,7 +345,7 @@
     position:absolute; inset:0;
     pointer-events:none;
     z-index:450;
-    background:radial-gradient(circle at 50% 35%, rgba(255,250,235,.09), rgba(255,250,235,0) 65%);
+    background:radial-gradient(circle at 50% 35%, rgba(255,250,235,.18), rgba(255,250,235,0) 65%);
     animation:breathe 12s ease-in-out infinite;
   }
   @keyframes breathe{
@@ -1683,7 +1683,7 @@
     for (var i=0;i<count;i++){
       var mote = document.createElement('div');
       mote.className = 'dust-mote';
-      var size = 2 + Math.random()*3.5;
+      var size = 3.5 + Math.random()*5;
       mote.style.width = size+'px';
       mote.style.height = size+'px';
       mote.style.left = (Math.random()*100)+'%';
