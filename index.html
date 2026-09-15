@@ -487,11 +487,23 @@
     filter:drop-shadow(0 10px 14px rgba(30,22,14,.30));
     transition:transform .2s ease;
   }
-  .piece.flipped .piece-inner img{ transform:scaleX(-1); }
-  /* height-locked pieces get width/height/object-fit forced via inline
-     style in JS (see applyStretchStyle) rather than relying on this class
-     alone — SVGs loaded via <img> have their own internal aspect-ratio
-     handling that can fight a plain CSS object-fit override */
+  /* stretchable items (curtains, rods) render as a background-image div
+     instead of an <img> — background-size:100% 100% is an unambiguous way
+     to force a non-uniform stretch, sidestepping the inconsistent way
+     browsers apply object-fit to SVGs specifically loaded via <img> */
+  .piece-inner .piece-visual{
+    position:relative;
+    width:100%; height:100%;
+    display:block;
+    background-size:100% 100%;
+    background-repeat:no-repeat;
+    background-position:center;
+    pointer-events:none;
+    filter:drop-shadow(0 10px 14px rgba(30,22,14,.30));
+    transition:transform .2s ease;
+  }
+  .piece.flipped .piece-inner img,
+  .piece.flipped .piece-inner .piece-visual{ transform:scaleX(-1); }
   .piece-outline{
     position:absolute; inset:0;
     border-radius:6px;
@@ -1003,19 +1015,19 @@
     // Curtains: opacityControl adds the transparency toolbar button;
     // stretchControl:'both' adds independent horizontal + vertical stretch
     // handles alongside the normal corner (proportional) one.
-    { id:'curtain-lana', name:'Lana Curtain', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_lana.svg' },
-    { id:'curtain-lana-white', name:'Lana Curtain White', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Minimal', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_lana_white.svg' },
-    { id:'curtain-maya', name:'Maya Curtain', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Cozy', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_maya.svg' },
-    { id:'curtain-maya-beige', name:'Maya Curtain Beige', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Organic', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_maya_beige.svg' },
+    { id:'curtain-lana', name:'Lana Curtain', category:'curtains', defaultWidth:22, ratio:0.48, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_lana.svg' },
+    { id:'curtain-lana-white', name:'Lana Curtain White', category:'curtains', defaultWidth:22, ratio:0.48, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Minimal', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_lana_white.svg' },
+    { id:'curtain-maya', name:'Maya Curtain', category:'curtains', defaultWidth:22, ratio:0.48, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Cozy', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_maya.svg' },
+    { id:'curtain-maya-beige', name:'Maya Curtain Beige', category:'curtains', defaultWidth:22, ratio:0.48, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Organic', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_maya_beige.svg' },
 
     // Curtain rods: stretchControl:'horizontal' only — a rod's length
     // should adjust to the window, its thickness shouldn't.
-    { id:'curtain-rod-mik-beige', name:'Mik Curtain Rod Beige', category:'curtains', defaultWidth:22, material:'Metal', type:'Steel', style1:'Modern', style2:'Minimal', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_beige.svg' },
-    { id:'curtain-rod-mik-black', name:'Mik Curtain Rod Black', category:'curtains', defaultWidth:22, material:'Metal', type:'Black Iron', style1:'Modern', style2:'Industrial', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_black.svg' },
-    { id:'curtain-rod-mik-darkwood', name:'Mik Curtain Rod Dark Wood', category:'curtains', defaultWidth:22, material:'Wood', type:'Dark', style1:'Traditional', style2:'Rustic', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_darkwood.svg' },
-    { id:'curtain-rod-mik-gold', name:'Mik Curtain Rod Gold', category:'curtains', defaultWidth:22, material:'Metal', type:'Brass', style1:'Traditional', style2:'Modern', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_gold.svg' },
-    { id:'curtain-rod-mik-silver', name:'Mik Curtain Rod Silver', category:'curtains', defaultWidth:22, material:'Metal', type:'Chrome', style1:'Modern', style2:'Minimal', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_silver.svg' },
-    { id:'curtain-rod-mik-white', name:'Mik Curtain Rod White', category:'curtains', defaultWidth:22, material:'Metal', type:'Steel', style1:'Scandinavian', style2:'Minimal', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_white.svg' },
+    { id:'curtain-rod-mik-beige', name:'Mik Curtain Rod Beige', category:'curtains', defaultWidth:22, ratio:11, material:'Metal', type:'Steel', style1:'Modern', style2:'Minimal', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_beige.svg' },
+    { id:'curtain-rod-mik-black', name:'Mik Curtain Rod Black', category:'curtains', defaultWidth:22, ratio:11, material:'Metal', type:'Black Iron', style1:'Modern', style2:'Industrial', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_black.svg' },
+    { id:'curtain-rod-mik-darkwood', name:'Mik Curtain Rod Dark Wood', category:'curtains', defaultWidth:22, ratio:11, material:'Wood', type:'Dark', style1:'Traditional', style2:'Rustic', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_darkwood.svg' },
+    { id:'curtain-rod-mik-gold', name:'Mik Curtain Rod Gold', category:'curtains', defaultWidth:22, ratio:11, material:'Metal', type:'Brass', style1:'Traditional', style2:'Modern', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_gold.svg' },
+    { id:'curtain-rod-mik-silver', name:'Mik Curtain Rod Silver', category:'curtains', defaultWidth:22, ratio:11, material:'Metal', type:'Chrome', style1:'Modern', style2:'Minimal', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_silver.svg' },
+    { id:'curtain-rod-mik-white', name:'Mik Curtain Rod White', category:'curtains', defaultWidth:22, ratio:11, material:'Metal', type:'Steel', style1:'Scandinavian', style2:'Minimal', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_white.svg' },
     { id:'book-collection-big', name:'Book Collection Big', category:'decor', defaultWidth:13, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_Book_collection_big.svg' },
     { id:'book-collection-small', name:'Book Collection Small', category:'decor', defaultWidth:6, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_Book_collection_small.svg' },
     { id:'blooming-flowers', name:'Blooming Flowers', category:'plants', defaultWidth:6, material:'Plant', type:'Flower', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_blooming_flowers.svg' },
@@ -1065,14 +1077,7 @@
     if (piece.height == null) return;
     el.style.height = piece.height + '%';
     var inner = el.querySelector('.piece-inner');
-    if (!inner) return;
-    inner.style.height = '100%';
-    var img = inner.querySelector('img');
-    if (img){
-      img.style.height = '100%';
-      img.style.width = '100%';
-      img.style.objectFit = 'fill';
-    }
+    if (inner) inner.style.height = '100%';
   }
 
   var TIME_ICONS = {
@@ -1378,7 +1383,14 @@
   }
 
   function addPiece(item, xPct, yPct){
-    var piece = { uid:'p'+(state.uidCounter++), assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, rotation:0, z:state.nextZ++, lampOn:true, flipped:false, swayLevel:2 };
+    var height = null;
+    if (item.ratio != null){
+      var stageRect = stage.getBoundingClientRect();
+      var widthPx = item.defaultWidth/100 * stageRect.width;
+      var heightPx = widthPx / item.ratio;
+      height = heightPx / stageRect.height * 100;
+    }
+    var piece = { uid:'p'+(state.uidCounter++), assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, height:height, rotation:0, z:state.nextZ++, lampOn:true, flipped:false, swayLevel:2 };
     state.placed.push(piece);
     renderPiece(piece, true);
     selectPiece(piece.uid);
@@ -1413,11 +1425,11 @@
   /* ---------------- rendering placed pieces ---------------- */
   function renderPiece(piece, animate){
     var asset = getAsset(piece.assetId);
+    var isStretchable = asset.ratio != null;
     var el = document.createElement('div');
     el.className = 'piece' +
       (asset.category==='lighting' && !piece.lampOn ? ' lamp-off' : '') +
-      (piece.flipped ? ' flipped' : '') +
-      (piece.height != null ? ' height-locked' : '');
+      (piece.flipped ? ' flipped' : '');
     el.dataset.uid = piece.uid;
     el.dataset.category = asset.category;
     updateSwayEligibility(el, piece, asset);
@@ -1437,13 +1449,21 @@
     if (asset.stretchControl === 'both'){
       extraHandles += '<div class="handle handle-stretch-v" data-handle="stretch-v"></div>';
     }
+    // rods and curtains stretch to fit a window — free rotation doesn't
+    // make sense for them, so they skip the rotate handle entirely
+    var rotateHandle = asset.stretchControl ? '' :
+      '<div class="handle handle-rotate" data-handle="rotate"><svg viewBox="0 0 20 20" fill="none" stroke="#BD7B52" stroke-width="1.6" stroke-linecap="round"><path d="M6 6a5 5 0 1 1-1 3"/><path d="M5 4v3h3"/></svg></div>';
+
+    var visualHtml = isStretchable
+      ? '<div class="piece-visual" style="background-image:url(\''+asset.src+'\'); opacity:'+((piece.transparency||100)/100)+'"></div>'
+      : '<img class="piece-visual" src="'+asset.src+'" alt="'+asset.name+'" style="opacity:'+((piece.transparency||100)/100)+'">';
 
     el.innerHTML =
       '<div class="piece-inner'+(animate?' pop':'')+'">' +
         (asset.category==='lighting' ? '<div class="lamp-glow"></div>' : '') +
-        '<img src="'+asset.src+'" alt="'+asset.name+'" style="opacity:'+((piece.transparency||100)/100)+'">' +
+        visualHtml +
         '<div class="piece-outline"></div>' +
-        '<div class="handle handle-rotate" data-handle="rotate"><svg viewBox="0 0 20 20" fill="none" stroke="#BD7B52" stroke-width="1.6" stroke-linecap="round"><path d="M6 6a5 5 0 1 1-1 3"/><path d="M5 4v3h3"/></svg></div>' +
+        rotateHandle +
         '<div class="handle handle-resize" data-handle="resize"></div>' +
         extraHandles +
       '</div>';
@@ -1456,7 +1476,8 @@
 
     el.addEventListener('pointerdown', function(e){ onPieceDown(e, piece.uid, el); });
     el.querySelector('[data-handle="resize"]').addEventListener('pointerdown', function(e){ e.stopPropagation(); startResize(e, piece.uid, el); });
-    el.querySelector('[data-handle="rotate"]').addEventListener('pointerdown', function(e){ e.stopPropagation(); startRotate(e, piece.uid, el); });
+    var rotateEl = el.querySelector('[data-handle="rotate"]');
+    if (rotateEl) rotateEl.addEventListener('pointerdown', function(e){ e.stopPropagation(); startRotate(e, piece.uid, el); });
     var stretchH = el.querySelector('[data-handle="stretch-h"]');
     if (stretchH) stretchH.addEventListener('pointerdown', function(e){ e.stopPropagation(); startStretch(e, piece.uid, el, 'h'); });
     var stretchV = el.querySelector('[data-handle="stretch-v"]');
@@ -1604,15 +1625,8 @@
     selectPiece(uid);
     var piece = getPiece(uid);
     var stageRect = stage.getBoundingClientRect();
-    // first use locks in the current natural height as an explicit value —
-    // from this point the image fills its box exactly instead of following
-    // its own aspect ratio, which is what makes independent stretch possible
-    if (piece.height == null){
-      var rect = el.getBoundingClientRect();
-      piece.height = rect.height / stageRect.height * 100;
-      el.classList.add('height-locked');
-      applyStretchStyle(el, piece);
-    }
+    // stretchable items always get an explicit height at placement time
+    // (see addPiece), so there's nothing to lock in here — just drag.
     stretchDrag = {
       mode:mode, pointerId:e.pointerId, uid:uid, el:el, stageRect:stageRect,
       startX:e.clientX, startY:e.clientY,
@@ -1724,7 +1738,7 @@
       var levels = [100,80,70];
       var idx = levels.indexOf(piece.transparency || 100);
       piece.transparency = levels[(idx+1) % levels.length];
-      pieceEl(piece.uid).querySelector('.piece-inner img').style.opacity = piece.transparency/100;
+      pieceEl(piece.uid).querySelector('.piece-visual').style.opacity = piece.transparency/100;
       updateOpacityButtonUI();
     }
     if (action==='duplicate'){
