@@ -485,6 +485,11 @@
     transition:transform .2s ease;
   }
   .piece.flipped .piece-inner img{ transform:scaleX(-1); }
+  /* once either stretch handle has been used, width and height become
+     fully independent — the image fills its box exactly instead of
+     preserving its natural ratio, which is the point of "stretch" */
+  .piece.height-locked .piece-inner{ height:100%; }
+  .piece.height-locked .piece-inner img{ height:100%; object-fit:fill; }
   .piece-outline{
     position:absolute; inset:0;
     border-radius:6px;
@@ -509,6 +514,8 @@
   .piece.selected .handle{ display:flex; }
   .handle-resize{ right:-8px; bottom:-8px; cursor:nwse-resize; }
   .handle-rotate{ top:-30px; left:50%; transform:translateX(-50%); cursor:grab; }
+  .handle-stretch-h{ right:-8px; top:50%; transform:translateY(-50%); cursor:ew-resize; }
+  .handle-stretch-v{ bottom:-8px; left:50%; transform:translateX(-50%); cursor:ns-resize; }
   .handle-rotate::before{
     content:'';
     position:absolute; top:16px; left:50%;
@@ -529,6 +536,8 @@
     .handle-resize{ right:-13px; bottom:-13px; }
     .handle-rotate{ top:-42px; }
     .handle-rotate::before{ top:26px; height:16px; }
+    .handle-stretch-h{ right:-13px; }
+    .handle-stretch-v{ bottom:-13px; }
     .handle svg{ width:14px; height:14px; }
   }
 
@@ -874,6 +883,9 @@
       <rect class="bar bar-3" x="14" y="4" width="3" height="13" rx="1" fill="currentColor"/>
     </svg>
   </button>
+  <button type="button" data-action="opacity" id="opacityToolbarBtn" title="Transparency" aria-label="Transparency" style="display:none;">
+    <span id="opacityBtnLabel" style="font-size:9.5px; font-weight:700; line-height:1;">100</span>
+  </button>
   <div class="divider"></div>
   <button type="button" class="danger" data-action="delete" title="Delete" aria-label="Delete">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12"/><path d="M8 6V4.6A1 1 0 0 1 9 3.6h2a1 1 0 0 1 1 1V6"/><path d="M5.5 6 6.3 16a1 1 0 0 0 1 .9h5.4a1 1 0 0 0 1-.9L14.5 6"/></svg>
@@ -955,6 +967,8 @@
     { id:'couch-sera-beige', name:'Sera Couch Beige', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_beige.svg' },
     { id:'couch-sera-black', name:'Sera Couch Black', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_black.svg' },
     { id:'couch-sera-blue', name:'Sera Couch Blue', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_blue.svg' },
+    { id:'couch-sera-beige-long', name:'Sera Couch Beige Long', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_beige_long.svg' },
+    { id:'couch-sera-blue-long', name:'Sera Couch Blue Long', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_blue_long.svg' },
     { id:'couch-sera-green', name:'Sera Couch Green', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_green.svg' },
     { id:'couchtable-ivar', name:'Ivar Coffee Table', category:'tables', defaultWidth:13, material:'Marble', type:'Travertine', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_couchtable_ivar.svg' },
     { id:'couchtable-ludwig', name:'Ludwig Coffee Table', category:'tables', defaultWidth:13, material:'Marble', type:'Travertine', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_couchtable_ludwig.svg' },
@@ -983,6 +997,23 @@
     { id:'vase-otto-black', name:'Otto Vase Black', category:'decor', defaultWidth:6, material:'Ceramic', type:'Glazed', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_vase_otto_black.svg' },
     { id:'vase-otto-white', name:'Otto Vase White', category:'decor', defaultWidth:6, material:'Ceramic', type:'Glazed', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_vase_otto_white.svg' },
     { id:'zuzu-plant', name:'Zuzu Plant', category:'plants', defaultWidth:13, material:'Plant', type:'Pothos', style1:'Organic', style2:'Modern', src:ITEMS_BASE+'items_zuzu_plant.svg' },
+
+    // Curtains: opacityControl adds the transparency toolbar button;
+    // stretchControl:'both' adds independent horizontal + vertical stretch
+    // handles alongside the normal corner (proportional) one.
+    { id:'curtain-lana', name:'Lana Curtain', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', opacityControl:true, stretchControl:'both', src:ITEMS_BASE+'items_curtain_lana.svg' },
+    { id:'curtain-lana-white', name:'Lana Curtain White', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Minimal', opacityControl:true, stretchControl:'both', src:ITEMS_BASE+'items_curtain_lana_white.svg' },
+    { id:'curtain-maya', name:'Maya Curtain', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Cozy', opacityControl:true, stretchControl:'both', src:ITEMS_BASE+'items_curtain_maya.svg' },
+    { id:'curtain-maya-beige', name:'Maya Curtain Beige', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Organic', opacityControl:true, stretchControl:'both', src:ITEMS_BASE+'items_curtain_maya_beige.svg' },
+
+    // Curtain rods: stretchControl:'horizontal' only — a rod's length
+    // should adjust to the window, its thickness shouldn't.
+    { id:'curtain-rod-mik-beige', name:'Mik Curtain Rod Beige', category:'curtains', defaultWidth:22, material:'Metal', type:'Steel', style1:'Modern', style2:'Minimal', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_beige.svg' },
+    { id:'curtain-rod-mik-black', name:'Mik Curtain Rod Black', category:'curtains', defaultWidth:22, material:'Metal', type:'Black Iron', style1:'Modern', style2:'Industrial', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_black.svg' },
+    { id:'curtain-rod-mik-darkwood', name:'Mik Curtain Rod Dark Wood', category:'curtains', defaultWidth:22, material:'Wood', type:'Dark', style1:'Traditional', style2:'Rustic', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_darkwood.svg' },
+    { id:'curtain-rod-mik-gold', name:'Mik Curtain Rod Gold', category:'curtains', defaultWidth:22, material:'Metal', type:'Brass', style1:'Traditional', style2:'Modern', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_gold.svg' },
+    { id:'curtain-rod-mik-silver', name:'Mik Curtain Rod Silver', category:'curtains', defaultWidth:22, material:'Metal', type:'Chrome', style1:'Modern', style2:'Minimal', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_silver.svg' },
+    { id:'curtain-rod-mik-white', name:'Mik Curtain Rod White', category:'curtains', defaultWidth:22, material:'Metal', type:'Steel', style1:'Scandinavian', style2:'Minimal', stretchControl:'horizontal', src:ITEMS_BASE+'items_curtain_rod_mik_white.svg' },
     { id:'book-collection-big', name:'Book Collection Big', category:'decor', defaultWidth:13, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_Book_collection_big.svg' },
     { id:'book-collection-small', name:'Book Collection Small', category:'decor', defaultWidth:6, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_Book_collection_small.svg' },
     { id:'blooming-flowers', name:'Blooming Flowers', category:'plants', defaultWidth:6, material:'Plant', type:'Flower', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_blooming_flowers.svg' },
@@ -1020,6 +1051,7 @@
     { id:'lighting', label:'Lighting' },
     { id:'rugs', label:'Rugs' },
     { id:'wall-art', label:'Wall Art' },
+    { id:'curtains', label:'Curtains' },
     { id:'plants', label:'Plants' },
     { id:'decor', label:'Decor' },
     { id:'textiles', label:'Textiles' },
@@ -1365,7 +1397,8 @@
     var el = document.createElement('div');
     el.className = 'piece' +
       (asset.category==='lighting' && !piece.lampOn ? ' lamp-off' : '') +
-      (piece.flipped ? ' flipped' : '');
+      (piece.flipped ? ' flipped' : '') +
+      (piece.height != null ? ' height-locked' : '');
     el.dataset.uid = piece.uid;
     el.dataset.category = asset.category;
     updateSwayEligibility(el, piece, asset);
@@ -1375,16 +1408,26 @@
     el.style.left = piece.x + '%';
     el.style.top = piece.y + '%';
     el.style.width = piece.width + '%';
+    if (piece.height != null) el.style.height = piece.height + '%';
     el.style.zIndex = piece.z;
     el.style.transform = 'translate(-50%,-50%) rotate('+piece.rotation+'deg)';
+
+    var extraHandles = '';
+    if (asset.stretchControl === 'both' || asset.stretchControl === 'horizontal'){
+      extraHandles += '<div class="handle handle-stretch-h" data-handle="stretch-h"></div>';
+    }
+    if (asset.stretchControl === 'both'){
+      extraHandles += '<div class="handle handle-stretch-v" data-handle="stretch-v"></div>';
+    }
 
     el.innerHTML =
       '<div class="piece-inner'+(animate?' pop':'')+'">' +
         (asset.category==='lighting' ? '<div class="lamp-glow"></div>' : '') +
-        '<img src="'+asset.src+'" alt="'+asset.name+'">' +
+        '<img src="'+asset.src+'" alt="'+asset.name+'" style="opacity:'+((piece.transparency||100)/100)+'">' +
         '<div class="piece-outline"></div>' +
         '<div class="handle handle-rotate" data-handle="rotate"><svg viewBox="0 0 20 20" fill="none" stroke="#BD7B52" stroke-width="1.6" stroke-linecap="round"><path d="M6 6a5 5 0 1 1-1 3"/><path d="M5 4v3h3"/></svg></div>' +
         '<div class="handle handle-resize" data-handle="resize"></div>' +
+        extraHandles +
       '</div>';
 
     stage.appendChild(el);
@@ -1395,6 +1438,10 @@
     el.addEventListener('pointerdown', function(e){ onPieceDown(e, piece.uid, el); });
     el.querySelector('[data-handle="resize"]').addEventListener('pointerdown', function(e){ e.stopPropagation(); startResize(e, piece.uid, el); });
     el.querySelector('[data-handle="rotate"]').addEventListener('pointerdown', function(e){ e.stopPropagation(); startRotate(e, piece.uid, el); });
+    var stretchH = el.querySelector('[data-handle="stretch-h"]');
+    if (stretchH) stretchH.addEventListener('pointerdown', function(e){ e.stopPropagation(); startStretch(e, piece.uid, el, 'h'); });
+    var stretchV = el.querySelector('[data-handle="stretch-v"]');
+    if (stretchV) stretchV.addEventListener('pointerdown', function(e){ e.stopPropagation(); startStretch(e, piece.uid, el, 'v'); });
   }
 
   function fullRerenderPieces(){
@@ -1427,7 +1474,21 @@
     }
   }
 
-  function selectPiece(uid){ state.selectedUid = uid; applySelectionClass(); positionToolbar(); updateSwayButtonUI(); }
+  function updateOpacityButtonUI(){
+    var btn = document.getElementById('opacityToolbarBtn');
+    var piece = state.selectedUid ? getPiece(state.selectedUid) : null;
+    var asset = piece ? getAsset(piece.assetId) : null;
+    if (piece && asset && asset.opacityControl){
+      btn.style.display = 'flex';
+      var val = piece.transparency || 100;
+      document.getElementById('opacityBtnLabel').textContent = val;
+      btn.title = 'Transparency: '+val+'% (click to change)';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
+  function selectPiece(uid){ state.selectedUid = uid; applySelectionClass(); positionToolbar(); updateSwayButtonUI(); updateOpacityButtonUI(); }
   function deselect(){ state.selectedUid = null; applySelectionClass(); itemToolbar.classList.remove('visible'); }
   function updateHint(){ stageHint.classList.toggle('hidden', state.placed.length > 0); }
 
@@ -1484,7 +1545,7 @@
     var rect = el.getBoundingClientRect();
     var cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
     var startDist = Math.hypot(e.clientX-cx, e.clientY-cy);
-    resizeDrag = { pointerId:e.pointerId, uid:uid, el:el, cx:cx, cy:cy, startDist:startDist, startWidth:piece.width };
+    resizeDrag = { pointerId:e.pointerId, uid:uid, el:el, cx:cx, cy:cy, startDist:startDist, startWidth:piece.width, startHeight:piece.height };
     var handle = e.target.closest('.handle');
     try{ handle.setPointerCapture(e.pointerId); }catch(err){}
     handle.addEventListener('pointermove', onResizeMove);
@@ -1498,6 +1559,14 @@
     var scale = dist / Math.max(resizeDrag.startDist, 1);
     piece.width = clamp(resizeDrag.startWidth * scale, MIN_WIDTH, MAX_WIDTH);
     resizeDrag.el.style.width = piece.width + '%';
+    // once a piece has an independent height (stretched at some point),
+    // the corner handle scales both dimensions together proportionally
+    // instead of letting the natural image ratio take back over
+    if (resizeDrag.startHeight != null){
+      piece.height = clamp(resizeDrag.startHeight * scale, 2, 90);
+      resizeDrag.el.style.height = piece.height + '%';
+    }
+    updateSwayEligibility(resizeDrag.el, piece, getAsset(piece.assetId));
     positionToolbar();
   }
   function onResizeEnd(e){
@@ -1507,6 +1576,65 @@
     handle.removeEventListener('pointerup', onResizeEnd);
     handle.removeEventListener('pointercancel', onResizeEnd);
     resizeDrag = null;
+  }
+
+  /* ---------------- independent horizontal/vertical stretch ---------------- */
+  var stretchDrag = null;
+  function startStretch(e, uid, el, mode){
+    e.preventDefault();
+    selectPiece(uid);
+    var piece = getPiece(uid);
+    var stageRect = stage.getBoundingClientRect();
+    // first use locks in the current natural height as an explicit value —
+    // from this point the image fills its box exactly instead of following
+    // its own aspect ratio, which is what makes independent stretch possible
+    if (piece.height == null){
+      var rect = el.getBoundingClientRect();
+      piece.height = rect.height / stageRect.height * 100;
+      el.classList.add('height-locked');
+      el.style.height = piece.height + '%';
+    }
+    stretchDrag = {
+      mode:mode, pointerId:e.pointerId, uid:uid, el:el, stageRect:stageRect,
+      startX:e.clientX, startY:e.clientY,
+      startWidth:piece.width, startHeight:piece.height,
+      startPieceX:piece.x, startPieceY:piece.y
+    };
+    var handle = e.target.closest('.handle');
+    try{ handle.setPointerCapture(e.pointerId); }catch(err){}
+    handle.addEventListener('pointermove', onStretchMove);
+    handle.addEventListener('pointerup', onStretchEnd);
+    handle.addEventListener('pointercancel', onStretchEnd);
+  }
+  function onStretchMove(e){
+    if (!stretchDrag || e.pointerId!==stretchDrag.pointerId) return;
+    var piece = getPiece(stretchDrag.uid);
+    if (stretchDrag.mode === 'h'){
+      var dxPct = (e.clientX - stretchDrag.startX) / stretchDrag.stageRect.width * 100;
+      var newWidth = clamp(stretchDrag.startWidth + dxPct, MIN_WIDTH, 90);
+      var deltaW = newWidth - stretchDrag.startWidth;
+      piece.width = newWidth;
+      piece.x = clamp(stretchDrag.startPieceX + deltaW/2, 0, 100); // left edge stays put
+      stretchDrag.el.style.width = piece.width + '%';
+      stretchDrag.el.style.left = piece.x + '%';
+    } else {
+      var dyPct = (e.clientY - stretchDrag.startY) / stretchDrag.stageRect.height * 100;
+      var newHeight = clamp(stretchDrag.startHeight + dyPct, 2, 90);
+      var deltaH = newHeight - stretchDrag.startHeight;
+      piece.height = newHeight;
+      piece.y = clamp(stretchDrag.startPieceY + deltaH/2, 0, 100); // top edge stays put
+      stretchDrag.el.style.height = piece.height + '%';
+      stretchDrag.el.style.top = piece.y + '%';
+    }
+    positionToolbar();
+  }
+  function onStretchEnd(e){
+    if (!stretchDrag || e.pointerId!==stretchDrag.pointerId) return;
+    var handle = stretchDrag.el.querySelector('[data-handle="stretch-'+stretchDrag.mode+'"]');
+    handle.removeEventListener('pointermove', onStretchMove);
+    handle.removeEventListener('pointerup', onStretchEnd);
+    handle.removeEventListener('pointercancel', onStretchEnd);
+    stretchDrag = null;
   }
 
   /* ---------------- rotating ---------------- */
@@ -1573,8 +1701,15 @@
       updateSwayEligibility(pieceEl(piece.uid), piece, getAsset(piece.assetId));
       updateSwayButtonUI();
     }
+    if (action==='opacity'){
+      var levels = [100,80,70];
+      var idx = levels.indexOf(piece.transparency || 100);
+      piece.transparency = levels[(idx+1) % levels.length];
+      pieceEl(piece.uid).querySelector('.piece-inner img').style.opacity = piece.transparency/100;
+      updateOpacityButtonUI();
+    }
     if (action==='duplicate'){
-      var copy = { uid:'p'+(state.uidCounter++), assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, rotation:piece.rotation, z:state.nextZ++, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel };
+      var copy = { uid:'p'+(state.uidCounter++), assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, height:piece.height, rotation:piece.rotation, z:state.nextZ++, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel, transparency:piece.transparency };
       state.placed.push(copy);
       renderPiece(copy, true);
       selectPiece(copy.uid);
