@@ -302,6 +302,56 @@
     88%  { opacity:.5; }
     100% { transform:translate(var(--drift-x,18px), var(--drift-y,-160px)); opacity:0; }
   }
+  /* at night the same motes become slow-blinking fireflies instead of a
+     steady fade — same drift path, no JS changes needed */
+  .stage.lamps-lit .dust-mote{
+    background:radial-gradient(circle, rgba(214,255,150,.95), rgba(214,255,150,0) 70%);
+    animation-name:fireflyDrift;
+  }
+  @keyframes fireflyDrift{
+    0%   { transform:translate(0,0); opacity:0; }
+    8%   { opacity:.75; }
+    20%  { opacity:.12; }
+    32%  { opacity:.8; }
+    46%  { opacity:.1; }
+    60%  { opacity:.7; }
+    74%  { opacity:.15; }
+    88%  { opacity:.6; }
+    100% { transform:translate(var(--drift-x,18px), var(--drift-y,-160px)); opacity:0; }
+  }
+
+  /* a very soft, slow cloud-shadow sweeping the room — deliberately
+     imprecise, sits behind the furniture with the background */
+  .cloud-shadow{
+    position:absolute;
+    top:-30%; left:-45%;
+    width:95%; height:160%;
+    border-radius:50%;
+    background:radial-gradient(ellipse, rgba(35,30,45,.09), rgba(35,30,45,0) 70%);
+    filter:blur(55px);
+    pointer-events:none;
+    z-index:-500;
+    animation:cloudDrift 75s ease-in-out infinite alternate;
+  }
+  @keyframes cloudDrift{
+    0%   { transform:translateX(0); }
+    100% { transform:translateX(160%); }
+  }
+
+  /* the faintest suggestion of shifting daylight — kept deliberately
+     subtle (alpha only ever moves between ~.02 and ~.05) after the plant
+     sway feedback; this should be felt more than seen */
+  .breathing-light{
+    position:absolute; inset:0;
+    pointer-events:none;
+    z-index:450;
+    background:radial-gradient(circle at 50% 35%, rgba(255,250,235,.05), rgba(255,250,235,0) 65%);
+    animation:breathe 12s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%, 100% { opacity:.4; }
+    50%      { opacity:1; }
+  }
 
   .stage-vignette-top{
     position:absolute; left:0; right:0;
@@ -388,17 +438,20 @@
   @keyframes lampBreathe{ 0%,100%{ opacity:.78; } 50%{ opacity:.92; } }
   .stage.lamps-lit .piece:not(.lamp-off) .lamp-glow{ animation:lampBreathe 3.4s ease-in-out infinite; }
 
-  /* gentle plant sway — pivots from the base, like it's rooted in a pot,
-     not the center */
+  /* gentle plant sway — pivots from the base, like it's rooted in a pot.
+     Rotation displacement grows with distance from the pivot, so at a small
+     angle the base barely shifts while the top does almost all the moving.
+     Only "big" plants qualify (see sway-eligible in JS), and it's slow and
+     minimal by design. */
   @keyframes plantSway{
-    0%   { transform:rotate(-1.3deg); }
-    50%  { transform:rotate(1.3deg); }
-    100% { transform:rotate(-1.3deg); }
+    0%   { transform:rotate(-0.5deg); }
+    50%  { transform:rotate(0.5deg); }
+    100% { transform:rotate(-0.5deg); }
   }
-  .piece[data-category="plants"] .piece-inner{
+  .piece.sway-eligible .piece-inner{
     transform-origin:50% 100%;
     animation:plantSway 6s ease-in-out infinite;
-    animation-duration:var(--sway-duration, 6s);
+    animation-duration:var(--sway-duration, 11s);
     animation-delay:var(--sway-delay, 0s);
   }
   .piece-inner img{
@@ -746,7 +799,9 @@
   <div class="stage" id="stage">
     <div class="stage-bg-layer" id="stageBgA"></div>
     <div class="stage-bg-layer" id="stageBgB"></div>
+    <div class="cloud-shadow"></div>
     <div class="stage-vignette-top"></div>
+    <div class="breathing-light"></div>
     <div class="night-overlay" id="nightOverlay"></div>
     <p class="stage-hint" id="stageHint">Drag a piece onto the room to start decorating</p>
   </div>
@@ -859,6 +914,7 @@
     { id:'armchair-lisa-black', name:'Lisa Armchair Black', category:'seating', defaultWidth:13, material:'Fabric', type:'Bouclé', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_armchair_lisa_black.svg' },
     { id:'armchair-lisa-white', name:'Lisa Armchair White', category:'seating', defaultWidth:13, material:'Fabric', type:'Bouclé', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_armchair_lisa_white.svg' },
     { id:'banana-leaf', name:'Banana Leaf', category:'plants', defaultWidth:13, material:'Plant', type:'Palm', style1:'Organic', style2:'Bohemian', src:ITEMS_BASE+'items_banana_leaf.svg' },
+    { id:'olive-branches', name:'Olive Branches', category:'plants', defaultWidth:13, material:'Plant', type:'Palm', style1:'Organic', style2:'Bohemian', src:ITEMS_BASE+'items_olive_branches.svg' },
     { id:'blanket-basket', name:'Blanket Basket', category:'textiles', defaultWidth:13, material:'Rattan', type:'Natural', style1:'Cozy', style2:'Bohemian', src:ITEMS_BASE+'items_blanket_basket.svg' },
     { id:'chair-victor', name:'Victor Chair', category:'seating', defaultWidth:13, material:'Wood', type:'Light', style1:'Organic', style2:'Mid-Century', src:ITEMS_BASE+'items_chair_victor.svg' },
     { id:'couch-carla-green', name:'Carla Couch Green', category:'seating', defaultWidth:22, material:'Fabric', type:'Velvet', style1:'Mid-Century', style2:'Vintage', src:ITEMS_BASE+'items_couch_carla_green.svg' },
@@ -1240,6 +1296,13 @@
     updateHint();
   }
 
+  var SWAY_MIN_WIDTH = 18; // only plants rendered at roughly Large size or bigger sway
+
+  function updateSwayEligibility(el, piece, asset){
+    var eligible = asset.category === 'plants' && piece.width >= SWAY_MIN_WIDTH;
+    el.classList.toggle('sway-eligible', eligible);
+  }
+
   /* ---------------- rendering placed pieces ---------------- */
   function renderPiece(piece, animate){
     var asset = getAsset(piece.assetId);
@@ -1249,9 +1312,10 @@
       (piece.flipped ? ' flipped' : '');
     el.dataset.uid = piece.uid;
     el.dataset.category = asset.category;
+    updateSwayEligibility(el, piece, asset);
     if (asset.category === 'plants'){
-      el.style.setProperty('--sway-duration', (5 + Math.random()*2.4).toFixed(2)+'s');
-      el.style.setProperty('--sway-delay', (Math.random()*-6).toFixed(2)+'s');
+      el.style.setProperty('--sway-duration', (9 + Math.random()*4).toFixed(2)+'s');
+      el.style.setProperty('--sway-delay', (Math.random()*-12).toFixed(2)+'s');
     }
     el.style.left = piece.x + '%';
     el.style.top = piece.y + '%';
@@ -1364,6 +1428,7 @@
     var scale = dist / Math.max(resizeDrag.startDist, 1);
     piece.width = clamp(resizeDrag.startWidth * scale, MIN_WIDTH, MAX_WIDTH);
     resizeDrag.el.style.width = piece.width + '%';
+    updateSwayEligibility(resizeDrag.el, piece, getAsset(piece.assetId));
     positionToolbar();
   }
   function onResizeEnd(e){
