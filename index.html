@@ -475,6 +475,9 @@
     animation:plantSway var(--sway-duration, 7.5s) ease-in-out infinite;
     animation-delay:var(--sway-delay, 0s);
   }
+  /* curtains hang from the rod, so they pivot from the top instead —
+     the hem sways, the header stays put */
+  .piece.sway-eligible.sway-top .piece-inner{ transform-origin:50% 0%; }
   .piece-inner img{
     position:relative;
     width:100%; height:auto;
@@ -485,11 +488,10 @@
     transition:transform .2s ease;
   }
   .piece.flipped .piece-inner img{ transform:scaleX(-1); }
-  /* once either stretch handle has been used, width and height become
-     fully independent — the image fills its box exactly instead of
-     preserving its natural ratio, which is the point of "stretch" */
-  .piece.height-locked .piece-inner{ height:100%; }
-  .piece.height-locked .piece-inner img{ height:100%; object-fit:fill; }
+  /* height-locked pieces get width/height/object-fit forced via inline
+     style in JS (see applyStretchStyle) rather than relying on this class
+     alone — SVGs loaded via <img> have their own internal aspect-ratio
+     handling that can fight a plain CSS object-fit override */
   .piece-outline{
     position:absolute; inset:0;
     border-radius:6px;
@@ -1001,10 +1003,10 @@
     // Curtains: opacityControl adds the transparency toolbar button;
     // stretchControl:'both' adds independent horizontal + vertical stretch
     // handles alongside the normal corner (proportional) one.
-    { id:'curtain-lana', name:'Lana Curtain', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', opacityControl:true, stretchControl:'both', src:ITEMS_BASE+'items_curtain_lana.svg' },
-    { id:'curtain-lana-white', name:'Lana Curtain White', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Minimal', opacityControl:true, stretchControl:'both', src:ITEMS_BASE+'items_curtain_lana_white.svg' },
-    { id:'curtain-maya', name:'Maya Curtain', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Cozy', opacityControl:true, stretchControl:'both', src:ITEMS_BASE+'items_curtain_maya.svg' },
-    { id:'curtain-maya-beige', name:'Maya Curtain Beige', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Organic', opacityControl:true, stretchControl:'both', src:ITEMS_BASE+'items_curtain_maya_beige.svg' },
+    { id:'curtain-lana', name:'Lana Curtain', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_lana.svg' },
+    { id:'curtain-lana-white', name:'Lana Curtain White', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Minimal', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_lana_white.svg' },
+    { id:'curtain-maya', name:'Maya Curtain', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Cozy', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_maya.svg' },
+    { id:'curtain-maya-beige', name:'Maya Curtain Beige', category:'curtains', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Organic', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_maya_beige.svg' },
 
     // Curtain rods: stretchControl:'horizontal' only — a rod's length
     // should adjust to the window, its thickness shouldn't.
@@ -1058,6 +1060,20 @@
   ];
 
   var MIN_WIDTH = 4, MAX_WIDTH = 65;
+
+  function applyStretchStyle(el, piece){
+    if (piece.height == null) return;
+    el.style.height = piece.height + '%';
+    var inner = el.querySelector('.piece-inner');
+    if (!inner) return;
+    inner.style.height = '100%';
+    var img = inner.querySelector('img');
+    if (img){
+      img.style.height = '100%';
+      img.style.width = '100%';
+      img.style.objectFit = 'fill';
+    }
+  }
 
   var TIME_ICONS = {
     sun:  '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="3.4"/><path d="M10 3v1.6M10 15.4V17M3 10h1.6M15.4 10H17M5.1 5.1l1.15 1.15M13.75 13.75l1.15 1.15M14.9 5.1l-1.15 1.15M6.25 13.75 5.1 14.9"/></svg>',
@@ -1378,12 +1394,15 @@
     // tied to the plant's own tagged size (Medium and up), not how big you've
     // dragged this particular instance — resizing one plant shouldn't turn
     // its sway on or off. Monstera is a specific, requested exception.
-    return asset.category === 'plants' && (asset.defaultWidth >= 13 || asset.id === 'monstera-small');
+    // Curtains sway too, but pivot from the top instead of the base.
+    return (asset.category === 'plants' && (asset.defaultWidth >= 13 || asset.id === 'monstera-small'))
+      || asset.curtainSway === true;
   }
   function updateSwayEligibility(el, piece, asset){
     var level = piece.swayLevel || 0;
     var eligible = canSway(asset) && level > 0;
     el.classList.toggle('sway-eligible', eligible);
+    el.classList.toggle('sway-top', asset.curtainSway === true);
     if (eligible){
       var cfg = SWAY_LEVELS[level];
       el.style.setProperty('--sway-amp', cfg.amp+'deg');
@@ -1402,13 +1421,12 @@
     el.dataset.uid = piece.uid;
     el.dataset.category = asset.category;
     updateSwayEligibility(el, piece, asset);
-    if (asset.category === 'plants'){
+    if (asset.category === 'plants' || asset.curtainSway){
       el.style.setProperty('--sway-delay', (Math.random()*-12).toFixed(2)+'s');
     }
     el.style.left = piece.x + '%';
     el.style.top = piece.y + '%';
     el.style.width = piece.width + '%';
-    if (piece.height != null) el.style.height = piece.height + '%';
     el.style.zIndex = piece.z;
     el.style.transform = 'translate(-50%,-50%) rotate('+piece.rotation+'deg)';
 
@@ -1431,6 +1449,7 @@
       '</div>';
 
     stage.appendChild(el);
+    applyStretchStyle(el, piece);
 
     var innerEl = el.querySelector('.piece-inner');
     if (animate) setTimeout(function(){ innerEl.classList.remove('pop'); }, 340);
@@ -1564,7 +1583,7 @@
     // instead of letting the natural image ratio take back over
     if (resizeDrag.startHeight != null){
       piece.height = clamp(resizeDrag.startHeight * scale, 2, 90);
-      resizeDrag.el.style.height = piece.height + '%';
+      applyStretchStyle(resizeDrag.el, piece);
     }
     updateSwayEligibility(resizeDrag.el, piece, getAsset(piece.assetId));
     positionToolbar();
@@ -1592,7 +1611,7 @@
       var rect = el.getBoundingClientRect();
       piece.height = rect.height / stageRect.height * 100;
       el.classList.add('height-locked');
-      el.style.height = piece.height + '%';
+      applyStretchStyle(el, piece);
     }
     stretchDrag = {
       mode:mode, pointerId:e.pointerId, uid:uid, el:el, stageRect:stageRect,
@@ -1623,7 +1642,7 @@
       var deltaH = newHeight - stretchDrag.startHeight;
       piece.height = newHeight;
       piece.y = clamp(stretchDrag.startPieceY + deltaH/2, 0, 100); // top edge stays put
-      stretchDrag.el.style.height = piece.height + '%';
+      applyStretchStyle(stretchDrag.el, piece);
       stretchDrag.el.style.top = piece.y + '%';
     }
     positionToolbar();
