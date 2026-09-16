@@ -555,11 +555,11 @@
     box-shadow:0 1px 3px rgba(0,0,0,.25);
   }
   .piece.selected .handle-edge{ display:flex; }
-  .handle-edge-h{ right:-9px; top:16%; bottom:24%; width:18px; border-radius:9px; cursor:ew-resize; }
-  .handle-edge-v{ bottom:-9px; left:16%; right:24%; height:18px; border-radius:9px; cursor:ns-resize; }
+  .handle-edge-h{ right:-7px; top:20%; bottom:28%; width:13px; border-radius:7px; cursor:ew-resize; }
+  .handle-edge-v{ bottom:-7px; left:20%; right:28%; height:13px; border-radius:7px; cursor:ns-resize; }
   .edge-dots{ border-radius:2px; background:var(--gold); opacity:.75; }
-  .handle-edge-h .edge-dots{ width:2px; height:55%; }
-  .handle-edge-v .edge-dots{ width:55%; height:2px; }
+  .handle-edge-h .edge-dots{ width:1.5px; height:50%; }
+  .handle-edge-v .edge-dots{ width:50%; height:1.5px; }
 
   /* touch devices get noticeably bigger grab targets on the resize/rotate
      handles — keyed off input precision, not screen size, so a touchscreen
@@ -569,8 +569,8 @@
     .handle-resize{ right:-13px; bottom:-13px; }
     .handle-rotate{ top:-42px; }
     .handle-rotate::before{ top:26px; height:16px; }
-    .handle-edge-h{ width:26px; right:-13px; }
-    .handle-edge-v{ height:26px; bottom:-13px; }
+    .handle-edge-h{ width:20px; right:-10px; }
+    .handle-edge-v{ height:20px; bottom:-10px; }
     .handle svg{ width:14px; height:14px; }
   }
 
@@ -926,7 +926,6 @@
 </div>
 
 <div class="drag-ghost" id="dragGhost"><img id="dragGhostImg" alt=""></div>
-<div id="stretchDebug" style="display:none; position:fixed; left:50%; bottom:14px; transform:translateX(-50%); z-index:9999; background:#111; color:#0f0; font:11px/1.4 monospace; padding:8px 12px; border-radius:8px; white-space:pre; pointer-events:none;"></div>
 
 <audio id="bgMusic" loop preload="none">
   <source src="audio/MainTrack.mp3" type="audio/mpeg">
@@ -1040,15 +1039,16 @@
     { id:'curtain-maya', name:'Maya Curtain', category:'curtains', defaultWidth:22, ratio:0.48, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Cozy', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_maya.svg' },
     { id:'curtain-maya-beige', name:'Maya Curtain Beige', category:'curtains', defaultWidth:22, ratio:0.48, material:'Fabric', type:'Linen', style1:'Bohemian', style2:'Organic', opacityControl:true, stretchControl:'both', curtainSway:true, src:ITEMS_BASE+'items_curtain_maya_beige.svg' },
 
-    // Curtain rods: normal items now — plain scale/resize only, same as
-    // any other piece of furniture. No independent stretch, no rotation
-    // (see the rotateHandle logic below, keyed off category:'curtains').
-    { id:'curtain-rod-mik-beige', name:'Mik Curtain Rod Beige', category:'curtains', defaultWidth:22, material:'Metal', type:'Steel', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_curtain_rod_mik_beige.svg' },
-    { id:'curtain-rod-mik-black', name:'Mik Curtain Rod Black', category:'curtains', defaultWidth:22, material:'Metal', type:'Black Iron', style1:'Modern', style2:'Industrial', src:ITEMS_BASE+'items_curtain_rod_mik_black.svg' },
-    { id:'curtain-rod-mik-darkwood', name:'Mik Curtain Rod Dark Wood', category:'curtains', defaultWidth:22, material:'Wood', type:'Dark', style1:'Traditional', style2:'Rustic', src:ITEMS_BASE+'items_curtain_rod_mik_darkwood.svg' },
-    { id:'curtain-rod-mik-gold', name:'Mik Curtain Rod Gold', category:'curtains', defaultWidth:22, material:'Metal', type:'Brass', style1:'Traditional', style2:'Modern', src:ITEMS_BASE+'items_curtain_rod_mik_gold.svg' },
-    { id:'curtain-rod-mik-silver', name:'Mik Curtain Rod Silver', category:'curtains', defaultWidth:22, material:'Metal', type:'Chrome', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_curtain_rod_mik_silver.svg' },
-    { id:'curtain-rod-mik-white', name:'Mik Curtain Rod White', category:'curtains', defaultWidth:22, material:'Metal', type:'Steel', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'items_curtain_rod_mik_white.svg' },
+    // Curtain rods: stretch horizontally only (see below). No rotation
+    // either way — that's keyed off category:'curtains', not stretchControl.
+    // Rods stretch horizontally only — length adjusts to fit the window,
+    // thickness never changes.
+    { id:'curtain-rod-mik-beige', name:'Mik Curtain Rod Beige', category:'curtains', defaultWidth:22, ratio:11, stretchControl:'horizontal', material:'Metal', type:'Steel', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_curtain_rod_mik_beige.svg' },
+    { id:'curtain-rod-mik-black', name:'Mik Curtain Rod Black', category:'curtains', defaultWidth:22, ratio:11, stretchControl:'horizontal', material:'Metal', type:'Black Iron', style1:'Modern', style2:'Industrial', src:ITEMS_BASE+'items_curtain_rod_mik_black.svg' },
+    { id:'curtain-rod-mik-darkwood', name:'Mik Curtain Rod Dark Wood', category:'curtains', defaultWidth:22, ratio:11, stretchControl:'horizontal', material:'Wood', type:'Dark', style1:'Traditional', style2:'Rustic', src:ITEMS_BASE+'items_curtain_rod_mik_darkwood.svg' },
+    { id:'curtain-rod-mik-gold', name:'Mik Curtain Rod Gold', category:'curtains', defaultWidth:22, ratio:11, stretchControl:'horizontal', material:'Metal', type:'Brass', style1:'Traditional', style2:'Modern', src:ITEMS_BASE+'items_curtain_rod_mik_gold.svg' },
+    { id:'curtain-rod-mik-silver', name:'Mik Curtain Rod Silver', category:'curtains', defaultWidth:22, ratio:11, stretchControl:'horizontal', material:'Metal', type:'Chrome', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_curtain_rod_mik_silver.svg' },
+    { id:'curtain-rod-mik-white', name:'Mik Curtain Rod White', category:'curtains', defaultWidth:22, ratio:11, stretchControl:'horizontal', material:'Metal', type:'Steel', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'items_curtain_rod_mik_white.svg' },
     { id:'book-collection-big', name:'Book Collection Big', category:'decor', defaultWidth:13, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_Book_collection_big.svg' },
     { id:'book-collection-small', name:'Book Collection Small', category:'decor', defaultWidth:6, material:'Leather', type:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_Book_collection_small.svg' },
     { id:'blooming-flowers', name:'Blooming Flowers', category:'plants', defaultWidth:6, material:'Plant', type:'Flower', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_blooming_flowers.svg' },
@@ -1601,12 +1601,9 @@
 
   function selectPiece(uid){
     state.selectedUid = uid; applySelectionClass(); positionToolbar(); updateSwayButtonUI(); updateOpacityButtonUI();
-    var piece = getPiece(uid);
-    updateStretchDebug(pieceEl(uid), piece, getAsset(piece.assetId));
   }
   function deselect(){
     state.selectedUid = null; applySelectionClass(); itemToolbar.classList.remove('visible');
-    document.getElementById('stretchDebug').style.display = 'none';
   }
   function updateHint(){ stageHint.classList.toggle('hidden', state.placed.length > 0); }
 
@@ -1729,7 +1726,6 @@
       stretchDrag.el.style.width = piece.width + '%';
       stretchDrag.el.style.left = piece.x + '%';
       applyStretchStyle(stretchDrag.el, piece);
-      updateStretchDebug(stretchDrag.el, piece, getAsset(piece.assetId));
     } else {
       var dyPct = (e.clientY - stretchDrag.startY) / stretchDrag.stageRect.height * 100;
       var newHeight = clamp(stretchDrag.startHeight + dyPct, 2, 90);
@@ -1738,7 +1734,6 @@
       piece.y = clamp(stretchDrag.startPieceY + deltaH/2, 0, 100); // top edge stays put
       applyStretchStyle(stretchDrag.el, piece);
       stretchDrag.el.style.top = piece.y + '%';
-      updateStretchDebug(stretchDrag.el, piece, getAsset(piece.assetId));
     }
     positionToolbar();
   }
@@ -1784,20 +1779,6 @@
   }
 
   /* ---------------- floating toolbar ---------------- */
-  function updateStretchDebug(el, piece, asset){
-    var dbg = document.getElementById('stretchDebug');
-    if (!dbg) return;
-    if (!asset || !asset.ratio){ dbg.style.display = 'none'; return; }
-    var boxRect = el.getBoundingClientRect();
-    var visual = el.querySelector('.piece-visual');
-    var visRect = visual ? visual.getBoundingClientRect() : null;
-    dbg.style.display = 'block';
-    dbg.textContent =
-      'piece.width=' + piece.width.toFixed(1) + '%  piece.height=' + (piece.height||0).toFixed(1) + '%\n' +
-      'box (outer) px = ' + Math.round(boxRect.width) + ' x ' + Math.round(boxRect.height) + '\n' +
-      'visual (art) px = ' + (visRect ? Math.round(visRect.width)+' x '+Math.round(visRect.height) : 'not found');
-  }
-
   function positionToolbar(){
     if (!state.selectedUid){ itemToolbar.classList.remove('visible'); return; }
     var el = pieceEl(state.selectedUid);
