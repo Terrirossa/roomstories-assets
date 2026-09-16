@@ -1271,10 +1271,72 @@
     var lit = bg.times ? (state.activeTime==='dusk' || state.activeTime==='night') : state.isNight;
     stage.classList.toggle('lamps-lit', lit);
   }
+
+  var LAMP_GLOW_RADIUS = 30; // max reach of the effect, in % of stage width
+  function updateLampProximityGlow(){
+    var dark = stage.classList.contains('lamps-lit');
+    var stageRect = stage.getBoundingClientRect();
+    var litLamps = [];
+    state.placed.forEach(function(p){
+      var a = getAsset(p.assetId);
+      if (a.category === 'lighting' && p.lampOn !== false) litLamps.push(p);
+    });
+
+    state.placed.forEach(function(piece){
+      var asset = getAsset(piece.assetId);
+      if (asset.category === 'lighting') return; // lamps don't relight themselves
+      var el = pieceEl(piece.uid);
+      var visual = el ? el.querySelector('.piece-visual') : null;
+      if (!visual) return;
+
+      if (!dark || litLamps.length === 0){
+        visual.style.filter = '';
+        return;
+      }
+
+      var best = null, bestDistPx = Infinity;
+      litLamps.forEach(function(lamp){
+        var dxPx = (lamp.x - piece.x)/100 * stageRect.width;
+        var dyPx = (lamp.y - piece.y)/100 * stageRect.height;
+        var distPx = Math.hypot(dxPx, dyPx);
+        if (distPx < bestDistPx){ bestDistPx = distPx; best = { dx:dxPx, dy:dyPx }; }
+      });
+
+      var maxPx = LAMP_GLOW_RADIUS/100 * stageRect.width;
+      if (!best || bestDistPx > maxPx || bestDistPx === 0){
+        visual.style.filter = '';
+        return;
+      }
+
+      var intensity = 1 - (bestDistPx / maxPx); // 0..1, stronger when closer
+      var angle = Math.atan2(best.dy, best.dx);
+      var ux = Math.cos(angle), uy = Math.sin(angle);
+
+      // correct for this piece's own flip/rotation, since the filter is
+      // computed in the piece's local space but we want the glow pointing
+      // at the lamp's real position on screen, regardless of orientation
+      if (piece.flipped) ux = -ux;
+      var rot = -(piece.rotation||0) * Math.PI/180;
+      var rux = ux*Math.cos(rot) - uy*Math.sin(rot);
+      var ruy = ux*Math.sin(rot) + uy*Math.cos(rot);
+
+      var off1 = 3 + intensity*3, off2 = 6 + intensity*4;
+      var blur1 = 12 + intensity*8, blur2 = 22 + intensity*10;
+      var alpha1 = (0.16 + intensity*0.30).toFixed(2);
+      var alpha2 = (0.09 + intensity*0.18).toFixed(2);
+
+      visual.style.filter =
+        'drop-shadow(0 10px 14px rgba(30,22,14,.30)) ' +
+        'drop-shadow(' + (rux*off1).toFixed(1) + 'px ' + (ruy*off1).toFixed(1) + 'px ' + blur1.toFixed(0) + 'px rgba(255,200,120,'+alpha1+')) ' +
+        'drop-shadow(' + (rux*off2).toFixed(1) + 'px ' + (ruy*off2).toFixed(1) + 'px ' + blur2.toFixed(0) + 'px rgba(255,180,90,'+alpha2+'))';
+    });
+  }
+
   function refreshRoomVisuals(){
     applyBackground();
     updateNightOverlay();
     updateLampsLit();
+    updateLampProximityGlow();
   }
   function renderTimeControls(){
     var bg = getBackground(state.activeBackground);
@@ -1433,6 +1495,7 @@
     renderPiece(piece, true);
     selectPiece(piece.uid);
     updateHint();
+    updateLampProximityGlow();
   }
 
   var SWAY_LEVELS = {
@@ -1560,6 +1623,7 @@
     state.placed.slice().sort(function(a,b){ return a.z-b.z; }).forEach(function(p){ renderPiece(p,false); });
     if (state.selectedUid) applySelectionClass();
     updateHint();
+    updateLampProximityGlow();
   }
 
   function pieceEl(uid){ return stage.querySelector('.piece[data-uid="'+uid+'"]'); }
@@ -1632,6 +1696,7 @@
     piece.y = clamp(moveDrag.startPctY + dyPct, 0, 100);
     moveDrag.el.style.left = piece.x + '%';
     moveDrag.el.style.top = piece.y + '%';
+    updateLampProximityGlow();
     positionToolbar();
   }
   function onMoveEnd(e){
@@ -1642,6 +1707,7 @@
       if (asset.category === 'lighting'){
         piece.lampOn = !piece.lampOn;
         moveDrag.el.classList.toggle('lamp-off', !piece.lampOn);
+        updateLampProximityGlow();
       }
     }
     moveDrag.el.classList.remove('dragging');
@@ -1735,6 +1801,7 @@
       applyStretchStyle(stretchDrag.el, piece);
       stretchDrag.el.style.top = piece.y + '%';
     }
+    updateLampProximityGlow();
     positionToolbar();
   }
   function onStretchEnd(e){
@@ -1822,6 +1889,7 @@
       state.placed.push(copy);
       renderPiece(copy, true);
       selectPiece(copy.uid);
+      updateLampProximityGlow();
     }
     if (action==='delete'){
       state.placed = state.placed.filter(function(p){ return p.uid!==piece.uid; });
@@ -1829,6 +1897,7 @@
       if (node) node.remove();
       deselect();
       updateHint();
+      updateLampProximityGlow();
     }
   });
 
