@@ -1658,7 +1658,7 @@
       startWidth:piece.width, startHeight:piece.height,
       startPieceX:piece.x, startPieceY:piece.y
     };
-    var handle = e.target.closest('.handle');
+    var handle = e.target.closest('.handle-edge');
     try{ handle.setPointerCapture(e.pointerId); }catch(err){}
     handle.addEventListener('pointermove', onStretchMove);
     handle.addEventListener('pointerup', onStretchEnd);
