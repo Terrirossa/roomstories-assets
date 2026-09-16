@@ -442,6 +442,10 @@
   #swayToolbarBtn[data-level="2"] .bar-1,
   #swayToolbarBtn[data-level="2"] .bar-2{ opacity:1; }
   #swayToolbarBtn[data-level="3"] .bar{ opacity:1; }
+  #lightToolbarBtn[data-level="1"] .bar-1{ opacity:1; }
+  #lightToolbarBtn[data-level="2"] .bar-1,
+  #lightToolbarBtn[data-level="2"] .bar-2{ opacity:1; }
+  #lightToolbarBtn[data-level="3"] .bar{ opacity:1; }
 
   /* the global switch now only covers room-wide effects — sway is per item */
   .stage.motion-off .lamp-glow{ animation:none !important; }
@@ -470,9 +474,9 @@
     pointer-events:none;
     transition:opacity 1.1s ease;
   }
-  .stage.lamps-lit .lamp-glow{ opacity:.85; }
+  .stage.lamps-lit .lamp-glow{ opacity:calc(.85 * var(--lamp-intensity, 1)); }
   .stage.lamps-lit .piece.lamp-off .lamp-glow{ opacity:.16; }
-  @keyframes lampBreathe{ 0%,100%{ opacity:.78; } 50%{ opacity:.92; } }
+  @keyframes lampBreathe{ 0%,100%{ opacity:calc(.78 * var(--lamp-intensity, 1)); } 50%{ opacity:calc(.92 * var(--lamp-intensity, 1)); } }
   .stage.lamps-lit .piece:not(.lamp-off) .lamp-glow{ animation:lampBreathe 3.4s ease-in-out infinite; }
 
   /* plant sway — pivots from the base, like it's rooted in a pot. Amplitude
@@ -910,10 +914,16 @@
 
 <!-- floating selection toolbar -->
 <div class="item-toolbar" id="itemToolbar">
-  <button type="button" data-action="back" title="Send backward" aria-label="Send backward">
+  <button type="button" data-action="back" title="Send to back" aria-label="Send to back">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="4" y="4" width="9" height="9" rx="1.5"/><path d="M8 16h8a1 1 0 0 0 1-1V7" stroke-dasharray="2.2 2.2"/></svg>
   </button>
-  <button type="button" data-action="front" title="Bring forward" aria-label="Bring forward">
+  <button type="button" data-action="step-back" title="Move back one step" aria-label="Move back one step">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l5 5 5-5"/></svg>
+  </button>
+  <button type="button" data-action="step-forward" title="Move forward one step" aria-label="Move forward one step">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5-5 5 5"/></svg>
+  </button>
+  <button type="button" data-action="front" title="Bring to front" aria-label="Bring to front">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M7 4h8a1 1 0 0 1 1 1v8" stroke-dasharray="2.2 2.2"/><rect x="4" y="7" width="9" height="9" rx="1.5"/></svg>
   </button>
   <div class="divider"></div>
@@ -924,6 +934,13 @@
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v14" stroke-dasharray="2 2"/><path d="M6 7 3 10l3 3"/><path d="M14 7l3 3-3 3"/></svg>
   </button>
   <button type="button" data-action="sway" id="swayToolbarBtn" title="Toggle swaying" aria-label="Toggle swaying" style="display:none;">
+    <svg viewBox="0 0 20 20" fill="none">
+      <rect class="bar bar-1" x="3" y="12" width="3" height="5" rx="1" fill="currentColor"/>
+      <rect class="bar bar-2" x="8.5" y="8" width="3" height="9" rx="1" fill="currentColor"/>
+      <rect class="bar bar-3" x="14" y="4" width="3" height="13" rx="1" fill="currentColor"/>
+    </svg>
+  </button>
+  <button type="button" data-action="light" id="lightToolbarBtn" title="Light intensity" aria-label="Light intensity" style="display:none;">
     <svg viewBox="0 0 20 20" fill="none">
       <rect class="bar bar-1" x="3" y="12" width="3" height="5" rx="1" fill="currentColor"/>
       <rect class="bar bar-2" x="8.5" y="8" width="3" height="9" rx="1" fill="currentColor"/>
@@ -1145,8 +1162,6 @@
     activeBackground: BACKGROUNDS[0].id,
     placed: [],
     selectedUid: null,
-    nextZ: 1,
-    minZ: 0,
     uidCounter: 1,
     trayOpen: true,
     isNight: false,
@@ -1313,7 +1328,7 @@
         var dxPx = (lamp.x - piece.x)/100 * stageRect.width;
         var dyPx = (lamp.y - piece.y)/100 * stageRect.height;
         var distPx = Math.hypot(dxPx, dyPx);
-        if (distPx < bestDistPx){ bestDistPx = distPx; best = { dx:dxPx, dy:dyPx }; }
+        if (distPx < bestDistPx){ bestDistPx = distPx; best = { dx:dxPx, dy:dyPx, lamp:lamp }; }
       });
 
       var maxPx = LAMP_GLOW_RADIUS/100 * stageRect.width;
@@ -1322,7 +1337,8 @@
         return;
       }
 
-      var intensity = 1 - (bestDistPx / maxPx); // 0..1, stronger when closer
+      var rimMult = LIGHT_LEVELS[best.lamp.lightIntensity || 2].rim;
+      var intensity = (1 - (bestDistPx / maxPx)) * rimMult; // 0..1, stronger when closer or brighter
       var angle = Math.atan2(best.dy, best.dx);
       var ux = Math.cos(angle), uy = Math.sin(angle);
 
@@ -1358,7 +1374,9 @@
     var stageRect = stage.getBoundingClientRect();
     var radiusPx = Math.round(LAMP_GLOW_RADIUS/100 * stageRect.width);
     layer.style.background = litLamps.map(function(lamp){
-      return 'radial-gradient(circle '+radiusPx+'px at '+lamp.x+'% '+lamp.y+'%, rgba(255,190,110,.5), rgba(255,190,110,0) 75%)';
+      var mult = LIGHT_LEVELS[lamp.lightIntensity || 2].pool;
+      var alpha = (0.5 * mult).toFixed(2);
+      return 'radial-gradient(circle '+radiusPx+'px at '+lamp.x+'% '+lamp.y+'%, rgba(255,190,110,'+alpha+'), rgba(255,190,110,0) 75%)';
     }).join(', ');
   }
 
@@ -1527,8 +1545,9 @@
       var heightPx = widthPx / item.ratio;
       height = heightPx / stageRect.height * 100;
     }
-    var piece = { uid:'p'+(state.uidCounter++), assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, height:height, rotation:0, z:state.nextZ++, lampOn:true, flipped:false, swayLevel:2 };
+    var piece = { uid:'p'+(state.uidCounter++), assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, height:height, rotation:0, z:0, lampOn:true, flipped:false, swayLevel:2, lightIntensity:2 };
     state.placed.push(piece);
+    reassignZIndices();
     renderPiece(piece, true);
     selectPiece(piece.uid);
     updateHint();
@@ -1540,6 +1559,20 @@
     2: { amp:1.0,  minDur:8,   maxDur:10  },
     3: { amp:1.7,  minDur:6,   maxDur:7.5 }
   };
+  // per-lamp brightness — scales the lamp's own glow, its contribution to
+  // the room-wide light pool, and its contribution to nearby objects' rim
+  // glow, all together. New lamps default to Medium, since Strong is what
+  // felt "too intense" as a blanket default.
+  var LIGHT_LEVELS = {
+    1: { glow:0.45, pool:0.45, rim:0.45 },
+    2: { glow:0.70, pool:0.70, rim:0.70 },
+    3: { glow:1.0,  pool:1.0,  rim:1.0  }
+  };
+  function updateLampIntensityVar(el, piece, asset){
+    if (asset.category !== 'lighting') return;
+    var level = piece.lightIntensity || 2;
+    el.style.setProperty('--lamp-intensity', LIGHT_LEVELS[level].glow);
+  }
   function canSway(asset){
     // tied to the plant's own tagged size (Medium and up), not how big you've
     // dragged this particular instance — resizing one plant shouldn't turn
@@ -1595,6 +1628,7 @@
     el.dataset.uid = piece.uid;
     el.dataset.category = asset.category;
     updateSwayEligibility(el, piece, asset);
+    updateLampIntensityVar(el, piece, asset);
     if (asset.category === 'plants' || asset.curtainSway){
       el.style.setProperty('--sway-delay', (Math.random()*-12).toFixed(2)+'s');
     }
@@ -1665,6 +1699,50 @@
 
   function pieceEl(uid){ return stage.querySelector('.piece[data-uid="'+uid+'"]'); }
 
+  // Stacking order is simply the order of state.placed — index 0 is the
+  // very back, the last entry is the very front. z-index is always
+  // reassigned as a clean 1..N range from that order, so it can never
+  // drift into extreme values the way an ever-incrementing/decrementing
+  // counter could (which is what let a piece end up sent so far back it
+  // sank below other stage layers and became unclickable).
+  function reassignZIndices(){
+    state.placed.forEach(function(p, i){
+      p.z = i + 1;
+      var el = pieceEl(p.uid);
+      if (el) el.style.zIndex = p.z;
+    });
+  }
+  function bringToFront(piece){
+    var idx = state.placed.indexOf(piece);
+    if (idx === -1 || idx === state.placed.length - 1) return;
+    state.placed.splice(idx, 1);
+    state.placed.push(piece);
+    reassignZIndices();
+  }
+  function sendToBack(piece){
+    var idx = state.placed.indexOf(piece);
+    if (idx <= 0) return;
+    state.placed.splice(idx, 1);
+    state.placed.unshift(piece);
+    reassignZIndices();
+  }
+  function moveStepForward(piece){
+    var idx = state.placed.indexOf(piece);
+    if (idx === -1 || idx === state.placed.length - 1) return;
+    var next = state.placed[idx + 1];
+    state.placed[idx + 1] = piece;
+    state.placed[idx] = next;
+    reassignZIndices();
+  }
+  function moveStepBackward(piece){
+    var idx = state.placed.indexOf(piece);
+    if (idx <= 0) return;
+    var prev = state.placed[idx - 1];
+    state.placed[idx - 1] = piece;
+    state.placed[idx] = prev;
+    reassignZIndices();
+  }
+
   function applySelectionClass(){
     Array.prototype.slice.call(stage.querySelectorAll('.piece')).forEach(function(n){
       n.classList.toggle('selected', n.dataset.uid === state.selectedUid);
@@ -1686,6 +1764,21 @@
     }
   }
 
+  function updateLightButtonUI(){
+    var btn = document.getElementById('lightToolbarBtn');
+    var piece = state.selectedUid ? getPiece(state.selectedUid) : null;
+    var asset = piece ? getAsset(piece.assetId) : null;
+    if (piece && asset && asset.category === 'lighting'){
+      btn.style.display = 'flex';
+      var level = piece.lightIntensity || 2;
+      btn.dataset.level = level;
+      var labels = ['', 'Gentle', 'Medium', 'Strong'];
+      btn.title = 'Light intensity: '+labels[level]+' (click to change)';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
   function updateOpacityButtonUI(){
     var btn = document.getElementById('opacityToolbarBtn');
     var piece = state.selectedUid ? getPiece(state.selectedUid) : null;
@@ -1701,7 +1794,7 @@
   }
 
   function selectPiece(uid){
-    state.selectedUid = uid; applySelectionClass(); positionToolbar(); updateSwayButtonUI(); updateOpacityButtonUI();
+    state.selectedUid = uid; applySelectionClass(); positionToolbar(); updateSwayButtonUI(); updateOpacityButtonUI(); updateLightButtonUI();
   }
   function deselect(){
     state.selectedUid = null; applySelectionClass(); itemToolbar.classList.remove('visible');
@@ -1906,13 +1999,21 @@
     if (!btn || !state.selectedUid) return;
     var piece = getPiece(state.selectedUid);
     var action = btn.dataset.action;
-    if (action==='front'){ piece.z = state.nextZ++; pieceEl(piece.uid).style.zIndex = piece.z; }
-    if (action==='back'){ piece.z = --state.minZ; pieceEl(piece.uid).style.zIndex = piece.z; }
+    if (action==='front'){ bringToFront(piece); }
+    if (action==='back'){ sendToBack(piece); }
+    if (action==='step-forward'){ moveStepForward(piece); }
+    if (action==='step-back'){ moveStepBackward(piece); }
     if (action==='flip'){ piece.flipped = !piece.flipped; pieceEl(piece.uid).classList.toggle('flipped', piece.flipped); }
     if (action==='sway'){
       piece.swayLevel = ((piece.swayLevel || 0) + 1) % 4;
       updateSwayEligibility(pieceEl(piece.uid), piece, getAsset(piece.assetId));
       updateSwayButtonUI();
+    }
+    if (action==='light'){
+      piece.lightIntensity = (piece.lightIntensity % 3) + 1;
+      updateLampIntensityVar(pieceEl(piece.uid), piece, getAsset(piece.assetId));
+      updateLampLighting();
+      updateLightButtonUI();
     }
     if (action==='opacity'){
       var levels = [100,80,70];
@@ -1922,8 +2023,9 @@
       updateOpacityButtonUI();
     }
     if (action==='duplicate'){
-      var copy = { uid:'p'+(state.uidCounter++), assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, height:piece.height, rotation:piece.rotation, z:state.nextZ++, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel, transparency:piece.transparency };
+      var copy = { uid:'p'+(state.uidCounter++), assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, height:piece.height, rotation:piece.rotation, z:0, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel, transparency:piece.transparency, lightIntensity:piece.lightIntensity };
       state.placed.push(copy);
+      reassignZIndices();
       renderPiece(copy, true);
       selectPiece(copy.uid);
       updateLampLighting();
@@ -1932,6 +2034,7 @@
       state.placed = state.placed.filter(function(p){ return p.uid!==piece.uid; });
       var node = pieceEl(piece.uid);
       if (node) node.remove();
+      reassignZIndices();
       deselect();
       updateHint();
       updateLampLighting();
