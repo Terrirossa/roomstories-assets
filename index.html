@@ -1095,10 +1095,22 @@
   var MIN_WIDTH = 4, MAX_WIDTH = 65;
 
   function applyStretchStyle(el, piece){
-    if (piece.height == null) return;
-    el.style.height = piece.height + '%';
+    // Force exact pixel dimensions on the inner wrapper and the visual
+    // element directly, rather than trusting percentage inheritance
+    // through several nested position:absolute/relative layers — that
+    // chain has proven unreliable in practice, so this removes the
+    // ambiguity entirely rather than trying to reason about it further.
+    if (piece.height != null) el.style.height = piece.height + '%';
+    var rect = el.getBoundingClientRect(); // forces layout with the size just set
     var inner = el.querySelector('.piece-inner');
-    if (inner) inner.style.height = '100%';
+    if (!inner) return;
+    inner.style.width = rect.width + 'px';
+    inner.style.height = rect.height + 'px';
+    var visual = inner.querySelector('.piece-visual');
+    if (visual){
+      visual.style.width = rect.width + 'px';
+      visual.style.height = rect.height + 'px';
+    }
   }
 
   var TIME_ICONS = {
@@ -1675,6 +1687,7 @@
       piece.x = clamp(stretchDrag.startPieceX + deltaW/2, 0, 100); // left edge stays put
       stretchDrag.el.style.width = piece.width + '%';
       stretchDrag.el.style.left = piece.x + '%';
+      applyStretchStyle(stretchDrag.el, piece);
     } else {
       var dyPct = (e.clientY - stretchDrag.startY) / stretchDrag.stageRect.height * 100;
       var newHeight = clamp(stretchDrag.startHeight + dyPct, 2, 90);
