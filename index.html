@@ -478,6 +478,9 @@
   /* curtains hang from the rod, so they pivot from the top instead —
      the hem sways, the header stays put */
   .piece.sway-eligible.sway-top .piece-inner{ transform-origin:50% 0%; }
+  /* a freshly placed piece holds still for a moment before it starts
+     swaying, rather than snapping into motion the instant it lands */
+  .piece.settling .piece-inner{ animation:none !important; }
   .piece-inner img{
     position:relative;
     width:100%; height:auto;
@@ -528,8 +531,6 @@
   .piece.selected .handle{ display:flex; }
   .handle-resize{ right:-8px; bottom:-8px; cursor:nwse-resize; }
   .handle-rotate{ top:-30px; left:50%; transform:translateX(-50%); cursor:grab; }
-  .handle-stretch-h{ right:-8px; top:50%; transform:translateY(-50%); cursor:ew-resize; }
-  .handle-stretch-v{ bottom:-8px; left:50%; transform:translateX(-50%); cursor:ns-resize; }
   .handle-rotate::before{
     content:'';
     position:absolute; top:16px; left:50%;
@@ -542,6 +543,26 @@
   .piece.dragging, .piece.dragging *{ cursor:grabbing !important; }
   .piece-inner.pop{ animation:popIn .32s cubic-bezier(.2,.9,.3,1.2); }
 
+  /* stretch handles are wide grab-strips along most of an edge, not a
+     small dot — deliberately a different shape from the round corner
+     handle so the two are never confused for one another. Each leaves
+     the bottom-right corner clear for the resize handle. */
+  .handle-edge{
+    position:absolute;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(252,250,243,.92);
+    border:1.5px solid var(--gold);
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+  }
+  .piece.selected .handle-edge{ display:flex; }
+  .handle-edge-h{ right:-9px; top:16%; bottom:24%; width:18px; border-radius:9px; cursor:ew-resize; }
+  .handle-edge-v{ bottom:-9px; left:16%; right:24%; height:18px; border-radius:9px; cursor:ns-resize; }
+  .edge-dots{ border-radius:2px; background:var(--gold); opacity:.75; }
+  .handle-edge-h .edge-dots{ width:2px; height:55%; }
+  .handle-edge-v .edge-dots{ width:55%; height:2px; }
+
   /* touch devices get noticeably bigger grab targets on the resize/rotate
      handles — keyed off input precision, not screen size, so a touchscreen
      laptop still gets this and a mouse on a small window doesn't */
@@ -550,8 +571,8 @@
     .handle-resize{ right:-13px; bottom:-13px; }
     .handle-rotate{ top:-42px; }
     .handle-rotate::before{ top:26px; height:16px; }
-    .handle-stretch-h{ right:-13px; }
-    .handle-stretch-v{ bottom:-13px; }
+    .handle-edge-h{ width:26px; right:-13px; }
+    .handle-edge-v{ height:26px; bottom:-13px; }
     .handle svg{ width:14px; height:14px; }
   }
 
@@ -1398,9 +1419,9 @@
   }
 
   var SWAY_LEVELS = {
-    1: { amp:0.9, minDur:9,   maxDur:12  },
-    2: { amp:1.6, minDur:6.5, maxDur:8.5 },
-    3: { amp:2.6, minDur:4.5, maxDur:6   }
+    1: { amp:0.55, minDur:11,  maxDur:14  },
+    2: { amp:1.0,  minDur:8,   maxDur:10  },
+    3: { amp:1.7,  minDur:6,   maxDur:7.5 }
   };
   function canSway(asset){
     // tied to the plant's own tagged size (Medium and up), not how big you've
@@ -1444,10 +1465,10 @@
 
     var extraHandles = '';
     if (asset.stretchControl === 'both' || asset.stretchControl === 'horizontal'){
-      extraHandles += '<div class="handle handle-stretch-h" data-handle="stretch-h"></div>';
+      extraHandles += '<div class="handle-edge handle-edge-h" data-handle="stretch-h"><span class="edge-dots"></span></div>';
     }
     if (asset.stretchControl === 'both'){
-      extraHandles += '<div class="handle handle-stretch-v" data-handle="stretch-v"></div>';
+      extraHandles += '<div class="handle-edge handle-edge-v" data-handle="stretch-v"><span class="edge-dots"></span></div>';
     }
     // rods and curtains stretch to fit a window — free rotation doesn't
     // make sense for them, so they skip the rotate handle entirely
@@ -1473,6 +1494,10 @@
 
     var innerEl = el.querySelector('.piece-inner');
     if (animate) setTimeout(function(){ innerEl.classList.remove('pop'); }, 340);
+    if (animate && el.classList.contains('sway-eligible')){
+      el.classList.add('settling');
+      setTimeout(function(){ el.classList.remove('settling'); }, 1500);
+    }
 
     el.addEventListener('pointerdown', function(e){ onPieceDown(e, piece.uid, el); });
     el.querySelector('[data-handle="resize"]').addEventListener('pointerdown', function(e){ e.stopPropagation(); startResize(e, piece.uid, el); });
