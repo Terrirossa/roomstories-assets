@@ -732,27 +732,43 @@
   }
 
   /* mute toggle */
-  .mute-toggle{
+  .music-controls{
     position:fixed;
     top:14px; left:50%;
     transform:translateX(-50%);
-    width:38px; height:38px;
-    border-radius:50%;
+    z-index:7000;
+    display:flex;
+    align-items:center;
+    gap:8px;
     background:var(--glass-bg-strong);
     backdrop-filter:blur(14px) saturate(160%);
     -webkit-backdrop-filter:blur(14px) saturate(160%);
     border:1px solid var(--glass-border);
+    border-radius:999px;
     box-shadow:0 6px 16px rgba(20,15,10,.25);
+    padding:4px 14px 4px 4px;
+  }
+  .mute-toggle{
+    width:38px; height:38px;
+    flex-shrink:0;
+    border-radius:50%;
+    background:transparent;
+    border:none;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
-    z-index:7000;
     color:var(--ink);
     padding:0;
   }
-  .mute-toggle:hover{ background:var(--paper-light); }
+  .mute-toggle:hover{ background:rgba(255,255,255,.35); }
   .mute-toggle svg{ width:16px; height:16px; }
   .mute-toggle .icon-muted{ display:none; }
   .mute-toggle.muted .icon-unmuted{ display:none; }
+  .volume-slider{
+    width:70px;
+    height:3px;
+    accent-color:var(--gold);
+    cursor:pointer;
+  }
   .mute-toggle.muted .icon-muted{ display:block; }
 
   /* drag ghost */
@@ -959,10 +975,13 @@
 <div class="drag-ghost" id="dragGhost"><img id="dragGhostImg" alt=""></div>
 
 <audio id="bgMusic" preload="none"></audio>
-<button class="mute-toggle" id="muteToggle" type="button" aria-label="Mute or unmute music" aria-pressed="false">
-  <svg class="icon-unmuted" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v4h3l4 3V5L7 8H4Z"/><path d="M13.5 7.2a3.6 3.6 0 0 1 0 5.6"/><path d="M15.7 5a6.6 6.6 0 0 1 0 10"/></svg>
-  <svg class="icon-muted" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v4h3l4 3V5L7 8H4Z"/><path d="M13 8l4 4M17 8l-4 4"/></svg>
-</button>
+<div class="music-controls" id="musicControls">
+  <button class="mute-toggle" id="muteToggle" type="button" aria-label="Mute or unmute music" aria-pressed="false">
+    <svg class="icon-unmuted" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v4h3l4 3V5L7 8H4Z"/><path d="M13.5 7.2a3.6 3.6 0 0 1 0 5.6"/><path d="M15.7 5a6.6 6.6 0 0 1 0 10"/></svg>
+    <svg class="icon-muted" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v4h3l4 3V5L7 8H4Z"/><path d="M13 8l4 4M17 8l-4 4"/></svg>
+  </button>
+  <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="65" aria-label="Music volume">
+</div>
 
 <!-- ============================================================
      RESULTS OVERLAY
@@ -1198,6 +1217,7 @@
   var dragGhostImg = document.getElementById('dragGhostImg');
   var bgMusic = document.getElementById('bgMusic');
   var muteToggle = document.getElementById('muteToggle');
+  var volumeSlider = document.getElementById('volumeSlider');
   var resultsOverlay = document.getElementById('resultsOverlay');
   var resultsBars = document.getElementById('resultsBars');
 
@@ -1223,6 +1243,15 @@
     bgMusic.muted = !bgMusic.muted;
     muteToggle.classList.toggle('muted', bgMusic.muted);
     muteToggle.setAttribute('aria-pressed', bgMusic.muted ? 'true' : 'false');
+  });
+  bgMusic.volume = volumeSlider.value / 100;
+  volumeSlider.addEventListener('input', function(){
+    bgMusic.volume = volumeSlider.value / 100;
+    if (bgMusic.muted){
+      bgMusic.muted = false;
+      muteToggle.classList.remove('muted');
+      muteToggle.setAttribute('aria-pressed', 'false');
+    }
   });
 
   function showScreen(name){
@@ -1610,9 +1639,61 @@
 
   /* ---------------- rendering placed pieces ---------------- */
   var svgTextCache = {};
+  var svgNamespaceCounter = 0;
+  function namespaceSvgNames(svgEl, ns){
+    // Design-tool SVG exports reuse generic names like ".cls-1" or
+    // "#gradient1" across completely different files. Fine when isolated
+    // in an <img>, but these get injected directly into the live page, so
+    // two different curtains/rods sharing a name would collide and one's
+    // colors would silently override the other's. Every asset gets a
+    // unique prefix on its classes and ids before it's ever shown.
+    var classNames = {};
+    svgEl.querySelectorAll('[class]').forEach(function(node){
+      node.classList.forEach(function(c){ classNames[c] = true; });
+    });
+    Object.keys(classNames).forEach(function(cls){
+      var escaped = cls.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      var re = new RegExp('\\.' + escaped + '(?=[\\s,{:.\\[]|$)', 'g');
+      svgEl.querySelectorAll('style').forEach(function(styleEl){
+        styleEl.textContent = styleEl.textContent.replace(re, '.' + ns + cls);
+      });
+    });
+    svgEl.querySelectorAll('[class]').forEach(function(node){
+      var renamed = Array.prototype.map.call(node.classList, function(c){ return ns + c; });
+      node.setAttribute('class', renamed.join(' '));
+    });
+
+    var idMap = {};
+    svgEl.querySelectorAll('[id]').forEach(function(node){
+      idMap[node.getAttribute('id')] = ns + node.getAttribute('id');
+    });
+    Object.keys(idMap).forEach(function(oldId){
+      var newId = idMap[oldId];
+      var escaped = oldId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      var refRe = new RegExp('#' + escaped + '(?=[\\)\'"\\s]|$)', 'g');
+      svgEl.querySelectorAll('[id="'+oldId+'"]').forEach(function(node){ node.setAttribute('id', newId); });
+      svgEl.querySelectorAll('*').forEach(function(node){
+        ['fill','stroke','filter','clip-path','mask'].forEach(function(attr){
+          var val = node.getAttribute(attr);
+          if (val && val.indexOf('#'+oldId) !== -1) node.setAttribute(attr, val.replace(refRe, '#'+newId));
+        });
+        var xlink = node.getAttributeNS ? node.getAttributeNS('http://www.w3.org/1999/xlink', 'href') : null;
+        if (xlink && xlink.indexOf('#'+oldId) !== -1) node.setAttributeNS('http://www.w3.org/1999/xlink', 'href', xlink.replace(refRe, '#'+newId));
+      });
+      svgEl.querySelectorAll('style').forEach(function(styleEl){
+        styleEl.textContent = styleEl.textContent.replace(refRe, '#'+newId);
+      });
+    });
+  }
   function loadStretchableSvg(url, container){
     if (!svgTextCache[url]){
-      svgTextCache[url] = fetch(url).then(function(r){ return r.text(); });
+      svgTextCache[url] = fetch(url).then(function(r){ return r.text(); }).then(function(svgText){
+        var temp = document.createElement('div');
+        temp.innerHTML = svgText;
+        var svgEl = temp.querySelector('svg');
+        if (svgEl) namespaceSvgNames(svgEl, 'svgns' + (svgNamespaceCounter++) + '-');
+        return svgEl ? svgEl.outerHTML : svgText;
+      });
     }
     svgTextCache[url].then(function(svgText){
       var temp = document.createElement('div');
