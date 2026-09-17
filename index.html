@@ -451,6 +451,12 @@
   .time-btn.active{ background:var(--ink); color:#fff; box-shadow:0 0 0 2px var(--gold); }
 
   .arch-picker{ position:relative; }
+  #archPickerBtn{
+    width:38px; height:38px;
+    padding:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #archPickerBtn svg{ width:16px; height:16px; }
   .arch-popover{
     display:none;
     position:absolute;
@@ -1105,6 +1111,7 @@
   // embedded, so this game file stays small no matter how many rooms get added.
   // If a filename ever changes on GitHub, update its src here to match.
   var ASSET_BASE = 'backgrounds/';
+  var ROOM_OPTIONS_BASE = 'roomoptions/';
   var BACKGROUNDS = [
     { id:'sunlit-living-room-big-window',   name:'Sunlit Living Room — Big Window',    src:ASSET_BASE+'backgrounds_sunlit-living-room_01.svg' },
     { id:'sunlit-living-room-twin-windows', name:'Sunlit Living Room — Twin Windows',
@@ -1116,15 +1123,15 @@
             { id:'dusk',  label:'Dusk',  icon:'dusk', src:ASSET_BASE+'dusk_01.png' },
             { id:'night', label:'Night', icon:'moon', src:ASSET_BASE+'night_01.png' }
           ] },
-        { id:'both-bothdoors',  label:'Both Windows + 2 Doors',    hasLeftDoor:true,  hasRightDoor:true,  src:ASSET_BASE+'bothwindows_bothdoors.jpg' },
-        { id:'both-leftdoor',   label:'Both Windows + Left Door',  hasLeftDoor:true,  hasRightDoor:false, src:ASSET_BASE+'bothwindows_leftdoor.jpg' },
-        { id:'both-rightdoor',  label:'Both Windows + Right Door', hasLeftDoor:false, hasRightDoor:true,  src:ASSET_BASE+'bothwindows_rightdoor.jpg' },
-        { id:'left-leftdoor',   label:'Left Window + Left Door',   hasLeftDoor:true,  hasRightDoor:false, src:ASSET_BASE+'leftwindow_leftdoor.jpg' },
-        { id:'left-rightdoor',  label:'Left Window + Right Door',  hasLeftDoor:false, hasRightDoor:true,  src:ASSET_BASE+'leftwindow_rightdoor.jpg' },
-        { id:'left-bothdoors',  label:'Left Window + 2 Doors',     hasLeftDoor:true,  hasRightDoor:true,  src:ASSET_BASE+'leftwindow_bothdoors.jpg' },
-        { id:'right-leftdoor',  label:'Right Window + Left Door',  hasLeftDoor:true,  hasRightDoor:false, src:ASSET_BASE+'rightwindow_leftdoor.jpg' },
-        { id:'right-rightdoor', label:'Right Window + Right Door', hasLeftDoor:false, hasRightDoor:true,  src:ASSET_BASE+'rightwindow_rightdoor.jpg' },
-        { id:'right-bothdoors', label:'Right Window + 2 Doors',    hasLeftDoor:true,  hasRightDoor:true,  src:ASSET_BASE+'rightwindow_bothdoors.jpg' }
+        { id:'both-bothdoors',  label:'Both Windows + 2 Doors',    hasLeftDoor:true,  hasRightDoor:true,  src:ROOM_OPTIONS_BASE+'bothwindows_bothdoors.jpg' },
+        { id:'both-leftdoor',   label:'Both Windows + Left Door',  hasLeftDoor:true,  hasRightDoor:false, src:ROOM_OPTIONS_BASE+'bothwindows_leftdoor.jpg' },
+        { id:'both-rightdoor',  label:'Both Windows + Right Door', hasLeftDoor:false, hasRightDoor:true,  src:ROOM_OPTIONS_BASE+'bothwindows_rightdoor.jpg' },
+        { id:'left-leftdoor',   label:'Left Window + Left Door',   hasLeftDoor:true,  hasRightDoor:false, src:ROOM_OPTIONS_BASE+'leftwindow_leftdoor.jpg' },
+        { id:'left-rightdoor',  label:'Left Window + Right Door',  hasLeftDoor:false, hasRightDoor:true,  src:ROOM_OPTIONS_BASE+'leftwindow_rightdoor.jpg' },
+        { id:'left-bothdoors',  label:'Left Window + 2 Doors',     hasLeftDoor:true,  hasRightDoor:true,  src:ROOM_OPTIONS_BASE+'leftwindow_bothdoors.jpg' },
+        { id:'right-leftdoor',  label:'Right Window + Left Door',  hasLeftDoor:true,  hasRightDoor:false, src:ROOM_OPTIONS_BASE+'rightwindow_leftdoor.jpg' },
+        { id:'right-rightdoor', label:'Right Window + Right Door', hasLeftDoor:false, hasRightDoor:true,  src:ROOM_OPTIONS_BASE+'rightwindow_rightdoor.jpg' },
+        { id:'right-bothdoors', label:'Right Window + 2 Doors',    hasLeftDoor:true,  hasRightDoor:true,  src:ROOM_OPTIONS_BASE+'rightwindow_bothdoors.jpg' }
       ] },
     { id:'modern-living-room',              name:'Modern Living Room',                 src:ASSET_BASE+'backgrounds_modern_living_room.svg' },
     { id:'classic-living-room',             name:'Classic Living Room',                src:ASSET_BASE+'backgrounds_classic_living_room.svg' },
