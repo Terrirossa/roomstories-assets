@@ -731,6 +731,33 @@
     pointer-events:none;
   }
 
+  /* grouped color variants — one card shown by default, others revealed
+     on tap so the tray doesn't need a separate slot per color */
+  .sticker-group{ grid-column:1 / -1; }
+  .sticker-primary{ position:relative; }
+  .variant-dots{
+    position:absolute;
+    top:5px; right:5px;
+    display:flex; gap:2px;
+    pointer-events:none;
+  }
+  .variant-dot{
+    width:5px; height:5px;
+    border-radius:50%;
+    background:var(--ink-35);
+  }
+  .sticker-group.expanded .sticker-primary{
+    box-shadow:0 0 0 1.5px var(--gold);
+  }
+  .variant-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(70px, 1fr));
+    gap:8px;
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px dashed var(--line-strong);
+  }
+
   /* mute toggle */
   .music-controls{
     position:fixed;
@@ -1045,12 +1072,12 @@
     { id:'couch-carla-green', name:'Carla Couch Green', category:'seating', defaultWidth:22, material:'Fabric', type:'Velvet', style1:'Mid-Century', style2:'Vintage', src:ITEMS_BASE+'items_couch_carla_green.svg' },
     { id:'couch-carla-pink', name:'Carla Couch Pink', category:'seating', defaultWidth:22, material:'Fabric', type:'Velvet', style1:'Mid-Century', style2:'Vintage', src:ITEMS_BASE+'items_couch_carla_pink.svg' },
     { id:'couch-henry', name:'Henry Couch', category:'seating', defaultWidth:22, material:'Fabric', type:'Velvet', style1:'Vintage', style2:'Cozy', src:ITEMS_BASE+'items_couch_henry.svg' },
-    { id:'couch-sera-beige', name:'Sera Couch Beige', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_beige.svg' },
-    { id:'couch-sera-black', name:'Sera Couch Black', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_black.svg' },
-    { id:'couch-sera-blue', name:'Sera Couch Blue', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_blue.svg' },
+    { id:'couch-sera-beige', name:'Sera Couch Beige', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', variantGroup:'couch-sera', groupLabel:'Sera Couch', colorLabel:'Beige', src:ITEMS_BASE+'items_couch_sera_beige.svg' },
+    { id:'couch-sera-black', name:'Sera Couch Black', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', variantGroup:'couch-sera', groupLabel:'Sera Couch', colorLabel:'Black', src:ITEMS_BASE+'items_couch_sera_black.svg' },
+    { id:'couch-sera-blue', name:'Sera Couch Blue', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', variantGroup:'couch-sera', groupLabel:'Sera Couch', colorLabel:'Blue', src:ITEMS_BASE+'items_couch_sera_blue.svg' },
     { id:'couch-sera-beige-long', name:'Sera Couch Beige Long', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_beige_long.svg' },
     { id:'couch-sera-blue-long', name:'Sera Couch Blue Long', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_blue_long.svg' },
-    { id:'couch-sera-green', name:'Sera Couch Green', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_green.svg' },
+    { id:'couch-sera-green', name:'Sera Couch Green', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', variantGroup:'couch-sera', groupLabel:'Sera Couch', colorLabel:'Green', src:ITEMS_BASE+'items_couch_sera_green.svg' },
     { id:'couchtable-ivar', name:'Ivar Coffee Table', category:'tables', defaultWidth:13, material:'Marble', type:'Travertine', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_couchtable_ivar.svg' },
     { id:'couchtable-ludwig', name:'Ludwig Coffee Table', category:'tables', defaultWidth:13, material:'Marble', type:'Travertine', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_couchtable_ludwig.svg' },
     { id:'cushion-square-beige', name:'Square Cushion Beige', category:'textiles', defaultWidth:6, material:'Fabric', type:'Linen', style1:'Cozy', style2:'Scandinavian', src:ITEMS_BASE+'items_cushion_square_beige.svg' },
@@ -1183,7 +1210,8 @@
     trayOpen: true,
     isNight: false,
     activeTime: 'day',
-    motionOff: false
+    motionOff: false,
+    expandedGroup: null
   };
 
   function getAsset(id){ for (var i=0;i<ITEMS.length;i++) if (ITEMS[i].id===id) return ITEMS[i]; return null; }
@@ -1491,16 +1519,70 @@
 
   function renderTray(){
     trayGrid.innerHTML = '';
-    ITEMS.filter(function(it){ return it.category===state.activeCategory; }).forEach(function(item){
-      var card = document.createElement('div');
-      card.className = 'sticker';
-      card.style.setProperty('--tilt', tiltFor(item.id)+'deg');
-      card.innerHTML =
-        '<div class="sticker-thumb"><img src="'+item.src+'" alt=""></div>' +
-        '<div class="sticker-label">'+item.name+'</div>';
-      card.addEventListener('pointerdown', function(e){ startTrayDrag(e, item, card); });
-      trayGrid.appendChild(card);
+    var itemsInCat = ITEMS.filter(function(it){ return it.category===state.activeCategory; });
+    var seenGroups = {};
+    itemsInCat.forEach(function(item){
+      if (item.variantGroup){
+        if (seenGroups[item.variantGroup]) return;
+        seenGroups[item.variantGroup] = true;
+        var variants = itemsInCat.filter(function(it){ return it.variantGroup === item.variantGroup; });
+        renderGroupCard(item, variants);
+      } else {
+        renderSingleCard(item);
+      }
     });
+  }
+
+  function renderSingleCard(item){
+    var card = document.createElement('div');
+    card.className = 'sticker';
+    card.style.setProperty('--tilt', tiltFor(item.id)+'deg');
+    card.innerHTML =
+      '<div class="sticker-thumb"><img src="'+item.src+'" alt=""></div>' +
+      '<div class="sticker-label">'+item.name+'</div>';
+    card.addEventListener('pointerdown', function(e){ startTrayDrag(e, item, card); });
+    trayGrid.appendChild(card);
+  }
+
+  function renderGroupCard(primary, variants){
+    var expanded = state.expandedGroup === primary.variantGroup;
+    var wrap = document.createElement('div');
+    wrap.className = 'sticker-group' + (expanded ? ' expanded' : '');
+
+    var card = document.createElement('div');
+    card.className = 'sticker sticker-primary';
+    card.style.setProperty('--tilt', tiltFor(primary.id)+'deg');
+    card.innerHTML =
+      '<div class="sticker-thumb"><img src="'+primary.src+'" alt=""></div>' +
+      '<div class="sticker-label">'+(primary.groupLabel||primary.name)+'</div>' +
+      '<div class="variant-dots">' + variants.map(function(){ return '<span class="variant-dot"></span>'; }).join('') + '</div>';
+    // dragging still places this exact color immediately; a plain tap
+    // toggles the other colors open instead of placing right away
+    card.addEventListener('pointerdown', function(e){
+      startTrayDrag(e, primary, card, function(){
+        state.expandedGroup = expanded ? null : primary.variantGroup;
+        renderTray();
+      });
+    });
+    wrap.appendChild(card);
+
+    if (expanded){
+      var row = document.createElement('div');
+      row.className = 'variant-row';
+      variants.forEach(function(v){
+        var vcard = document.createElement('div');
+        vcard.className = 'sticker';
+        vcard.style.setProperty('--tilt', tiltFor(v.id)+'deg');
+        vcard.innerHTML =
+          '<div class="sticker-thumb"><img src="'+v.src+'" alt=""></div>' +
+          '<div class="sticker-label">'+(v.colorLabel||v.name)+'</div>';
+        vcard.addEventListener('pointerdown', function(e){ startTrayDrag(e, v, vcard); });
+        row.appendChild(vcard);
+      });
+      wrap.appendChild(row);
+    }
+
+    trayGrid.appendChild(wrap);
   }
 
   /* ---------------- hit-testing helper (glass tray floats over the stage) ---------------- */
@@ -1530,10 +1612,10 @@
   /* ---------------- placing from tray ---------------- */
   var trayDrag = null;
 
-  function startTrayDrag(e, item, cardEl){
+  function startTrayDrag(e, item, cardEl, onTapOverride){
     e.preventDefault();
     try{ cardEl.setPointerCapture(e.pointerId); }catch(err){}
-    trayDrag = { pointerId:e.pointerId, item:item, cardEl:cardEl, startX:e.clientX, startY:e.clientY, moved:false };
+    trayDrag = { pointerId:e.pointerId, item:item, cardEl:cardEl, startX:e.clientX, startY:e.clientY, moved:false, onTapOverride:onTapOverride };
     dragGhostImg.src = item.src;
     dragGhost.style.transform = 'translate(-50%,-50%) rotate('+tiltFor(item.id)+'deg)';
 
@@ -1570,6 +1652,7 @@
     var rect = stage.getBoundingClientRect();
 
     if (!d.moved){
+      if (d.onTapOverride){ d.onTapOverride(); trayDrag = null; return; }
       var jx = 50 + (Math.random()*16-8);
       var jy = 48 + (Math.random()*10-5);
       addPiece(d.item, clamp(jx,4,96), clamp(jy,4,96));
