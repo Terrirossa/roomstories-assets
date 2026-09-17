@@ -243,12 +243,38 @@
     height:100dvh;
     overflow:hidden;
   }
-  .stage{
+  .rooms-viewport{
     position:absolute;
     inset:0;
-    touch-action:none;
+    display:flex;
+    align-items:stretch;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    scrollbar-width:thin;
+  }
+  .stage{
+    position:relative;
+    flex:0 0 100%;
+    height:100%;
+    scroll-snap-align:center;
+    touch-action:pan-x;
     user-select:none;
   }
+  .add-room-btn{
+    flex:0 0 64px;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--paper);
+    border:none;
+    cursor:pointer;
+    color:var(--ink-70);
+    scroll-snap-align:start;
+  }
+  .add-room-btn:hover{ color:var(--ink); background:var(--paper-light); }
+  .add-room-btn svg{ width:28px; height:28px; }
   .stage-bg-layer{
     position:absolute; inset:0;
     z-index:-1000;
@@ -423,6 +449,51 @@
   }
   .time-btn:hover{ background:rgba(255,255,255,.48); }
   .time-btn.active{ background:var(--ink); color:#fff; box-shadow:0 0 0 2px var(--gold); }
+
+  .arch-picker{ position:relative; }
+  .arch-popover{
+    display:none;
+    position:absolute;
+    top:calc(100% + 8px);
+    right:0;
+    background:var(--glass-bg-strong);
+    backdrop-filter:blur(14px) saturate(160%);
+    -webkit-backdrop-filter:blur(14px) saturate(160%);
+    border:1px solid var(--glass-border);
+    border-radius:14px;
+    box-shadow:0 12px 30px rgba(20,15,10,.3);
+    padding:10px;
+    grid-template-columns:repeat(3, 72px);
+    gap:8px;
+    z-index:8000;
+  }
+  .arch-popover.open{ display:grid; }
+  .arch-card{
+    cursor:pointer;
+    border-radius:8px;
+    background:none;
+    padding:3px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    border:2px solid transparent;
+  }
+  .arch-card:hover{ background:rgba(255,255,255,.35); }
+  .arch-card.active{ border-color:var(--gold); }
+  .arch-card img{
+    width:72px; height:46px;
+    object-fit:cover;
+    border-radius:6px;
+    display:block;
+  }
+  .arch-card span{
+    font-size:8px;
+    font-weight:600;
+    color:var(--ink-70);
+    text-align:center;
+    line-height:1.15;
+  }
   .time-btn svg{ width:17px; height:17px; }
 
   .motion-toggle{
@@ -919,21 +990,18 @@
      BUILDER SCREEN
 ============================================================ -->
 <section class="screen screen-builder" id="screen-builder">
-  <div class="stage" id="stage">
-    <div class="stage-bg-layer" id="stageBgA"></div>
-    <div class="stage-bg-layer" id="stageBgB"></div>
-    <div class="cloud-shadow"></div>
-    <div class="stage-vignette-top"></div>
-    <div class="breathing-light"></div>
-    <div class="night-overlay" id="nightOverlay"></div>
-    <div class="lamp-light-pools" id="lampLightPools"></div>
-    <p class="stage-hint" id="stageHint">Drag a piece onto the room to start decorating</p>
-  </div>
+  <div class="rooms-viewport" id="roomsViewport"></div>
 
   <div class="builder-topbar">
     <span class="builder-brand">Roomstories</span>
     <div class="builder-actions">
       <div class="time-controls" id="timeControls"></div>
+      <div class="arch-picker" id="archPicker" style="display:none;">
+        <button class="btn-ghost btn-on-glass" id="archPickerBtn" type="button" aria-label="Room layout" aria-expanded="false" title="Room layout">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="1"/><path d="M3 8h5v8"/><path d="M12.5 9.5a1.5 2 0 0 1 0 4" opacity=".7"/></svg>
+        </button>
+        <div class="arch-popover" id="archPopover"></div>
+      </div>
       <button class="btn-ghost btn-on-glass motion-toggle" id="motionToggle" type="button" aria-label="Toggle ambient effects" aria-pressed="true" title="Ambient particles &amp; light">
         <svg class="icon-on" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12c2-3 4-3 6 0s4 3 6 0"/><path d="M4 7c2-3 4-3 6 0s4 3 6 0" opacity=".5"/></svg>
         <svg class="icon-off" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12c2-3 4-3 6 0s4 3 6 0"/><path d="M4 7c2-3 4-3 6 0s4 3 6 0" opacity=".5"/><path d="M4 4l12 12"/></svg>
@@ -1039,12 +1107,24 @@
   var ASSET_BASE = 'backgrounds/';
   var BACKGROUNDS = [
     { id:'sunlit-living-room-big-window',   name:'Sunlit Living Room — Big Window',    src:ASSET_BASE+'backgrounds_sunlit-living-room_01.svg' },
-    { id:'sunlit-living-room-twin-windows', name:'Sunlit Living Room — Twin Windows',  src:ASSET_BASE+'backgrounds_sunlit-living-room_02.svg',
-      times:[
-        { id:'day',   label:'Day',   icon:'sun',  src:ASSET_BASE+'day_01.png' },
-        { id:'dawn',  label:'Dawn',  icon:'dawn', src:ASSET_BASE+'dawn_01.png' },
-        { id:'dusk',  label:'Dusk',  icon:'dusk', src:ASSET_BASE+'dusk_01.png' },
-        { id:'night', label:'Night', icon:'moon', src:ASSET_BASE+'night_01.png' }
+    { id:'sunlit-living-room-twin-windows', name:'Sunlit Living Room — Twin Windows',
+      architectures:[
+        { id:'both-nodoors', label:'Both Windows', hasLeftDoor:false, hasRightDoor:false,
+          times:[
+            { id:'day',   label:'Day',   icon:'sun',  src:ASSET_BASE+'day_01.png' },
+            { id:'dawn',  label:'Dawn',  icon:'dawn', src:ASSET_BASE+'dawn_01.png' },
+            { id:'dusk',  label:'Dusk',  icon:'dusk', src:ASSET_BASE+'dusk_01.png' },
+            { id:'night', label:'Night', icon:'moon', src:ASSET_BASE+'night_01.png' }
+          ] },
+        { id:'both-bothdoors',  label:'Both Windows + 2 Doors',    hasLeftDoor:true,  hasRightDoor:true,  src:ASSET_BASE+'bothwindows_bothdoors.jpg' },
+        { id:'both-leftdoor',   label:'Both Windows + Left Door',  hasLeftDoor:true,  hasRightDoor:false, src:ASSET_BASE+'bothwindows_leftdoor.jpg' },
+        { id:'both-rightdoor',  label:'Both Windows + Right Door', hasLeftDoor:false, hasRightDoor:true,  src:ASSET_BASE+'bothwindows_rightdoor.jpg' },
+        { id:'left-leftdoor',   label:'Left Window + Left Door',   hasLeftDoor:true,  hasRightDoor:false, src:ASSET_BASE+'leftwindow_leftdoor.jpg' },
+        { id:'left-rightdoor',  label:'Left Window + Right Door',  hasLeftDoor:false, hasRightDoor:true,  src:ASSET_BASE+'leftwindow_rightdoor.jpg' },
+        { id:'left-bothdoors',  label:'Left Window + 2 Doors',     hasLeftDoor:true,  hasRightDoor:true,  src:ASSET_BASE+'leftwindow_bothdoors.jpg' },
+        { id:'right-leftdoor',  label:'Right Window + Left Door',  hasLeftDoor:true,  hasRightDoor:false, src:ASSET_BASE+'rightwindow_leftdoor.jpg' },
+        { id:'right-rightdoor', label:'Right Window + Right Door', hasLeftDoor:false, hasRightDoor:true,  src:ASSET_BASE+'rightwindow_rightdoor.jpg' },
+        { id:'right-bothdoors', label:'Right Window + 2 Doors',    hasLeftDoor:true,  hasRightDoor:true,  src:ASSET_BASE+'rightwindow_bothdoors.jpg' }
       ] },
     { id:'modern-living-room',              name:'Modern Living Room',                 src:ASSET_BASE+'backgrounds_modern_living_room.svg' },
     { id:'classic-living-room',             name:'Classic Living Room',                src:ASSET_BASE+'backgrounds_classic_living_room.svg' },
@@ -1203,7 +1283,11 @@
   /* ---------------- state ---------------- */
   var state = {
     activeCategory: 'seating',
-    activeBackground: BACKGROUNDS[0].id,
+    rooms: [
+      { id:'room-1', backgroundId: BACKGROUNDS[0].id, architectureId: null }
+    ],
+    focusedRoomId: 'room-1',
+    roomIdCounter: 2,
     placed: [],
     selectedUid: null,
     uidCounter: 1,
@@ -1217,6 +1301,14 @@
   function getAsset(id){ for (var i=0;i<ITEMS.length;i++) if (ITEMS[i].id===id) return ITEMS[i]; return null; }
   function getBackground(id){ for (var i=0;i<BACKGROUNDS.length;i++) if (BACKGROUNDS[i].id===id) return BACKGROUNDS[i]; return null; }
   function getPiece(uid){ for (var i=0;i<state.placed.length;i++) if (state.placed[i].uid===uid) return state.placed[i]; return null; }
+  function getRoom(id){ for (var i=0;i<state.rooms.length;i++) if (state.rooms[i].id===id) return state.rooms[i]; return null; }
+  function architectureFor(room){
+    if (!room) return null;
+    var bg = getBackground(room.backgroundId);
+    if (!bg || !bg.architectures) return null;
+    return bg.architectures.filter(function(a){ return a.id === room.architectureId; })[0] || bg.architectures[0];
+  }
+  function roomStageEl(id){ return document.querySelector('.room-stage[data-room-id="'+id+'"]'); }
   function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
   /* ---------------- dom refs ---------------- */
@@ -1225,17 +1317,16 @@
     picker: document.getElementById('screen-picker'),
     builder: document.getElementById('screen-builder')
   };
-  var stage = document.getElementById('stage');
-  var stageBgA = document.getElementById('stageBgA');
-  var stageBgB = document.getElementById('stageBgB');
-  var nightOverlay = document.getElementById('nightOverlay');
-  var stageHint = document.getElementById('stageHint');
+  var roomsViewport = document.getElementById('roomsViewport');
   var roomGrid = document.getElementById('roomGrid');
   var trayTabs = document.getElementById('trayTabs');
   var trayGrid = document.getElementById('trayGrid');
   var trayToggle = document.getElementById('trayToggle');
   var trayPanel = document.getElementById('trayPanel');
   var timeControls = document.getElementById('timeControls');
+  var archPicker = document.getElementById('archPicker');
+  var archPickerBtn = document.getElementById('archPickerBtn');
+  var archPopover = document.getElementById('archPopover');
   var motionToggle = document.getElementById('motionToggle');
   var itemToolbar = document.getElementById('itemToolbar');
   var clearBtn = document.getElementById('clearBtn');
@@ -1310,22 +1401,32 @@
   }
 
   /* ---------------- render: room picker ---------------- */
+  function bgThumbSrc(bg){
+    if (bg.architectures){
+      var a0 = bg.architectures[0];
+      return a0.times ? a0.times[0].src : a0.src;
+    }
+    return bg.src;
+  }
   function renderRoomGrid(){
     roomGrid.innerHTML = '';
+    var focused = getRoom(state.focusedRoomId);
     BACKGROUNDS.forEach(function(bg){
-      var isActive = bg.id === state.activeBackground;
+      var isActive = focused && bg.id === focused.backgroundId;
       var card = document.createElement('button');
       card.type = 'button';
       card.className = 'room-card' + (isActive ? ' active' : '');
       card.innerHTML =
-        '<img src="'+bg.src+'" alt="'+bg.name+'" loading="lazy">' +
+        '<img src="'+bgThumbSrc(bg)+'" alt="'+bg.name+'" loading="lazy">' +
         '<span class="room-card-label">'+bg.name+'</span>' +
         (isActive ? '<span class="room-card-check"><svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14l8-8"/></svg></span>' : '');
       card.querySelector('img').addEventListener('error', function(){ card.classList.add('img-error'); });
       card.addEventListener('click', function(){
-        state.activeBackground = bg.id;
-        refreshRoomVisuals();
-        renderTimeControls();
+        var room = getRoom(state.focusedRoomId);
+        if (!room) return;
+        room.backgroundId = bg.id;
+        room.architectureId = bg.architectures ? bg.architectures[0].id : null;
+        renderRooms();
         showScreen('builder');
       });
       roomGrid.appendChild(card);
@@ -1335,121 +1436,141 @@
     soon.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg><span>More rooms soon</span>';
     roomGrid.appendChild(soon);
   }
-  var activeBgLayer = null;
-  function currentTimeSrc(){
-    var bg = getBackground(state.activeBackground);
-    if (bg.times){
-      var t = bg.times.filter(function(t){ return t.id === state.activeTime; })[0] || bg.times[0];
+  function currentTimeSrcForRoom(room){
+    var bg = getBackground(room.backgroundId);
+    var arch = bg.architectures ? architectureFor(room) : bg;
+    if (arch.times){
+      var t = arch.times.filter(function(t){ return t.id === state.activeTime; })[0] || arch.times[0];
       return t.src;
     }
-    return (state.isNight && bg.nightSrc) ? bg.nightSrc : bg.src;
+    return (state.isNight && arch.nightSrc) ? arch.nightSrc : arch.src;
   }
-  function applyBackground(){
-    var src = currentTimeSrc();
-    var incoming = activeBgLayer === stageBgA ? stageBgB : stageBgA;
+  function applyBackgroundForRoom(room){
+    var roomEl = roomStageEl(room.id);
+    if (!roomEl) return;
+    var src = currentTimeSrcForRoom(room);
+    var layers = roomEl.querySelectorAll('.stage-bg-layer');
+    var activeLayer = roomEl.querySelector('.stage-bg-layer.active') || layers[0];
+    var incoming = activeLayer === layers[0] ? layers[1] : layers[0];
     var img = new Image();
     img.onload = function(){
       incoming.style.backgroundImage = "url('"+src+"')";
       incoming.classList.add('active');
-      if (activeBgLayer) activeBgLayer.classList.remove('active');
-      activeBgLayer = incoming;
+      activeLayer.classList.remove('active');
     };
     img.src = src;
   }
-  function updateNightOverlay(){
-    var bg = getBackground(state.activeBackground);
-    nightOverlay.classList.remove('tint-dawn','tint-dusk','tint-night');
-    if (bg.times){
-      if (state.activeTime === 'dawn') nightOverlay.classList.add('tint-dawn');
-      else if (state.activeTime === 'dusk') nightOverlay.classList.add('tint-dusk');
-      else if (state.activeTime === 'night') nightOverlay.classList.add('tint-night');
+  function updateNightOverlayForRoom(room){
+    var roomEl = roomStageEl(room.id);
+    if (!roomEl) return;
+    var nightOverlayEl = roomEl.querySelector('.night-overlay');
+    var bg = getBackground(room.backgroundId);
+    var arch = bg.architectures ? architectureFor(room) : bg;
+    nightOverlayEl.classList.remove('tint-dawn','tint-dusk','tint-night');
+    if (arch.times){
+      if (state.activeTime === 'dawn') nightOverlayEl.classList.add('tint-dawn');
+      else if (state.activeTime === 'dusk') nightOverlayEl.classList.add('tint-dusk');
+      else if (state.activeTime === 'night') nightOverlayEl.classList.add('tint-night');
     } else if (state.isNight){
-      nightOverlay.classList.add('tint-night');
+      nightOverlayEl.classList.add('tint-night');
     }
   }
-  function updateLampsLit(){
-    var bg = getBackground(state.activeBackground);
-    var lit = bg.times ? (state.activeTime==='dusk' || state.activeTime==='night') : state.isNight;
-    stage.classList.toggle('lamps-lit', lit);
+  function updateLampsLitForRoom(room){
+    var roomEl = roomStageEl(room.id);
+    if (!roomEl) return;
+    var bg = getBackground(room.backgroundId);
+    var arch = bg.architectures ? architectureFor(room) : bg;
+    var lit = arch.times ? (state.activeTime==='dusk' || state.activeTime==='night') : state.isNight;
+    roomEl.classList.toggle('lamps-lit', lit);
   }
 
   var LAMP_GLOW_RADIUS = 30; // max reach of the effect, in % of stage width
   function updateLampProximityGlow(){
-    var dark = stage.classList.contains('lamps-lit');
-    var stageRect = stage.getBoundingClientRect();
-    var litLamps = [];
-    state.placed.forEach(function(p){
-      var a = getAsset(p.assetId);
-      if (a.category === 'lighting' && p.lampOn !== false) litLamps.push(p);
-    });
-
-    state.placed.forEach(function(piece){
-      var asset = getAsset(piece.assetId);
-      if (asset.category === 'lighting') return; // lamps don't relight themselves
-      var el = pieceEl(piece.uid);
-      var visual = el ? el.querySelector('.piece-visual') : null;
-      if (!visual) return;
-
-      if (!dark || litLamps.length === 0){
-        visual.style.filter = '';
-        return;
-      }
-
-      var best = null, bestDistPx = Infinity;
-      litLamps.forEach(function(lamp){
-        var dxPx = (lamp.x - piece.x)/100 * stageRect.width;
-        var dyPx = (lamp.y - piece.y)/100 * stageRect.height;
-        var distPx = Math.hypot(dxPx, dyPx);
-        if (distPx < bestDistPx){ bestDistPx = distPx; best = { dx:dxPx, dy:dyPx, lamp:lamp }; }
+    state.rooms.forEach(function(room){
+      var roomEl = roomStageEl(room.id);
+      if (!roomEl) return;
+      var dark = roomEl.classList.contains('lamps-lit');
+      var stageRect = roomEl.getBoundingClientRect();
+      var roomPieces = state.placed.filter(function(p){ return p.roomId === room.id; });
+      var litLamps = [];
+      roomPieces.forEach(function(p){
+        var a = getAsset(p.assetId);
+        if (a.category === 'lighting' && p.lampOn !== false) litLamps.push(p);
       });
 
-      var maxPx = LAMP_GLOW_RADIUS/100 * stageRect.width;
-      if (!best || bestDistPx > maxPx || bestDistPx === 0){
-        visual.style.filter = '';
-        return;
-      }
+      roomPieces.forEach(function(piece){
+        var asset = getAsset(piece.assetId);
+        if (asset.category === 'lighting') return; // lamps don't relight themselves
+        var el = pieceEl(piece.uid);
+        var visual = el ? el.querySelector('.piece-visual') : null;
+        if (!visual) return;
 
-      var rimMult = LIGHT_LEVELS[best.lamp.lightIntensity || 2].rim;
-      var intensity = (1 - (bestDistPx / maxPx)) * rimMult; // 0..1, stronger when closer or brighter
-      var angle = Math.atan2(best.dy, best.dx);
-      var ux = Math.cos(angle), uy = Math.sin(angle);
+        if (!dark || litLamps.length === 0){
+          visual.style.filter = '';
+          return;
+        }
 
-      // correct for this piece's own flip/rotation, since the filter is
-      // computed in the piece's local space but we want the glow pointing
-      // at the lamp's real position on screen, regardless of orientation
-      if (piece.flipped) ux = -ux;
-      var rot = -(piece.rotation||0) * Math.PI/180;
-      var rux = ux*Math.cos(rot) - uy*Math.sin(rot);
-      var ruy = ux*Math.sin(rot) + uy*Math.cos(rot);
+        var best = null, bestDistPx = Infinity;
+        litLamps.forEach(function(lamp){
+          var dxPx = (lamp.x - piece.x)/100 * stageRect.width;
+          var dyPx = (lamp.y - piece.y)/100 * stageRect.height;
+          var distPx = Math.hypot(dxPx, dyPx);
+          if (distPx < bestDistPx){ bestDistPx = distPx; best = { dx:dxPx, dy:dyPx, lamp:lamp }; }
+        });
 
-      var off1 = 3 + intensity*3, off2 = 6 + intensity*4;
-      var blur1 = 12 + intensity*8, blur2 = 22 + intensity*10;
-      var alpha1 = (0.16 + intensity*0.30).toFixed(2);
-      var alpha2 = (0.09 + intensity*0.18).toFixed(2);
+        var maxPx = LAMP_GLOW_RADIUS/100 * stageRect.width;
+        if (!best || bestDistPx > maxPx || bestDistPx === 0){
+          visual.style.filter = '';
+          return;
+        }
 
-      visual.style.filter =
-        'drop-shadow(0 10px 14px rgba(30,22,14,.30)) ' +
-        'drop-shadow(' + (rux*off1).toFixed(1) + 'px ' + (ruy*off1).toFixed(1) + 'px ' + blur1.toFixed(0) + 'px rgba(255,200,120,'+alpha1+')) ' +
-        'drop-shadow(' + (rux*off2).toFixed(1) + 'px ' + (ruy*off2).toFixed(1) + 'px ' + blur2.toFixed(0) + 'px rgba(255,180,90,'+alpha2+'))';
+        var rimMult = LIGHT_LEVELS[best.lamp.lightIntensity || 2].rim;
+        var intensity = (1 - (bestDistPx / maxPx)) * rimMult; // 0..1, stronger when closer or brighter
+        var angle = Math.atan2(best.dy, best.dx);
+        var ux = Math.cos(angle), uy = Math.sin(angle);
+
+        // correct for this piece's own flip/rotation, since the filter is
+        // computed in the piece's local space but we want the glow pointing
+        // at the lamp's real position on screen, regardless of orientation
+        if (piece.flipped) ux = -ux;
+        var rot = -(piece.rotation||0) * Math.PI/180;
+        var rux = ux*Math.cos(rot) - uy*Math.sin(rot);
+        var ruy = ux*Math.sin(rot) + uy*Math.cos(rot);
+
+        var off1 = 3 + intensity*3, off2 = 6 + intensity*4;
+        var blur1 = 12 + intensity*8, blur2 = 22 + intensity*10;
+        var alpha1 = (0.16 + intensity*0.30).toFixed(2);
+        var alpha2 = (0.09 + intensity*0.18).toFixed(2);
+
+        visual.style.filter =
+          'drop-shadow(0 10px 14px rgba(30,22,14,.30)) ' +
+          'drop-shadow(' + (rux*off1).toFixed(1) + 'px ' + (ruy*off1).toFixed(1) + 'px ' + blur1.toFixed(0) + 'px rgba(255,200,120,'+alpha1+')) ' +
+          'drop-shadow(' + (rux*off2).toFixed(1) + 'px ' + (ruy*off2).toFixed(1) + 'px ' + blur2.toFixed(0) + 'px rgba(255,180,90,'+alpha2+'))';
+      });
     });
   }
 
   function updateLampLightPools(){
-    var layer = document.getElementById('lampLightPools');
-    if (!layer) return;
-    var dark = stage.classList.contains('lamps-lit');
-    var litLamps = dark ? state.placed.filter(function(p){
-      var a = getAsset(p.assetId);
-      return a.category === 'lighting' && p.lampOn !== false;
-    }) : [];
-    if (!litLamps.length){ layer.style.background = 'none'; return; }
-    var stageRect = stage.getBoundingClientRect();
-    var radiusPx = Math.round(LAMP_GLOW_RADIUS/100 * stageRect.width);
-    layer.style.background = litLamps.map(function(lamp){
-      var mult = LIGHT_LEVELS[lamp.lightIntensity || 2].pool;
-      var alpha = (0.5 * mult).toFixed(2);
-      return 'radial-gradient(circle '+radiusPx+'px at '+lamp.x+'% '+lamp.y+'%, rgba(255,190,110,'+alpha+'), rgba(255,190,110,0) 75%)';
-    }).join(', ');
+    state.rooms.forEach(function(room){
+      var roomEl = roomStageEl(room.id);
+      if (!roomEl) return;
+      var layer = roomEl.querySelector('.lamp-light-pools');
+      if (!layer) return;
+      var dark = roomEl.classList.contains('lamps-lit');
+      var roomPieces = state.placed.filter(function(p){ return p.roomId === room.id; });
+      var litLamps = dark ? roomPieces.filter(function(p){
+        var a = getAsset(p.assetId);
+        return a.category === 'lighting' && p.lampOn !== false;
+      }) : [];
+      if (!litLamps.length){ layer.style.background = 'none'; return; }
+      var stageRect = roomEl.getBoundingClientRect();
+      var radiusPx = Math.round(LAMP_GLOW_RADIUS/100 * stageRect.width);
+      layer.style.background = litLamps.map(function(lamp){
+        var mult = LIGHT_LEVELS[lamp.lightIntensity || 2].pool;
+        var alpha = (0.5 * mult).toFixed(2);
+        return 'radial-gradient(circle '+radiusPx+'px at '+lamp.x+'% '+lamp.y+'%, rgba(255,190,110,'+alpha+'), rgba(255,190,110,0) 75%)';
+      }).join(', ');
+    });
   }
 
   // both effects share the same "who's lit and where" question, so they're
@@ -1460,16 +1581,21 @@
   }
 
   function refreshRoomVisuals(){
-    applyBackground();
-    updateNightOverlay();
-    updateLampsLit();
+    state.rooms.forEach(function(room){
+      applyBackgroundForRoom(room);
+      updateNightOverlayForRoom(room);
+      updateLampsLitForRoom(room);
+    });
     updateLampLighting();
   }
   function renderTimeControls(){
-    var bg = getBackground(state.activeBackground);
+    var room = getRoom(state.focusedRoomId);
+    var bg = room ? getBackground(room.backgroundId) : null;
+    var arch = bg ? (bg.architectures ? architectureFor(room) : bg) : null;
     timeControls.innerHTML = '';
-    if (bg.times){
-      bg.times.forEach(function(t){
+    if (!arch) return;
+    if (arch.times){
+      arch.times.forEach(function(t){
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'time-btn' + (state.activeTime===t.id ? ' active' : '');
@@ -1498,6 +1624,180 @@
       });
       timeControls.appendChild(btn);
     }
+  }
+
+  function renderArchPicker(){
+    var room = getRoom(state.focusedRoomId);
+    var bg = room ? getBackground(room.backgroundId) : null;
+    if (!bg || !bg.architectures){
+      archPicker.style.display = 'none';
+      archPopover.classList.remove('open');
+      archPickerBtn.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    var resolvedArch = architectureFor(room);
+    archPicker.style.display = '';
+    archPopover.innerHTML = '';
+    bg.architectures.forEach(function(a){
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'arch-card' + (resolvedArch && resolvedArch.id===a.id ? ' active' : '');
+      var thumb = a.times ? a.times[0].src : a.src;
+      card.innerHTML = '<img src="'+thumb+'" alt="" loading="lazy"><span>'+a.label+'</span>';
+      card.addEventListener('click', function(){
+        room.architectureId = a.id;
+        renderRooms();
+        archPopover.classList.remove('open');
+        archPickerBtn.setAttribute('aria-expanded', 'false');
+      });
+      archPopover.appendChild(card);
+    });
+  }
+  archPickerBtn.addEventListener('click', function(){
+    var open = archPopover.classList.toggle('open');
+    archPickerBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('pointerdown', function(e){
+    if (archPopover.classList.contains('open') && !archPicker.contains(e.target)){
+      archPopover.classList.remove('open');
+      archPickerBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  /* ---------------- multi-room flat: building & scrolling between rooms ---------------- */
+  function buildRoomStageEl(room){
+    var el = document.createElement('div');
+    el.className = 'stage room-stage' + (state.motionOff ? ' motion-off' : '');
+    el.dataset.roomId = room.id;
+    el.innerHTML =
+      '<div class="stage-bg-layer active"></div>' +
+      '<div class="stage-bg-layer"></div>' +
+      '<div class="cloud-shadow"></div>' +
+      '<div class="stage-vignette-top"></div>' +
+      '<div class="breathing-light"></div>' +
+      '<div class="night-overlay"></div>' +
+      '<div class="lamp-light-pools"></div>' +
+      '<p class="stage-hint">Drag a piece onto the room to start decorating</p>';
+    return el;
+  }
+
+  var addRoomPopoverEl = null;
+  function closeAddRoomPopover(){
+    if (addRoomPopoverEl){ addRoomPopoverEl.remove(); addRoomPopoverEl = null; }
+    document.removeEventListener('pointerdown', onDocPointerDownCloseAddRoom);
+  }
+  function onDocPointerDownCloseAddRoom(e){
+    if (addRoomPopoverEl && !addRoomPopoverEl.contains(e.target)) closeAddRoomPopover();
+  }
+  function openAddRoomPopover(anchorBtn, side, options, onPick){
+    closeAddRoomPopover();
+    var pop = document.createElement('div');
+    pop.className = 'arch-popover open';
+    pop.style.position = 'fixed';
+    if (!options.length){
+      pop.innerHTML = '<span style="font-size:11px;font-weight:600;color:var(--ink-70);max-width:150px;display:block;">No matching layouts yet</span>';
+    }
+    options.forEach(function(a){
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'arch-card';
+      var thumb = a.times ? a.times[0].src : a.src;
+      card.innerHTML = '<img src="'+thumb+'" alt="" loading="lazy"><span>'+a.label+'</span>';
+      card.addEventListener('click', function(e){
+        e.stopPropagation();
+        closeAddRoomPopover();
+        onPick(a);
+      });
+      pop.appendChild(card);
+    });
+    document.body.appendChild(pop);
+    var rect = anchorBtn.getBoundingClientRect();
+    pop.style.top = Math.max(70, window.innerHeight/2 - 100) + 'px';
+    if (side === 'left'){
+      pop.style.right = (window.innerWidth - rect.left + 8) + 'px';
+      pop.style.left = 'auto';
+    } else {
+      pop.style.left = (rect.right + 8) + 'px';
+      pop.style.right = 'auto';
+    }
+    addRoomPopoverEl = pop;
+    setTimeout(function(){ document.addEventListener('pointerdown', onDocPointerDownCloseAddRoom); }, 0);
+  }
+
+  function focusRoom(id){
+    state.focusedRoomId = id;
+    var el = roomStageEl(id);
+    if (el) el.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+    renderTimeControls();
+    renderArchPicker();
+  }
+
+  function buildAddRoomButton(side){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'add-room-btn add-room-btn-'+side;
+    btn.setAttribute('aria-label', side === 'left' ? 'Add room to the left' : 'Add room to the right');
+    btn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>';
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      // new rooms are Twin Windows only for now — it's the only style with
+      // layout artwork so far
+      var bg = getBackground('sunlit-living-room-twin-windows');
+      var needsDoor = side === 'left' ? 'hasRightDoor' : 'hasLeftDoor';
+      var options = bg.architectures.filter(function(a){ return a[needsDoor]; });
+      openAddRoomPopover(btn, side, options, function(chosenArch){
+        var newRoom = { id:'room-'+(state.roomIdCounter++), backgroundId:'sunlit-living-room-twin-windows', architectureId:chosenArch.id };
+        if (side === 'left') state.rooms.unshift(newRoom);
+        else state.rooms.push(newRoom);
+        renderRooms();
+        focusRoom(newRoom.id);
+      });
+    });
+    return btn;
+  }
+
+  var roomFocusObserver = null;
+  function setupRoomFocusTracking(){
+    if (roomFocusObserver) roomFocusObserver.disconnect();
+    if (typeof IntersectionObserver === 'undefined') return;
+    roomFocusObserver = new IntersectionObserver(function(entries){
+      var best = null, bestRatio = 0;
+      entries.forEach(function(entry){
+        if (entry.intersectionRatio > bestRatio){ bestRatio = entry.intersectionRatio; best = entry.target; }
+      });
+      if (best && best.dataset.roomId !== state.focusedRoomId){
+        state.focusedRoomId = best.dataset.roomId;
+        renderTimeControls();
+        renderArchPicker();
+      }
+    }, { root: roomsViewport, threshold: [0.5, 0.75, 0.9] });
+    document.querySelectorAll('.room-stage').forEach(function(el){ roomFocusObserver.observe(el); });
+  }
+
+  function renderRooms(){
+    roomsViewport.innerHTML = '';
+    state.rooms.forEach(function(room, i){
+      var arch = architectureFor(room);
+      if (i === 0 && arch && arch.hasLeftDoor){
+        roomsViewport.appendChild(buildAddRoomButton('left'));
+      }
+      roomsViewport.appendChild(buildRoomStageEl(room));
+      if (i === state.rooms.length - 1 && arch && arch.hasRightDoor){
+        roomsViewport.appendChild(buildAddRoomButton('right'));
+      }
+    });
+    if (!getRoom(state.focusedRoomId)) state.focusedRoomId = state.rooms[0].id;
+    state.rooms.forEach(function(room){
+      applyBackgroundForRoom(room);
+      updateNightOverlayForRoom(room);
+      updateLampsLitForRoom(room);
+      createDustMotes(roomStageEl(room.id));
+    });
+    fullRerenderPieces();
+    updateLampLighting();
+    renderTimeControls();
+    renderArchPicker();
+    setupRoomFocusTracking();
   }
 
   /* ---------------- render: tray ---------------- */
@@ -1586,11 +1886,11 @@
   }
 
   /* ---------------- hit-testing helper (glass tray floats over the stage) ---------------- */
-  function isOverStage(x, y){
+  function roomStageAtPoint(x, y){
     var topEl = document.elementFromPoint(x, y);
-    if (!topEl) return false;
-    if (topEl.closest('.tray-panel') || topEl.closest('.tray-toggle') || topEl.closest('.builder-topbar')) return false;
-    return !!topEl.closest('#stage');
+    if (!topEl) return null;
+    if (topEl.closest('.tray-panel') || topEl.closest('.tray-toggle') || topEl.closest('.builder-topbar')) return null;
+    return topEl.closest('.room-stage');
   }
 
   /* ---------------- show / hide the items panel ---------------- */
@@ -1604,7 +1904,7 @@
 
   motionToggle.addEventListener('click', function(){
     state.motionOff = !state.motionOff;
-    stage.classList.toggle('motion-off', state.motionOff);
+    document.querySelectorAll('.room-stage').forEach(function(s){ s.classList.toggle('motion-off', state.motionOff); });
     motionToggle.classList.toggle('off', state.motionOff);
     motionToggle.setAttribute('aria-pressed', state.motionOff ? 'false' : 'true');
   });
@@ -1635,7 +1935,11 @@
     dragGhost.style.left = e.clientX + 'px';
     dragGhost.style.top = e.clientY + 'px';
 
-    stage.classList.toggle('drop-active', isOverStage(e.clientX, e.clientY));
+    var overRoom = roomStageAtPoint(e.clientX, e.clientY);
+    document.querySelectorAll('.room-stage.drop-active').forEach(function(s){
+      if (s !== overRoom) s.classList.remove('drop-active');
+    });
+    if (overRoom) overRoom.classList.add('drop-active');
   }
 
   function onTrayDragEnd(e){
@@ -1646,38 +1950,41 @@
     d.cardEl.removeEventListener('pointercancel', onTrayDragEnd);
     dragGhost.style.display = 'none';
     dragGhost.style.opacity = '0';
-    stage.classList.remove('drop-active');
+    document.querySelectorAll('.room-stage.drop-active').forEach(function(s){ s.classList.remove('drop-active'); });
 
-    var over = isOverStage(e.clientX, e.clientY);
-    var rect = stage.getBoundingClientRect();
+    var overRoom = roomStageAtPoint(e.clientX, e.clientY);
 
     if (!d.moved){
       if (d.onTapOverride){ d.onTapOverride(); trayDrag = null; return; }
-      var jx = 50 + (Math.random()*16-8);
-      var jy = 48 + (Math.random()*10-5);
-      addPiece(d.item, clamp(jx,4,96), clamp(jy,4,96));
-    } else if (over){
+      if (roomStageEl(state.focusedRoomId)){
+        var jx = 50 + (Math.random()*16-8);
+        var jy = 48 + (Math.random()*10-5);
+        addPiece(d.item, clamp(jx,4,96), clamp(jy,4,96), state.focusedRoomId);
+      }
+    } else if (overRoom){
+      var rect = overRoom.getBoundingClientRect();
       var xPct = (e.clientX - rect.left) / rect.width * 100;
       var yPct = (e.clientY - rect.top) / rect.height * 100;
-      addPiece(d.item, clamp(xPct,0,100), clamp(yPct,0,100));
+      addPiece(d.item, clamp(xPct,0,100), clamp(yPct,0,100), overRoom.dataset.roomId);
     }
     trayDrag = null;
   }
 
-  function addPiece(item, xPct, yPct){
+  function addPiece(item, xPct, yPct, roomId){
     var height = null;
-    if (item.ratio != null){
-      var stageRect = stage.getBoundingClientRect();
+    var roomEl = roomStageEl(roomId);
+    if (item.ratio != null && roomEl){
+      var stageRect = roomEl.getBoundingClientRect();
       var widthPx = item.defaultWidth/100 * stageRect.width;
       var heightPx = widthPx / item.ratio;
       height = heightPx / stageRect.height * 100;
     }
-    var piece = { uid:'p'+(state.uidCounter++), assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, height:height, rotation:0, z:0, lampOn:true, flipped:false, swayLevel:2, lightIntensity:2 };
+    var piece = { uid:'p'+(state.uidCounter++), roomId:roomId, assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, height:height, rotation:0, z:0, lampOn:true, flipped:false, swayLevel:2, lightIntensity:2 };
     state.placed.push(piece);
     reassignZIndices();
     renderPiece(piece, true);
     selectPiece(piece.uid);
-    updateHint();
+    updateAllHints();
     updateLampLighting();
   }
 
@@ -1844,7 +2151,8 @@
         extraHandles +
       '</div>';
 
-    stage.appendChild(el);
+    var pieceRoomEl = roomStageEl(piece.roomId);
+    if (pieceRoomEl) pieceRoomEl.appendChild(el);
     applyStretchStyle(el, piece);
     if (isStretchable){
       var visualEl = el.querySelector('.piece-visual');
@@ -1869,14 +2177,14 @@
   }
 
   function fullRerenderPieces(){
-    Array.prototype.slice.call(stage.querySelectorAll('.piece')).forEach(function(n){ n.remove(); });
+    Array.prototype.slice.call(document.querySelectorAll('.piece')).forEach(function(n){ n.remove(); });
     state.placed.slice().sort(function(a,b){ return a.z-b.z; }).forEach(function(p){ renderPiece(p,false); });
     if (state.selectedUid) applySelectionClass();
-    updateHint();
+    updateAllHints();
     updateLampLighting();
   }
 
-  function pieceEl(uid){ return stage.querySelector('.piece[data-uid="'+uid+'"]'); }
+  function pieceEl(uid){ return document.querySelector('.piece[data-uid="'+uid+'"]'); }
 
   // Stacking order is simply the order of state.placed — index 0 is the
   // very back, the last entry is the very front. z-index is always
@@ -1885,10 +2193,15 @@
   // counter could (which is what let a piece end up sent so far back it
   // sank below other stage layers and became unclickable).
   function reassignZIndices(){
-    state.placed.forEach(function(p, i){
-      p.z = i + 1;
-      var el = pieceEl(p.uid);
-      if (el) el.style.zIndex = p.z;
+    state.rooms.forEach(function(room){
+      var i = 0;
+      state.placed.forEach(function(p){
+        if (p.roomId !== room.id) return;
+        i++;
+        p.z = i;
+        var el = pieceEl(p.uid);
+        if (el) el.style.zIndex = p.z;
+      });
     });
   }
   function bringToFront(piece){
@@ -1905,25 +2218,34 @@
     state.placed.unshift(piece);
     reassignZIndices();
   }
+  function roomPiecesOrdered(roomId){
+    return state.placed.filter(function(p){ return p.roomId === roomId; });
+  }
   function moveStepForward(piece){
-    var idx = state.placed.indexOf(piece);
-    if (idx === -1 || idx === state.placed.length - 1) return;
-    var next = state.placed[idx + 1];
-    state.placed[idx + 1] = piece;
-    state.placed[idx] = next;
+    var roomPieces = roomPiecesOrdered(piece.roomId);
+    var idx = roomPieces.indexOf(piece);
+    if (idx === -1 || idx === roomPieces.length - 1) return;
+    var next = roomPieces[idx + 1];
+    var realIdxA = state.placed.indexOf(piece);
+    var realIdxB = state.placed.indexOf(next);
+    state.placed[realIdxA] = next;
+    state.placed[realIdxB] = piece;
     reassignZIndices();
   }
   function moveStepBackward(piece){
-    var idx = state.placed.indexOf(piece);
+    var roomPieces = roomPiecesOrdered(piece.roomId);
+    var idx = roomPieces.indexOf(piece);
     if (idx <= 0) return;
-    var prev = state.placed[idx - 1];
-    state.placed[idx - 1] = piece;
-    state.placed[idx] = prev;
+    var prev = roomPieces[idx - 1];
+    var realIdxA = state.placed.indexOf(piece);
+    var realIdxB = state.placed.indexOf(prev);
+    state.placed[realIdxA] = prev;
+    state.placed[realIdxB] = piece;
     reassignZIndices();
   }
 
   function applySelectionClass(){
-    Array.prototype.slice.call(stage.querySelectorAll('.piece')).forEach(function(n){
+    Array.prototype.slice.call(document.querySelectorAll('.piece')).forEach(function(n){
       n.classList.toggle('selected', n.dataset.uid === state.selectedUid);
     });
   }
@@ -1978,7 +2300,16 @@
   function deselect(){
     state.selectedUid = null; applySelectionClass(); itemToolbar.classList.remove('visible');
   }
-  function updateHint(){ stageHint.classList.toggle('hidden', state.placed.length > 0); }
+  function updateAllHints(){
+    state.rooms.forEach(function(room){
+      var roomEl = roomStageEl(room.id);
+      if (!roomEl) return;
+      var hint = roomEl.querySelector('.stage-hint');
+      if (!hint) return;
+      var count = state.placed.filter(function(p){ return p.roomId === room.id; }).length;
+      hint.classList.toggle('hidden', count > 0);
+    });
+  }
 
   /* ---------------- moving a placed piece ---------------- */
   var moveDrag = null;
@@ -1987,7 +2318,7 @@
     e.preventDefault();
     selectPiece(uid);
     var piece = getPiece(uid);
-    var rect = stage.getBoundingClientRect();
+    var rect = roomStageEl(piece.roomId).getBoundingClientRect();
     moveDrag = { pointerId:e.pointerId, uid:uid, el:el, rect:rect, startX:e.clientX, startY:e.clientY, startPctX:piece.x, startPctY:piece.y, moved:false };
     el.classList.add('dragging');
     try{ el.setPointerCapture(e.pointerId); }catch(err){}
@@ -2074,7 +2405,7 @@
     e.preventDefault();
     selectPiece(uid);
     var piece = getPiece(uid);
-    var stageRect = stage.getBoundingClientRect();
+    var stageRect = roomStageEl(piece.roomId).getBoundingClientRect();
     // stretchable items always get an explicit height at placement time
     // (see addPiece), so there's nothing to lock in here — just drag.
     stretchDrag = {
@@ -2202,7 +2533,7 @@
       updateOpacityButtonUI();
     }
     if (action==='duplicate'){
-      var copy = { uid:'p'+(state.uidCounter++), assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, height:piece.height, rotation:piece.rotation, z:0, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel, transparency:piece.transparency, lightIntensity:piece.lightIntensity };
+      var copy = { uid:'p'+(state.uidCounter++), roomId:piece.roomId, assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, height:piece.height, rotation:piece.rotation, z:0, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel, transparency:piece.transparency, lightIntensity:piece.lightIntensity };
       state.placed.push(copy);
       reassignZIndices();
       renderPiece(copy, true);
@@ -2215,14 +2546,14 @@
       if (node) node.remove();
       reassignZIndices();
       deselect();
-      updateHint();
+      updateAllHints();
       updateLampLighting();
     }
   });
 
   /* ---------------- stage-level interactions ---------------- */
-  stage.addEventListener('pointerdown', function(e){
-    if (e.target === stage || e.target === stageHint){
+  roomsViewport.addEventListener('pointerdown', function(e){
+    if (e.target.classList.contains('room-stage') || e.target.classList.contains('stage-hint')){
       deselect();
       if (state.trayOpen) setTrayOpen(false);
     }
@@ -2255,7 +2586,7 @@
     clearTimeout(confirmTimer);
     confirmingClear = false;
     clearBtn.textContent = 'Clear room';
-    state.placed = [];
+    state.placed = state.placed.filter(function(p){ return p.roomId !== state.focusedRoomId; });
     state.selectedUid = null;
     fullRerenderPieces();
     itemToolbar.classList.remove('visible');
@@ -2263,7 +2594,7 @@
 
   /* ---------------- scoring: variety & balance ---------------- */
   function computeScore(){
-    var placed = state.placed;
+    var placed = state.placed.filter(function(p){ return p.roomId === state.focusedRoomId; });
     var n = placed.length;
     if (n === 0) return null;
 
@@ -2327,7 +2658,7 @@
   });
 
   /* ---------------- ambient dust motes ---------------- */
-  function createDustMotes(){
+  function createDustMotes(roomEl){
     var count = 13;
     for (var i=0;i<count;i++){
       var mote = document.createElement('div');
@@ -2342,20 +2673,17 @@
       var duration = 14 + Math.random()*14;
       mote.style.animationDuration = duration.toFixed(1)+'s';
       mote.style.animationDelay = (Math.random()*-duration).toFixed(1)+'s';
-      stage.appendChild(mote);
+      roomEl.appendChild(mote);
     }
   }
 
   /* ---------------- init ---------------- */
   document.querySelector('.title-bg').style.backgroundImage = "url('"+BACKGROUNDS[0].src+"')";
   renderRoomGrid();
-  refreshRoomVisuals();
-  renderTimeControls();
+  renderRooms();
   renderTabs();
   renderTray();
-  updateHint();
   setTrayOpen(state.trayOpen);
-  createDustMotes();
 
 })();
 </script>
