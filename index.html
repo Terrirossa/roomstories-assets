@@ -262,19 +262,25 @@
     user-select:none;
   }
   .add-room-btn{
-    flex:0 0 64px;
-    height:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:var(--paper);
-    border:none;
-    cursor:pointer;
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:36px; height:36px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--glass-bg-strong);
+    backdrop-filter:blur(10px) saturate(160%);
+    -webkit-backdrop-filter:blur(10px) saturate(160%);
+    border:1px solid var(--glass-border);
+    box-shadow:0 6px 16px rgba(20,15,10,.22);
     color:var(--ink-70);
-    scroll-snap-align:start;
+    cursor:pointer;
+    z-index:200;
   }
   .add-room-btn:hover{ color:var(--ink); background:var(--paper-light); }
-  .add-room-btn svg{ width:28px; height:28px; }
+  .add-room-btn svg{ width:15px; height:15px; }
+  .add-room-btn-left{ left:14px; }
+  .add-room-btn-right{ right:14px; }
   .stage-bg-layer{
     position:absolute; inset:0;
     z-index:-1000;
@@ -1721,11 +1727,13 @@
     var rect = anchorBtn.getBoundingClientRect();
     pop.style.top = Math.max(70, window.innerHeight/2 - 100) + 'px';
     if (side === 'left'){
-      pop.style.right = (window.innerWidth - rect.left + 8) + 'px';
-      pop.style.left = 'auto';
-    } else {
+      // the button sits at the left edge, so open toward the room (rightward)
       pop.style.left = (rect.right + 8) + 'px';
       pop.style.right = 'auto';
+    } else {
+      // the button sits at the right edge, so open toward the room (leftward)
+      pop.style.right = (window.innerWidth - rect.left + 8) + 'px';
+      pop.style.left = 'auto';
     }
     addRoomPopoverEl = pop;
     setTimeout(function(){ document.addEventListener('pointerdown', onDocPointerDownCloseAddRoom); }, 0);
@@ -1783,15 +1791,8 @@
 
   function renderRooms(){
     roomsViewport.innerHTML = '';
-    state.rooms.forEach(function(room, i){
-      var arch = architectureFor(room);
-      if (i === 0 && arch && arch.hasLeftDoor){
-        roomsViewport.appendChild(buildAddRoomButton('left'));
-      }
+    state.rooms.forEach(function(room){
       roomsViewport.appendChild(buildRoomStageEl(room));
-      if (i === state.rooms.length - 1 && arch && arch.hasRightDoor){
-        roomsViewport.appendChild(buildAddRoomButton('right'));
-      }
     });
     if (!getRoom(state.focusedRoomId)) state.focusedRoomId = state.rooms[0].id;
     state.rooms.forEach(function(room){
@@ -1800,6 +1801,19 @@
       updateLampsLitForRoom(room);
       createDustMotes(roomStageEl(room.id));
     });
+    // the "+" to extend the flat only ever sits on the two open ends of the
+    // chain, floating over that room's own corner rather than taking up
+    // scroll space of its own
+    var firstRoom = state.rooms[0];
+    var lastRoom = state.rooms[state.rooms.length - 1];
+    var firstArch = architectureFor(firstRoom);
+    var lastArch = architectureFor(lastRoom);
+    if (firstArch && firstArch.hasLeftDoor){
+      roomStageEl(firstRoom.id).appendChild(buildAddRoomButton('left'));
+    }
+    if (lastArch && lastArch.hasRightDoor){
+      roomStageEl(lastRoom.id).appendChild(buildAddRoomButton('right'));
+    }
     fullRerenderPieces();
     updateLampLighting();
     renderTimeControls();
