@@ -958,9 +958,7 @@
 
 <div class="drag-ghost" id="dragGhost"><img id="dragGhostImg" alt=""></div>
 
-<audio id="bgMusic" loop preload="none">
-  <source src="audio/MainTrack.mp3" type="audio/mpeg">
-</audio>
+<audio id="bgMusic" preload="none"></audio>
 <button class="mute-toggle" id="muteToggle" type="button" aria-label="Mute or unmute music" aria-pressed="false">
   <svg class="icon-unmuted" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v4h3l4 3V5L7 8H4Z"/><path d="M13.5 7.2a3.6 3.6 0 0 1 0 5.6"/><path d="M15.7 5a6.6 6.6 0 0 1 0 10"/></svg>
   <svg class="icon-muted" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v4h3l4 3V5L7 8H4Z"/><path d="M13 8l4 4M17 8l-4 4"/></svg>
@@ -1203,6 +1201,23 @@
   var resultsOverlay = document.getElementById('resultsOverlay');
   var resultsBars = document.getElementById('resultsBars');
 
+  // A rotating playlist rather than one looping track — when a track ends,
+  // the next one starts, wrapping back to the first after the last.
+  var MUSIC_TRACKS = [
+    'audio/romantic_calm_piano_for_relaxation.mp3',
+    'audio/Wild_Beauty.mp3',
+    'audio/Wishful_Piano.mp3'
+  ];
+  var currentTrack = 0;
+  function playCurrentTrack(){
+    bgMusic.src = MUSIC_TRACKS[currentTrack];
+    bgMusic.play().catch(function(){});
+  }
+  bgMusic.addEventListener('ended', function(){
+    currentTrack = (currentTrack + 1) % MUSIC_TRACKS.length;
+    playCurrentTrack();
+  });
+
   /* ---------------- screen navigation ---------------- */
   muteToggle.addEventListener('click', function(){
     bgMusic.muted = !bgMusic.muted;
@@ -1220,7 +1235,7 @@
 
   document.getElementById('titleStartBtn').addEventListener('click', function(){
     showScreen('picker');
-    bgMusic.play().catch(function(){});
+    playCurrentTrack();
   });
   document.getElementById('pickerBackBtn').addEventListener('click', function(){
     showScreen('title');
