@@ -261,6 +261,8 @@
     touch-action:pan-x;
     user-select:none;
     cursor:grab;
+    transform-origin:center center;
+    will-change:transform, opacity, filter;
   }
   .stage.panning{ cursor:grabbing; }
   .add-room-btn{
@@ -1107,6 +1109,9 @@
   <button type="button" data-action="flip" title="Mirror left/right" aria-label="Mirror left/right">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v14" stroke-dasharray="2 2"/><path d="M6 7 3 10l3 3"/><path d="M14 7l3 3-3 3"/></svg>
   </button>
+  <button type="button" data-action="view" id="viewToolbarBtn" title="Turn to another side" aria-label="Turn to another side" style="display:none;">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a6 6 0 0 1 10.5-4"/><path d="M16 10a6 6 0 0 1-10.5 4"/><path d="M14 3.5v3h-3"/><path d="M6 16.5v-3h3"/></svg>
+  </button>
   <button type="button" data-action="sway" id="swayToolbarBtn" title="Toggle swaying" aria-label="Toggle swaying" style="display:none;">
     <svg viewBox="0 0 20 20" fill="none">
       <rect class="bar bar-1" x="3" y="12" width="3" height="5" rx="1" fill="currentColor"/>
@@ -1218,7 +1223,8 @@
     { id:'couch-henry', name:'Henry Couch', category:'seating', defaultWidth:22, material:'Fabric', type:'Velvet', style1:'Vintage', style2:'Cozy', src:ITEMS_BASE+'items_couch_henry.svg' },
     { id:'couch-sera-beige', name:'Sera Couch Beige', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', variantGroup:'couch-sera', groupLabel:'Sera Couch', colorLabel:'Beige', src:ITEMS_BASE+'items_couch_sera_beige.svg' },
     { id:'couch-sera-black', name:'Sera Couch Black', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', variantGroup:'couch-sera', groupLabel:'Sera Couch', colorLabel:'Black', src:ITEMS_BASE+'items_couch_sera_black.svg' },
-    { id:'couch-sera-blue', name:'Sera Couch Blue', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', variantGroup:'couch-sera', groupLabel:'Sera Couch', colorLabel:'Blue', src:ITEMS_BASE+'items_couch_sera_blue.svg' },
+    { id:'couch-sera-blue', name:'Sera Couch Blue', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', variantGroup:'couch-sera', groupLabel:'Sera Couch', colorLabel:'Blue', src:ITEMS_BASE+'items_couch_sera_blue.svg',
+      rotations:{ left:ITEMS_BASE+'rotations/rotation_couch_sera_blue_left.svg', back:ITEMS_BASE+'rotations/rotation_couch_sera_blue_back.svg', right:ITEMS_BASE+'rotations/rotation_couch_sera_blue_right.svg' } },
     { id:'couch-sera-beige-long', name:'Sera Couch Beige Long', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_beige_long.svg' },
     { id:'couch-sera-blue-long', name:'Sera Couch Blue Long', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_sera_blue_long.svg' },
     { id:'couch-sera-green', name:'Sera Couch Green', category:'seating', defaultWidth:32, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', variantGroup:'couch-sera', groupLabel:'Sera Couch', colorLabel:'Green', src:ITEMS_BASE+'items_couch_sera_green.svg' },
@@ -1899,14 +1905,62 @@
     if (idx !== -1 && idx < state.rooms.length - 1) focusRoom(state.rooms[idx+1].id);
   });
 
+  var roomScrollAnimId = 0;
+  function animateRoomsScrollTo(targetLeft, duration){
+    var myId = ++roomScrollAnimId;
+    var startLeft = roomsViewport.scrollLeft;
+    var delta = targetLeft - startLeft;
+    if (Math.abs(delta) < 1) return;
+    var startTime = null;
+    function step(timestamp){
+      if (myId !== roomScrollAnimId) return; // superseded by a newer transition
+      if (startTime === null) startTime = timestamp;
+      var t = Math.min(1, (timestamp - startTime) / duration);
+      // ease-in-out-cubic — a gentle glide in and a soft landing, rather
+      // than the curt, near-linear snap of the browser's own smooth-scroll
+      var eased = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+      roomsViewport.scrollLeft = startLeft + delta*eased;
+      scheduleRoomDepthEffect();
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
   function focusRoom(id){
     state.focusedRoomId = id;
     var el = roomStageEl(id);
-    if (el) el.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+    if (el){
+      var targetLeft = el.offsetLeft - (roomsViewport.clientWidth - el.offsetWidth)/2;
+      animateRoomsScrollTo(targetLeft, 560);
+    }
     renderTimeControls();
     renderArchPicker();
     updateRoomNavButtons();
   }
+
+  var roomDepthRAF = null;
+  function updateRoomDepthEffect(){
+    roomDepthRAF = null;
+    var viewportRect = roomsViewport.getBoundingClientRect();
+    var centerX = viewportRect.left + viewportRect.width/2;
+    document.querySelectorAll('.room-stage').forEach(function(roomEl){
+      var rect = roomEl.getBoundingClientRect();
+      if (rect.width === 0) return;
+      var dist = Math.abs((rect.left + rect.width/2) - centerX);
+      var frac = Math.min(1, dist / (viewportRect.width * 0.94));
+      // the centered room stays full-bright and full-size; a neighbor
+      // still peeking in at the edge quietly recedes instead of just
+      // being cut off, so the swap between rooms reads as one continuous
+      // motion rather than a hard, stark cut
+      roomEl.style.opacity = (1 - frac*0.4).toFixed(3);
+      roomEl.style.filter = 'brightness(' + (1 - frac*0.2).toFixed(3) + ')';
+      roomEl.style.transform = 'scale(' + (1 - frac*0.06).toFixed(3) + ')';
+    });
+  }
+  function scheduleRoomDepthEffect(){
+    if (roomDepthRAF) return;
+    roomDepthRAF = requestAnimationFrame(updateRoomDepthEffect);
+  }
+  roomsViewport.addEventListener('scroll', scheduleRoomDepthEffect, { passive:true });
 
   function buildAddRoomButton(side){
     var btn = document.createElement('button');
@@ -1980,6 +2034,7 @@
     updateLampLighting();
     renderTimeControls();
     renderArchPicker();
+    updateRoomDepthEffect();
     updateRoomNavButtons();
     setupRoomFocusTracking();
   }
@@ -2242,6 +2297,21 @@
     return (asset.category === 'plants' && (asset.defaultWidth >= 13 || asset.id === 'monstera-small'))
       || asset.curtainSway === true;
   }
+  // "view rotation" (turning an item to see it from another side) is a
+  // separate concept from the freehand angle-rotate handle — it swaps in a
+  // completely different piece of art rather than spinning the current one.
+  // Only a handful of items have the extra side/back artwork so far; a
+  // "front" view always exists (it's just the item's normal src) and never
+  // needs an entry of its own in asset.rotations.
+  var VIEW_ROTATION_ORDER = ['front','left','back','right'];
+  function availableViews(asset){
+    return VIEW_ROTATION_ORDER.filter(function(v){ return v === 'front' || (asset.rotations && asset.rotations[v]); });
+  }
+  function viewSrcFor(piece, asset){
+    var view = piece.viewRotation;
+    if (view && view !== 'front' && asset.rotations && asset.rotations[view]) return asset.rotations[view];
+    return asset.src;
+  }
   function updateSwayEligibility(el, piece, asset){
     var level = piece.swayLevel || 0;
     var eligible = canSway(asset) && level > 0;
@@ -2366,7 +2436,7 @@
 
     var visualHtml = isStretchable
       ? '<div class="piece-visual" style="opacity:'+((piece.transparency||100)/100)+'"></div>'
-      : '<img class="piece-visual" src="'+asset.src+'" alt="'+asset.name+'" style="opacity:'+((piece.transparency||100)/100)+'">';
+      : '<img class="piece-visual" src="'+viewSrcFor(piece, asset)+'" alt="'+asset.name+'" style="opacity:'+((piece.transparency||100)/100)+'">';
 
     el.innerHTML =
       '<div class="piece-inner'+(animate?' pop':'')+'">' +
@@ -2521,8 +2591,22 @@
     }
   }
 
+  function updateViewButtonUI(){
+    var btn = document.getElementById('viewToolbarBtn');
+    var piece = state.selectedUid ? getPiece(state.selectedUid) : null;
+    var asset = piece ? getAsset(piece.assetId) : null;
+    if (piece && asset && asset.rotations){
+      btn.style.display = 'flex';
+      var labels = { front:'Front', left:'Left side', back:'Back', right:'Right side' };
+      var view = piece.viewRotation || 'front';
+      btn.title = 'Showing: '+(labels[view]||view)+' — click to turn';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
   function selectPiece(uid){
-    state.selectedUid = uid; applySelectionClass(); positionToolbar(); updateSwayButtonUI(); updateOpacityButtonUI(); updateLightButtonUI();
+    state.selectedUid = uid; applySelectionClass(); positionToolbar(); updateSwayButtonUI(); updateOpacityButtonUI(); updateLightButtonUI(); updateViewButtonUI();
   }
   function deselect(){
     state.selectedUid = null; applySelectionClass(); itemToolbar.classList.remove('visible');
@@ -2741,6 +2825,15 @@
     if (action==='step-forward'){ moveStepForward(piece); }
     if (action==='step-back'){ moveStepBackward(piece); }
     if (action==='flip'){ piece.flipped = !piece.flipped; pieceEl(piece.uid).classList.toggle('flipped', piece.flipped); }
+    if (action==='view'){
+      var viewAsset = getAsset(piece.assetId);
+      var views = availableViews(viewAsset);
+      var vIdx = views.indexOf(piece.viewRotation || 'front');
+      piece.viewRotation = views[(vIdx+1) % views.length];
+      var visualEl = pieceEl(piece.uid).querySelector('.piece-visual');
+      if (visualEl && visualEl.tagName === 'IMG') visualEl.src = viewSrcFor(piece, viewAsset);
+      updateViewButtonUI();
+    }
     if (action==='sway'){
       piece.swayLevel = ((piece.swayLevel || 0) + 1) % 4;
       updateSwayEligibility(pieceEl(piece.uid), piece, getAsset(piece.assetId));
@@ -2760,7 +2853,7 @@
       updateOpacityButtonUI();
     }
     if (action==='duplicate'){
-      var copy = { uid:'p'+(state.uidCounter++), roomId:piece.roomId, assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, height:piece.height, rotation:piece.rotation, z:0, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel, transparency:piece.transparency, lightIntensity:piece.lightIntensity };
+      var copy = { uid:'p'+(state.uidCounter++), roomId:piece.roomId, assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, height:piece.height, rotation:piece.rotation, z:0, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel, transparency:piece.transparency, lightIntensity:piece.lightIntensity, viewRotation:piece.viewRotation };
       state.placed.push(copy);
       reassignZIndices();
       renderPiece(copy, true);
@@ -2821,6 +2914,7 @@
   roomsViewport.addEventListener('pointerup', endRoomPan);
   roomsViewport.addEventListener('pointercancel', endRoomPan);
   window.addEventListener('resize', positionToolbar);
+  window.addEventListener('resize', scheduleRoomDepthEffect);
   window.addEventListener('scroll', positionToolbar, true);
 
   document.addEventListener('keydown', function(e){
