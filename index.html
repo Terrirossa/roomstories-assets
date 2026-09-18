@@ -1174,7 +1174,6 @@
   var ASSET_BASE = 'backgrounds/';
   var ROOM_OPTIONS_BASE = 'roomoptions/';
   var BACKGROUNDS = [
-    { id:'sunlit-living-room-big-window',   name:'Sunlit Living Room — Big Window',    src:ASSET_BASE+'backgrounds_sunlit-living-room_01.svg' },
     { id:'sunlit-living-room-twin-windows', name:'Sunlit Living Room — Twin Windows',
       architectures:[
         { id:'both-nodoors', label:'Both Windows', hasLeftDoor:false, hasRightDoor:false,
@@ -1228,6 +1227,21 @@
           times:[
             { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'rightwindow_bothdoors.jpg' },
             { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'twinwindows/evening/rightwindow_bothdoors.jpg' }
+          ] },
+        { id:'big-bothdoors',   label:'Big Window + 2 Doors',      hasLeftDoor:true,  hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'bigwindow_bothdoors.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'twinwindows/evening/bigwindow_bothdoors.jpg' }
+          ] },
+        { id:'big-leftdoor',    label:'Big Window + Left Door',    hasLeftDoor:true,  hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'bigwindow_leftdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'twinwindows/evening/bigwindow_leftdoor.jpg' }
+          ] },
+        { id:'big-rightdoor',   label:'Big Window + Right Door',   hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'bigwindow_rightdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'twinwindows/evening/bigwindow_rightdoor.jpg' }
           ] }
       ] },
     { id:'modern-living-room',              name:'Modern Living Room',                 src:ASSET_BASE+'backgrounds_modern_living_room.svg' },
@@ -3085,7 +3099,7 @@
   }
 
   /* ---------------- init ---------------- */
-  document.querySelector('.title-bg').style.backgroundImage = "url('"+BACKGROUNDS[0].src+"')";
+  document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   renderRoomGrid();
   renderRooms();
   renderTabs();
