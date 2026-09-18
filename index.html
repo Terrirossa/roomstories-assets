@@ -261,8 +261,6 @@
     touch-action:pan-x;
     user-select:none;
     cursor:grab;
-    transform-origin:center center;
-    will-change:transform, opacity, filter;
   }
   .stage.panning{ cursor:grabbing; }
   .add-room-btn{
@@ -313,6 +311,7 @@
     background-position:center;
     opacity:0;
     transition:opacity 1s ease;
+    pointer-events:none;
   }
   .stage-bg-layer.active{ opacity:1; }
   .stage.drop-active::after{
@@ -1911,6 +1910,11 @@
     var startLeft = roomsViewport.scrollLeft;
     var delta = targetLeft - startLeft;
     if (Math.abs(delta) < 1) return;
+    // scroll-snap briefly fighting a JS-driven scrollLeft for the final
+    // pixel or two is what made this feel worse, not better — turning it
+    // off for the duration of our own animation and restoring it once
+    // we've landed exactly on the target avoids that tug-of-war
+    roomsViewport.style.scrollSnapType = 'none';
     var startTime = null;
     function step(timestamp){
       if (myId !== roomScrollAnimId) return; // superseded by a newer transition
@@ -1920,8 +1924,11 @@
       // than the curt, near-linear snap of the browser's own smooth-scroll
       var eased = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
       roomsViewport.scrollLeft = startLeft + delta*eased;
-      scheduleRoomDepthEffect();
-      if (t < 1) requestAnimationFrame(step);
+      if (t < 1){
+        requestAnimationFrame(step);
+      } else {
+        roomsViewport.style.scrollSnapType = '';
+      }
     }
     requestAnimationFrame(step);
   }
@@ -1936,31 +1943,6 @@
     renderArchPicker();
     updateRoomNavButtons();
   }
-
-  var roomDepthRAF = null;
-  function updateRoomDepthEffect(){
-    roomDepthRAF = null;
-    var viewportRect = roomsViewport.getBoundingClientRect();
-    var centerX = viewportRect.left + viewportRect.width/2;
-    document.querySelectorAll('.room-stage').forEach(function(roomEl){
-      var rect = roomEl.getBoundingClientRect();
-      if (rect.width === 0) return;
-      var dist = Math.abs((rect.left + rect.width/2) - centerX);
-      var frac = Math.min(1, dist / (viewportRect.width * 0.94));
-      // the centered room stays full-bright and full-size; a neighbor
-      // still peeking in at the edge quietly recedes instead of just
-      // being cut off, so the swap between rooms reads as one continuous
-      // motion rather than a hard, stark cut
-      roomEl.style.opacity = (1 - frac*0.4).toFixed(3);
-      roomEl.style.filter = 'brightness(' + (1 - frac*0.2).toFixed(3) + ')';
-      roomEl.style.transform = 'scale(' + (1 - frac*0.06).toFixed(3) + ')';
-    });
-  }
-  function scheduleRoomDepthEffect(){
-    if (roomDepthRAF) return;
-    roomDepthRAF = requestAnimationFrame(updateRoomDepthEffect);
-  }
-  roomsViewport.addEventListener('scroll', scheduleRoomDepthEffect, { passive:true });
 
   function buildAddRoomButton(side){
     var btn = document.createElement('button');
@@ -2034,7 +2016,6 @@
     updateLampLighting();
     renderTimeControls();
     renderArchPicker();
-    updateRoomDepthEffect();
     updateRoomNavButtons();
     setupRoomFocusTracking();
   }
@@ -2914,7 +2895,6 @@
   roomsViewport.addEventListener('pointerup', endRoomPan);
   roomsViewport.addEventListener('pointercancel', endRoomPan);
   window.addEventListener('resize', positionToolbar);
-  window.addEventListener('resize', scheduleRoomDepthEffect);
   window.addEventListener('scroll', positionToolbar, true);
 
   document.addEventListener('keydown', function(e){
