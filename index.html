@@ -673,16 +673,17 @@
     display:none;
     align-items:center;
     justify-content:center;
-    background:rgba(252,250,243,.92);
+    width:16px; height:16px;
+    border-radius:50%;
+    background:var(--paper-light);
     border:1.5px solid var(--gold);
     box-shadow:0 1px 3px rgba(0,0,0,.25);
+    color:var(--gold);
   }
   .piece.selected .handle-edge{ display:flex; }
-  .handle-edge-h{ right:-7px; top:20%; bottom:28%; width:13px; border-radius:7px; cursor:ew-resize; }
-  .handle-edge-v{ bottom:-7px; left:20%; right:28%; height:13px; border-radius:7px; cursor:ns-resize; }
-  .edge-dots{ border-radius:2px; background:var(--gold); opacity:.75; }
-  .handle-edge-h .edge-dots{ width:1.5px; height:50%; }
-  .handle-edge-v .edge-dots{ width:50%; height:1.5px; }
+  .handle-edge-h{ right:-8px; top:50%; transform:translateY(-50%); cursor:ew-resize; }
+  .handle-edge-v{ bottom:-8px; left:50%; transform:translateX(-50%); cursor:ns-resize; }
+  .handle-edge svg{ width:9px; height:9px; }
 
   /* touch devices get noticeably bigger grab targets on the resize/rotate
      handles — keyed off input precision, not screen size, so a touchscreen
@@ -692,9 +693,11 @@
     .handle-resize{ right:-13px; bottom:-13px; }
     .handle-rotate{ top:-42px; }
     .handle-rotate::before{ top:26px; height:16px; }
-    .handle-edge-h{ width:20px; right:-10px; }
-    .handle-edge-v{ height:20px; bottom:-10px; }
+    .handle-edge{ width:26px; height:26px; }
+    .handle-edge-h{ right:-13px; }
+    .handle-edge-v{ bottom:-13px; }
     .handle svg{ width:14px; height:14px; }
+    .handle-edge svg{ width:13px; height:13px; }
   }
 
   /* floating selection toolbar */
@@ -1293,10 +1296,98 @@
     { id:'stone-couchtable-iris', name:'Iris Stone Coffee Table', category:'tables', defaultWidth:13, material:'Marble', type:'Carrara', style1:'Rustic', style2:'Organic', src:ITEMS_BASE+'items_stone_couchtable_iris.svg' },
     { id:'travertine-couchtable-sara', name:'Sara Travertine Coffee Table', category:'tables', defaultWidth:13, material:'Marble', type:'Travertine', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_travertine_couchtable_sara.svg' },
     { id:'wallart-tulipa', name:'Tulipa Wall Art', category:'wall-art', defaultWidth:13, material:'Canvas', type:'Print', style1:'Organic', style2:'Modern', src:ITEMS_BASE+'items_wallart_tulipa.svg' },
+
+    // Bed (new)
+    { id:'bed-arias', name:'Arias Bed', category:'bed', defaultWidth:32, ratio:1.6, stretchControl:'both', material:'Wood', type:'Light', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_bed_arias.svg' },
+    { id:'bed-caro-lightwood', name:'Caro Bed Light Wood', category:'bed', defaultWidth:32, ratio:1.6, stretchControl:'both', material:'Wood', type:'Light', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'items_bed_caro_lightwood.svg' },
+    { id:'bed-hibina', name:'Hibina Bed', category:'bed', defaultWidth:32, ratio:1.6, stretchControl:'both', material:'Wood', type:'Light', style1:'Organic', style2:'Modern', src:ITEMS_BASE+'items_bed_hibina.svg' },
+    { id:'bed-lazio-beige', name:'Lazio Bed Beige', category:'bed', defaultWidth:32, ratio:1.6, stretchControl:'both', material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_bed_lazio_beige.svg' },
+    { id:'bed-luis-darkwood', name:'Luis Bed Dark Wood', category:'bed', defaultWidth:32, ratio:1.6, stretchControl:'both', material:'Wood', type:'Dark', style1:'Traditional', style2:'Rustic', src:ITEMS_BASE+'items_bed_luis_darkwood.svg' },
+    { id:'bed-pedra', name:'Pedra Bed', category:'bed', defaultWidth:32, ratio:1.6, stretchControl:'both', material:'Wood', type:'Medium', style1:'Rustic', style2:'Organic', src:ITEMS_BASE+'items_bed_pedra.svg' },
+    { id:'bed-rea-white', name:'Rea Bed White', category:'bed', defaultWidth:32, ratio:1.6, stretchControl:'both', material:'Wood', type:'Painted', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_bed_rea_white.svg' },
+
+    // Seating (new)
+    { id:'armchair-beige', name:'Beige Armchair', category:'seating', defaultWidth:13, material:'Fabric', type:'Bouclé', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_armchair_beige.svg' },
+    { id:'armchair-bruno-green', name:'Bruno Armchair Green', category:'seating', defaultWidth:13, material:'Fabric', type:'Velvet', style1:'Vintage', style2:'Cozy', src:ITEMS_BASE+'items_armchair_bruno_green.svg' },
+    { id:'armchair-bruno-white', name:'Bruno Armchair White', category:'seating', defaultWidth:13, material:'Fabric', type:'Velvet', style1:'Vintage', style2:'Cozy', src:ITEMS_BASE+'items_armchair_bruno_white.svg' },
+    { id:'armchair-grey', name:'Grey Armchair', category:'seating', defaultWidth:13, material:'Fabric', type:'Bouclé', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_armchair_grey.svg' },
+    { id:'chair-ian', name:'Ian Chair', category:'seating', defaultWidth:13, material:'Wood', type:'Light', style1:'Mid-Century', style2:'Organic', src:ITEMS_BASE+'items_chair_ian.svg' },
+    { id:'chair-nina-beige', name:'Nina Chair Beige', category:'seating', defaultWidth:13, material:'Fabric', type:'Bouclé', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_chair_nina_beige.svg' },
+    { id:'chair-nina-blue', name:'Nina Chair Blue', category:'seating', defaultWidth:13, material:'Fabric', type:'Bouclé', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_chair_nina_blue.svg' },
+    { id:'chair-nina-grey', name:'Nina Chair Grey', category:'seating', defaultWidth:13, material:'Fabric', type:'Bouclé', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_chair_nina_grey.svg' },
+    { id:'chair-nina-white', name:'Nina Chair White', category:'seating', defaultWidth:13, material:'Fabric', type:'Bouclé', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'items_chair_nina_white.svg' },
+    { id:'chair-tony', name:'Tony Chair', category:'seating', defaultWidth:13, material:'Wood', type:'Light', style1:'Mid-Century', style2:'Organic', src:ITEMS_BASE+'items_chair_tony.svg' },
+    { id:'couch-hale-beige', name:'Hale Couch Beige', category:'seating', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_hale_beige.svg' },
+    { id:'couch-hale-greige', name:'Hale Couch Greige', category:'seating', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_hale_greige.svg' },
+    { id:'couch-hale-grey', name:'Hale Couch Grey', category:'seating', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_hale_grey.svg' },
+    { id:'couch-hale-white', name:'Hale Couch White', category:'seating', defaultWidth:22, material:'Fabric', type:'Linen', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_couch_hale_white.svg' },
+    { id:'stool-cobi-beige', name:'Cobi Stool Beige', category:'seating', defaultWidth:6, material:'Fabric', type:'Velvet', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_stool_cobi_beige.svg' },
+    { id:'stool-cobi-black', name:'Cobi Stool Black', category:'seating', defaultWidth:6, material:'Fabric', type:'Velvet', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_stool_cobi_black.svg' },
+    { id:'stool-cobi-blue', name:'Cobi Stool Blue', category:'seating', defaultWidth:6, material:'Fabric', type:'Velvet', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_stool_cobi_blue.svg' },
+    { id:'stool-cobi-green', name:'Cobi Stool Green', category:'seating', defaultWidth:6, material:'Fabric', type:'Velvet', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_stool_cobi_green.svg' },
+    { id:'stool-cobi-white', name:'Cobi Stool White', category:'seating', defaultWidth:6, material:'Fabric', type:'Velvet', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_stool_cobi_white.svg' },
+    { id:'stool-cobi-zebra', name:'Cobi Stool Zebra', category:'seating', defaultWidth:6, material:'Fabric', type:'Velvet', style1:'Eclectic', style2:'Bohemian', src:ITEMS_BASE+'items_stool_cobi_zebra.svg' },
+
+    // Tables (new)
+    { id:'bedsidetable-aria-darkwodd', name:'Aria Bedside Table Dark Wood', category:'tables', defaultWidth:6, material:'Wood', type:'Dark', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_bedsidetable_aria_darkwodd.svg' },
+    { id:'bedsidetable-aria-lightwood', name:'Aria Bedside Table Light Wood', category:'tables', defaultWidth:6, material:'Wood', type:'Light', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_bedsidetable_aria_lightwood.svg' },
+    { id:'bedsidetable-kira-marble', name:'Kira Bedside Table Marble', category:'tables', defaultWidth:6, material:'Marble', type:'Travertine', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_bedsidetable_kira_marble.svg' },
+    { id:'bedsidetable-moppy-marble', name:'Moppy Bedside Table Marble', category:'tables', defaultWidth:6, material:'Marble', type:'Travertine', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_bedsidetable_moppy_marble.svg' },
+
+    // Storage (new)
+    { id:'bookshelf-atina-mediumwood', name:'Atina Bookshelf Medium Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'items_bookshelf_atina_mediumwood.svg' },
+    { id:'bookshelf-atoria-mediumwood', name:'Atoria Bookshelf Medium Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'items_bookshelf_atoria_mediumwood.svg' },
+    { id:'cabinet-hime', name:'Hime Cabinet', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Traditional', style2:'Eclectic', src:ITEMS_BASE+'items_cabinet_hime.svg' },
+    { id:'cabinet-luna-darkwood', name:'Luna Cabinet Dark Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Dark', style1:'Mid-Century', style2:'Organic', src:ITEMS_BASE+'items_cabinet_luna_darkwood.svg' },
+    { id:'cabinet-luna-mediumwood', name:'Luna Cabinet Medium Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Mid-Century', style2:'Organic', src:ITEMS_BASE+'items_cabinet_luna_mediumwood.svg' },
+    { id:'sideboard-akio-darkwood', name:'Akio Sideboard Dark Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Dark', style1:'Mid-Century', style2:'Organic', src:ITEMS_BASE+'items_sideboard_akio_darkwood.svg' },
+    { id:'sideboard-akio-lightwood', name:'Akio Sideboard Light Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Light', style1:'Mid-Century', style2:'Organic', src:ITEMS_BASE+'items_sideboard_akio_lightwood.svg' },
+    { id:'sideboard-akio-mediumwood', name:'Akio Sideboard Medium Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Mid-Century', style2:'Organic', src:ITEMS_BASE+'items_sideboard_akio_mediumwood.svg' },
+    { id:'sideboard-daria-black', name:'Daria Sideboard Black', category:'storage', defaultWidth:22, material:'Wood', type:'Painted', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_sideboard_daria_black.svg' },
+    { id:'sideboard-daria-lightwood', name:'Daria Sideboard Light Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Light', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_sideboard_daria_lightwood.svg' },
+    { id:'sideboard-daria-mediumwood', name:'Daria Sideboard Medium Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_sideboard_daria_mediumwood.svg' },
+    { id:'sideboard-lulu-darkwood', name:'Lulu Sideboard Dark Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Dark', style1:'Bohemian', style2:'Organic', src:ITEMS_BASE+'items_sideboard_lulu_darkwood.svg' },
+    { id:'sideboard-lulu-lightwood', name:'Lulu Sideboard Light Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Light', style1:'Bohemian', style2:'Organic', src:ITEMS_BASE+'items_sideboard_lulu_lightwood.svg' },
+    { id:'sideboard-lulu-mediumwood', name:'Lulu Sideboard Medium Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Bohemian', style2:'Organic', src:ITEMS_BASE+'items_sideboard_lulu_mediumwood.svg' },
+    { id:'sideboard-lulu-warmwood', name:'Lulu Sideboard Warm Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Bohemian', style2:'Organic', src:ITEMS_BASE+'items_sideboard_lulu_warmwood.svg' },
+    { id:'sideboard-nikola-darkwood', name:'Nikola Sideboard Dark Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Dark', style1:'Industrial', style2:'Modern', src:ITEMS_BASE+'items_sideboard_nikola_darkwood.svg' },
+    { id:'sideboard-nikola-mediumwood', name:'Nikola Sideboard Medium Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Industrial', style2:'Modern', src:ITEMS_BASE+'items_sideboard_nikola_mediumwood.svg' },
+    { id:'sideboard-toto-darkwood', name:'Toto Sideboard Dark Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Dark', style1:'Rustic', style2:'Traditional', src:ITEMS_BASE+'items_sideboard_toto_darkwood.svg' },
+    { id:'sideboard-toto-mediumwood', name:'Toto Sideboard Medium Wood', category:'storage', defaultWidth:22, material:'Wood', type:'Medium', style1:'Rustic', style2:'Traditional', src:ITEMS_BASE+'items_sideboard_toto_mediumwood.svg' },
+    { id:'wallshelf-omo', name:'Omo Wall Shelf', category:'storage', defaultWidth:13, material:'Wood', type:'Light', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'items_wallshelf_Omo.svg' },
+    { id:'wallshelf-vila', name:'Vila Wall Shelf', category:'storage', defaultWidth:13, material:'Wood', type:'Light', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'items_wallshelf_vila.svg' },
+
+    // Lighting (new)
+    { id:'lamp-fulu-blush', name:'Fulu Lamp Blush', category:'lighting', defaultWidth:13, material:'Ceramic', type:'Glazed', style1:'Modern', style2:'Cozy', src:ITEMS_BASE+'items_lamp_fulu_blush.svg' },
+    { id:'lamp-hubby', name:'Hubby Lamp', category:'lighting', defaultWidth:13, material:'Ceramic', type:'Glazed', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_lamp_hubby.svg' },
+    { id:'lamp-kay-blue', name:'Kay Lamp Blue', category:'lighting', defaultWidth:13, material:'Ceramic', type:'Glazed', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_lamp_kay_blue.svg' },
+    { id:'lamp-kay-blush', name:'Kay Lamp Blush', category:'lighting', defaultWidth:13, material:'Ceramic', type:'Glazed', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_lamp_kay_blush.svg' },
+    { id:'lamp-kay-red', name:'Kay Lamp Red', category:'lighting', defaultWidth:13, material:'Ceramic', type:'Glazed', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'items_lamp_kay_red.svg' },
+    { id:'lamp-sia-gold', name:'Sia Lamp Gold', category:'lighting', defaultWidth:13, material:'Metal', type:'Brass', style1:'Modern', style2:'Vintage', src:ITEMS_BASE+'items_lamp_sia_gold.svg' },
+    { id:'lamp-sia-sblack', name:'Sia Lamp Black', category:'lighting', defaultWidth:13, material:'Metal', type:'Black Iron', style1:'Modern', style2:'Vintage', src:ITEMS_BASE+'items_lamp_sia_sblack.svg' },
+    { id:'lamp-yana', name:'Yana Lamp', category:'lighting', defaultWidth:13, material:'Ceramic', type:'Glazed', style1:'Traditional', style2:'Modern', src:ITEMS_BASE+'items_lamp_yana.svg' },
+
+    // Curtains (new)
+    { id:'curtain-siri-beige', name:'Siri Curtain Beige', category:'curtains', defaultWidth:22, ratio:0.48, opacityControl:true, stretchControl:'both', curtainSway:true, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_curtain_siri_beige.svg' },
+    { id:'curtain-siri-blue', name:'Siri Curtain Blue', category:'curtains', defaultWidth:22, ratio:0.48, opacityControl:true, stretchControl:'both', curtainSway:true, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_curtain_siri_blue.svg' },
+    { id:'curtain-siri-blush', name:'Siri Curtain Blush', category:'curtains', defaultWidth:22, ratio:0.48, opacityControl:true, stretchControl:'both', curtainSway:true, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_curtain_siri_blush.svg' },
+    { id:'curtain-siri-green', name:'Siri Curtain Green', category:'curtains', defaultWidth:22, ratio:0.48, opacityControl:true, stretchControl:'both', curtainSway:true, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_curtain_siri_green.svg' },
+    { id:'curtain-siri-white', name:'Siri Curtain White', category:'curtains', defaultWidth:22, ratio:0.48, opacityControl:true, stretchControl:'both', curtainSway:true, material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_curtain_siri_white.svg' },
+
+    // Textiles (new)
+    { id:'bedding-irina-beige', name:'Irina Bedding Beige', category:'textiles', defaultWidth:22, ratio:1.8, stretchControl:'both', material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_bedding_irina_beige.svg' },
+    { id:'bedding-nina', name:'Nina Bedding', category:'textiles', defaultWidth:22, ratio:1.8, stretchControl:'both', material:'Fabric', type:'Linen', style1:'Cozy', style2:'Scandinavian', src:ITEMS_BASE+'items_bedding_nina.svg' },
+    { id:'bedding-stephan-beige', name:'Stephan Bedding Beige', category:'textiles', defaultWidth:22, ratio:1.8, stretchControl:'both', material:'Fabric', type:'Linen', style1:'Scandinavian', style2:'Cozy', src:ITEMS_BASE+'items_bedding_stephan_beige.svg' },
+    { id:'cushion-lala-brown', name:'Lala Cushion Brown', category:'textiles', defaultWidth:6, material:'Fabric', type:'Velvet', style1:'Cozy', style2:'Eclectic', src:ITEMS_BASE+'items_cushion_lala_brown.svg' },
+    { id:'cushion-lala-rosa', name:'Lala Cushion Rosa', category:'textiles', defaultWidth:6, material:'Fabric', type:'Velvet', style1:'Cozy', style2:'Eclectic', src:ITEMS_BASE+'items_cushion_lala_rosa.svg' },
+
+    // Decor (new)
+    { id:'marble-pillar-jutta', name:'Jutta Marble Pillar', category:'decor', defaultWidth:13, material:'Marble', type:'Travertine', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'items_marble_pillar_jutta.svg' },
   ];
 
   var CATEGORIES = [
     { id:'seating', label:'Seating' },
+    { id:'bed', label:'Bed' },
     { id:'tables', label:'Tables' },
     { id:'storage', label:'Storage' },
     { id:'lighting', label:'Lighting' },
@@ -2262,10 +2353,10 @@
 
     var extraHandles = '';
     if (asset.stretchControl === 'both' || asset.stretchControl === 'horizontal'){
-      extraHandles += '<div class="handle-edge handle-edge-h" data-handle="stretch-h"><span class="edge-dots"></span></div>';
+      extraHandles += '<div class="handle-edge handle-edge-h" data-handle="stretch-h"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4 3 8l3 4"/><path d="M10 4l3 4-3 4"/></svg></div>';
     }
     if (asset.stretchControl === 'both'){
-      extraHandles += '<div class="handle-edge handle-edge-v" data-handle="stretch-v"><span class="edge-dots"></span></div>';
+      extraHandles += '<div class="handle-edge handle-edge-v" data-handle="stretch-v"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6 8 3l4 3"/><path d="M4 10l4 3 4-3"/></svg></div>';
     }
     // rods and curtains stretch to fit a window — free rotation doesn't
     // curtains and rods never get a rotation handle — a window dressing
