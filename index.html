@@ -260,7 +260,9 @@
     scroll-snap-align:center;
     touch-action:pan-x;
     user-select:none;
+    cursor:grab;
   }
+  .stage.panning{ cursor:grabbing; }
   .add-room-btn{
     position:absolute;
     top:50%;
@@ -281,6 +283,27 @@
   .add-room-btn svg{ width:15px; height:15px; }
   .add-room-btn-left{ left:14px; }
   .add-room-btn-right{ right:14px; }
+  .room-nav-btn{
+    position:fixed;
+    top:50%;
+    transform:translateY(-50%);
+    width:40px; height:40px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--glass-bg-strong);
+    backdrop-filter:blur(10px) saturate(160%);
+    -webkit-backdrop-filter:blur(10px) saturate(160%);
+    border:1px solid var(--glass-border);
+    box-shadow:0 6px 16px rgba(20,15,10,.22);
+    color:var(--ink-70);
+    cursor:pointer;
+    z-index:6000;
+  }
+  .room-nav-btn:hover{ color:var(--ink); background:var(--paper-light); }
+  .room-nav-btn svg{ width:16px; height:16px; }
+  .room-nav-left{ left:16px; }
+  .room-nav-right{ right:16px; }
+  .room-nav-right.tray-open{ right:240px; }
   .stage-bg-layer{
     position:absolute; inset:0;
     z-index:-1000;
@@ -751,6 +774,24 @@
     transform:scale(.9) translateY(8px);
     pointer-events:none;
   }
+  .tray-drag-handle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:16px;
+    margin:-2px 0 4px;
+    cursor:grab;
+    touch-action:none;
+    flex-shrink:0;
+  }
+  .tray-drag-handle span{
+    width:30px; height:4px;
+    border-radius:2px;
+    background:var(--ink-35);
+  }
+  .tray-drag-handle:hover span{ background:var(--ink-55); }
+  .tray-panel.dragging{ transition:none; }
+  .tray-panel.dragging .tray-drag-handle{ cursor:grabbing; }
   .tray-tabs{
     display:flex;
     flex-wrap:wrap;
@@ -1003,6 +1044,12 @@
 ============================================================ -->
 <section class="screen screen-builder" id="screen-builder">
   <div class="rooms-viewport" id="roomsViewport"></div>
+  <button class="room-nav-btn room-nav-left" id="roomNavLeft" type="button" aria-label="Previous room" style="display:none;">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 6 10l6 6"/></svg>
+  </button>
+  <button class="room-nav-btn room-nav-right" id="roomNavRight" type="button" aria-label="Next room" style="display:none;">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4l6 6-6 6"/></svg>
+  </button>
 
   <div class="builder-topbar">
     <span class="builder-brand">Roomstories</span>
@@ -1030,6 +1077,7 @@
   </button>
 
   <div class="tray-panel" id="trayPanel">
+    <div class="tray-drag-handle" id="trayDragHandle" aria-label="Drag to move"><span></span></div>
     <div class="tray-tabs" id="trayTabs"></div>
     <div class="tray-grid" id="trayGrid"></div>
   </div>
@@ -1331,11 +1379,14 @@
     builder: document.getElementById('screen-builder')
   };
   var roomsViewport = document.getElementById('roomsViewport');
+  var roomNavLeft = document.getElementById('roomNavLeft');
+  var roomNavRight = document.getElementById('roomNavRight');
   var roomGrid = document.getElementById('roomGrid');
   var trayTabs = document.getElementById('trayTabs');
   var trayGrid = document.getElementById('trayGrid');
   var trayToggle = document.getElementById('trayToggle');
   var trayPanel = document.getElementById('trayPanel');
+  var trayDragHandle = document.getElementById('trayDragHandle');
   var timeControls = document.getElementById('timeControls');
   var archPicker = document.getElementById('archPicker');
   var archPickerBtn = document.getElementById('archPickerBtn');
@@ -1739,12 +1790,31 @@
     setTimeout(function(){ document.addEventListener('pointerdown', onDocPointerDownCloseAddRoom); }, 0);
   }
 
+  function focusedRoomIndex(){
+    for (var i=0;i<state.rooms.length;i++) if (state.rooms[i].id === state.focusedRoomId) return i;
+    return -1;
+  }
+  function updateRoomNavButtons(){
+    var idx = focusedRoomIndex();
+    roomNavLeft.style.display = idx > 0 ? 'flex' : 'none';
+    roomNavRight.style.display = (idx !== -1 && idx < state.rooms.length - 1) ? 'flex' : 'none';
+  }
+  roomNavLeft.addEventListener('click', function(){
+    var idx = focusedRoomIndex();
+    if (idx > 0) focusRoom(state.rooms[idx-1].id);
+  });
+  roomNavRight.addEventListener('click', function(){
+    var idx = focusedRoomIndex();
+    if (idx !== -1 && idx < state.rooms.length - 1) focusRoom(state.rooms[idx+1].id);
+  });
+
   function focusRoom(id){
     state.focusedRoomId = id;
     var el = roomStageEl(id);
     if (el) el.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
     renderTimeControls();
     renderArchPicker();
+    updateRoomNavButtons();
   }
 
   function buildAddRoomButton(side){
@@ -1784,6 +1854,7 @@
         state.focusedRoomId = best.dataset.roomId;
         renderTimeControls();
         renderArchPicker();
+        updateRoomNavButtons();
       }
     }, { root: roomsViewport, threshold: [0.5, 0.75, 0.9] });
     document.querySelectorAll('.room-stage').forEach(function(el){ roomFocusObserver.observe(el); });
@@ -1818,6 +1889,7 @@
     updateLampLighting();
     renderTimeControls();
     renderArchPicker();
+    updateRoomNavButtons();
     setupRoomFocusTracking();
   }
 
@@ -1920,8 +1992,51 @@
     trayPanel.classList.toggle('hidden', !open);
     trayToggle.classList.toggle('open', open);
     trayToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!trayPanelMoved) roomNavRight.classList.toggle('tray-open', open);
   }
   trayToggle.addEventListener('click', function(){ setTrayOpen(!state.trayOpen); });
+
+  /* ---------------- dragging the item tray to a new spot on screen ---------------- */
+  var trayPanelMoved = false;
+  var trayPanelDrag = null;
+  trayDragHandle.addEventListener('pointerdown', function(e){
+    e.preventDefault();
+    var rect = trayPanel.getBoundingClientRect();
+    // switch from the default right/bottom anchoring to left/top so the
+    // panel can be freely repositioned anywhere on screen
+    trayPanel.style.left = rect.left + 'px';
+    trayPanel.style.top = rect.top + 'px';
+    trayPanel.style.right = 'auto';
+    trayPanel.style.bottom = 'auto';
+    trayPanelDrag = { pointerId:e.pointerId, startX:e.clientX, startY:e.clientY, startLeft:rect.left, startTop:rect.top };
+    trayPanel.classList.add('dragging');
+    if (!trayPanelMoved){
+      trayPanelMoved = true;
+      roomNavRight.classList.remove('tray-open');
+    }
+    try{ trayDragHandle.setPointerCapture(e.pointerId); }catch(err){}
+    trayDragHandle.addEventListener('pointermove', onTrayPanelDragMove);
+    trayDragHandle.addEventListener('pointerup', onTrayPanelDragEnd);
+    trayDragHandle.addEventListener('pointercancel', onTrayPanelDragEnd);
+  });
+  function onTrayPanelDragMove(e){
+    if (!trayPanelDrag || e.pointerId !== trayPanelDrag.pointerId) return;
+    var dx = e.clientX - trayPanelDrag.startX;
+    var dy = e.clientY - trayPanelDrag.startY;
+    var rect = trayPanel.getBoundingClientRect();
+    var newLeft = clamp(trayPanelDrag.startLeft + dx, 4, window.innerWidth - rect.width - 4);
+    var newTop = clamp(trayPanelDrag.startTop + dy, 4, window.innerHeight - rect.height - 4);
+    trayPanel.style.left = newLeft + 'px';
+    trayPanel.style.top = newTop + 'px';
+  }
+  function onTrayPanelDragEnd(e){
+    if (!trayPanelDrag || e.pointerId !== trayPanelDrag.pointerId) return;
+    trayDragHandle.removeEventListener('pointermove', onTrayPanelDragMove);
+    trayDragHandle.removeEventListener('pointerup', onTrayPanelDragEnd);
+    trayDragHandle.removeEventListener('pointercancel', onTrayPanelDragEnd);
+    trayPanel.classList.remove('dragging');
+    trayPanelDrag = null;
+  }
 
   motionToggle.addEventListener('click', function(){
     state.motionOff = !state.motionOff;
@@ -2573,12 +2688,47 @@
   });
 
   /* ---------------- stage-level interactions ---------------- */
+  var roomPanDrag = null;
   roomsViewport.addEventListener('pointerdown', function(e){
     if (e.target.classList.contains('room-stage') || e.target.classList.contains('stage-hint')){
       deselect();
       if (state.trayOpen) setTrayOpen(false);
+      // click-and-drag panning is a desktop-mouse convenience; touch
+      // devices already get native swipe-scrolling via touch-action, and
+      // mixing the two would double up the movement
+      if (e.pointerType === 'mouse'){
+        var stageEl = e.target.closest('.room-stage');
+        roomPanDrag = { pointerId:e.pointerId, startX:e.clientX, startScrollLeft:roomsViewport.scrollLeft, stageEl:stageEl };
+        if (stageEl) stageEl.classList.add('panning');
+        try{ roomsViewport.setPointerCapture(e.pointerId); }catch(err){}
+      }
     }
   });
+  roomsViewport.addEventListener('pointermove', function(e){
+    if (!roomPanDrag || e.pointerId !== roomPanDrag.pointerId) return;
+    var dx = e.clientX - roomPanDrag.startX;
+    roomsViewport.scrollLeft = roomPanDrag.startScrollLeft - dx;
+  });
+  function snapToNearestRoom(){
+    var viewportCenter = roomsViewport.scrollLeft + roomsViewport.clientWidth/2;
+    var closest = null, closestDist = Infinity;
+    state.rooms.forEach(function(room){
+      var el = roomStageEl(room.id);
+      if (!el) return;
+      var center = el.offsetLeft + el.offsetWidth/2;
+      var dist = Math.abs(center - viewportCenter);
+      if (dist < closestDist){ closestDist = dist; closest = room; }
+    });
+    if (closest) focusRoom(closest.id);
+  }
+  function endRoomPan(e){
+    if (!roomPanDrag || e.pointerId !== roomPanDrag.pointerId) return;
+    if (roomPanDrag.stageEl) roomPanDrag.stageEl.classList.remove('panning');
+    roomPanDrag = null;
+    snapToNearestRoom();
+  }
+  roomsViewport.addEventListener('pointerup', endRoomPan);
+  roomsViewport.addEventListener('pointercancel', endRoomPan);
   window.addEventListener('resize', positionToolbar);
   window.addEventListener('scroll', positionToolbar, true);
 
