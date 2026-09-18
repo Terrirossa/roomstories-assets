@@ -1568,6 +1568,38 @@
     }
     return bg.src;
   }
+
+  /* ---------------- quiet background preloading ----------------
+     the room-picker grid, the architecture popover, and the day/night
+     buttons all reuse full-size room art as their thumbnails/variants —
+     the first time any of them is requested, the browser has to fetch it
+     fresh, which is what makes switching or opening a picker feel slow.
+     Once the current room is up and interactive, we quietly warm the
+     browser's cache with everything else the player is likely to click
+     next, so that by the time they do, it's already sitting there. */
+  function preloadImage(src){
+    var img = new Image();
+    img.src = src;
+  }
+  function runWhenIdle(fn){
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(fn, { timeout:2000 });
+    else setTimeout(fn, 300);
+  }
+  function preloadAheadOfNeed(){
+    BACKGROUNDS.forEach(function(bg){
+      if (bg.architectures){
+        bg.architectures.forEach(function(arch){
+          if (arch.times) arch.times.forEach(function(t){ preloadImage(t.src); });
+          else if (arch.src) preloadImage(arch.src);
+        });
+      } else if (bg.times){
+        bg.times.forEach(function(t){ preloadImage(t.src); });
+      } else if (bg.src){
+        preloadImage(bg.src);
+      }
+    });
+  }
+
   function renderRoomGrid(){
     roomGrid.innerHTML = '';
     var focused = getRoom(state.focusedRoomId);
@@ -1742,7 +1774,10 @@
 
   function refreshRoomVisuals(){
     state.rooms.forEach(function(room){
-      applyBackgroundForRoom(room);
+      var arch = architectureFor(room);
+      // a room whose current layout has no time-of-day art doesn't need a
+      // fresh image swap on every time change — just its dark/light tint
+      if (arch && arch.times) applyBackgroundForRoom(room);
       updateNightOverlayForRoom(room);
       updateLampsLitForRoom(room);
     });
@@ -3020,6 +3055,7 @@
   renderTabs();
   renderTray();
   setTrayOpen(state.trayOpen);
+  runWhenIdle(preloadAheadOfNeed);
 
 })();
 </script>
