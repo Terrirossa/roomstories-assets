@@ -2514,21 +2514,32 @@
   }
   function toggleItemState(piece, asset, el){
     piece.toggled = !piece.toggled;
-    var visualEl = el.querySelector('.piece-visual');
     var newSrc = viewSrcFor(piece, asset);
-    if (visualEl){
-      // a quick fade-out/fade-in around the src swap, self-contained via
-      // inline styles so it can't collide with the transparency slider's
-      // own opacity value or any other feature that also touches opacity
-      var restoreOpacity = visualEl.style.opacity;
-      visualEl.style.transition = 'opacity .15s ease';
-      visualEl.style.opacity = 0;
+    var inner = el.querySelector('.piece-inner');
+    var visualEl = el.querySelector('.piece-visual');
+    if (visualEl && inner && visualEl.tagName === 'IMG'){
+      // a real crossfade: the new picture fades in on top while the
+      // current one keeps showing underneath the whole time, rather than
+      // fading out to nothing first and back in after
+      var targetOpacity = (piece.transparency||100)/100;
+      var overlay = document.createElement('img');
+      overlay.className = visualEl.className;
+      overlay.src = newSrc;
+      overlay.alt = visualEl.alt;
+      overlay.style.position = 'absolute';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.opacity = '0';
+      overlay.style.transition = 'opacity .45s ease';
+      inner.insertBefore(overlay, visualEl.nextSibling);
+      overlay.getBoundingClientRect(); // force layout so the fade-in doesn't collapse into one frame
+      requestAnimationFrame(function(){ overlay.style.opacity = targetOpacity; });
       setTimeout(function(){
-        if (visualEl.tagName === 'IMG') visualEl.src = newSrc;
-        else loadStretchableSvg(newSrc, visualEl); // item was stretched at some point
-        visualEl.style.opacity = restoreOpacity;
-        setTimeout(function(){ visualEl.style.transition = ''; }, 160);
-      }, 150);
+        visualEl.src = newSrc; // now the "real" element carries the new state
+        overlay.remove();
+      }, 460);
+    } else if (visualEl){
+      loadStretchableSvg(newSrc, visualEl); // item has been stretched already; use its existing swap path
     }
     if (asset.toggleSound){
       try{
