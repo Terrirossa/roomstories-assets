@@ -651,7 +651,7 @@
     justify-content:center;
   }
   .piece.selected .handle{ display:flex; }
-  .handle-resize{ right:-8px; bottom:-8px; cursor:nwse-resize; }
+  .handle-resize{ right:-8px; top:-8px; cursor:nesw-resize; }
   .handle-rotate{ top:-30px; left:50%; transform:translateX(-50%); cursor:grab; }
   .handle-rotate::before{
     content:'';
@@ -691,7 +691,7 @@
      laptop still gets this and a mouse on a small window doesn't */
   @media (pointer: coarse){
     .handle{ width:26px; height:26px; }
-    .handle-resize{ right:-13px; bottom:-13px; }
+    .handle-resize{ right:-13px; top:-13px; }
     .handle-rotate{ top:-42px; }
     .handle-rotate::before{ top:26px; height:16px; }
     .handle-edge{ width:26px; height:26px; }
@@ -889,22 +889,25 @@
   /* mute toggle */
   .music-controls{
     position:fixed;
-    top:14px; left:50%;
+    top:12px; left:50%;
     transform:translateX(-50%);
     z-index:7000;
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:5px;
     background:var(--glass-bg-strong);
-    backdrop-filter:blur(14px) saturate(160%);
-    -webkit-backdrop-filter:blur(14px) saturate(160%);
+    backdrop-filter:blur(10px) saturate(150%);
+    -webkit-backdrop-filter:blur(10px) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:999px;
-    box-shadow:0 6px 16px rgba(20,15,10,.25);
-    padding:4px 14px 4px 4px;
+    box-shadow:0 3px 8px rgba(20,15,10,.16);
+    padding:3px 10px 3px 3px;
+    opacity:.82;
+    transition:opacity .15s ease;
   }
+  .music-controls:hover{ opacity:1; }
   .mute-toggle{
-    width:38px; height:38px;
+    width:26px; height:26px;
     flex-shrink:0;
     border-radius:50%;
     background:transparent;
@@ -915,11 +918,11 @@
     padding:0;
   }
   .mute-toggle:hover{ background:rgba(255,255,255,.35); }
-  .mute-toggle svg{ width:16px; height:16px; }
+  .mute-toggle svg{ width:12px; height:12px; }
   .mute-toggle .icon-muted{ display:none; }
   .mute-toggle.muted .icon-unmuted{ display:none; }
   .volume-slider{
-    width:70px;
+    width:46px;
     height:3px;
     accent-color:var(--gold);
     cursor:pointer;
@@ -2537,7 +2540,12 @@
 
   function renderPiece(piece, animate){
     var asset = getAsset(piece.assetId);
-    var isStretchable = asset.ratio != null;
+    var isStretchable = asset.ratio != null || piece.height != null;
+    // every item can be stretched now; an item that hasn't declared its
+    // own art proportions (the vast majority) just doesn't know its own
+    // height yet — that gets measured and locked in the moment someone
+    // actually grabs a stretch handle (see upgradeToStretchableVisual)
+    var stretchMode = asset.stretchControl || 'both';
     var el = document.createElement('div');
     el.className = 'piece' +
       (asset.category==='lighting' && !piece.lampOn ? ' lamp-off' : '') +
@@ -2556,10 +2564,10 @@
     el.style.transform = 'translate(-50%,-50%) rotate('+piece.rotation+'deg)';
 
     var extraHandles = '';
-    if (asset.stretchControl === 'both' || asset.stretchControl === 'horizontal'){
+    if (stretchMode === 'both' || stretchMode === 'horizontal'){
       extraHandles += '<div class="handle-edge handle-edge-h" data-handle="stretch-h"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4 3 8l3 4"/><path d="M10 4l3 4-3 4"/></svg></div>';
     }
-    if (asset.stretchControl === 'both'){
+    if (stretchMode === 'both'){
       extraHandles += '<div class="handle-edge handle-edge-v" data-handle="stretch-v"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6 8 3l4 3"/><path d="M4 10l4 3 4-3"/></svg></div>';
     }
     // rods and curtains stretch to fit a window — free rotation doesn't
@@ -2587,7 +2595,7 @@
     applyStretchStyle(el, piece);
     if (isStretchable){
       var visualEl = el.querySelector('.piece-visual');
-      if (visualEl) loadStretchableSvg(asset.src, visualEl);
+      if (visualEl) loadStretchableSvg(viewSrcFor(piece, asset), visualEl);
     }
 
     var innerEl = el.querySelector('.piece-inner');
@@ -2846,13 +2854,40 @@
 
   /* ---------------- independent horizontal/vertical stretch ---------------- */
   var stretchDrag = null;
+  function upgradeToStretchableVisual(el, piece, asset){
+    // this item never declared its own art proportions, so it's been
+    // rendering as a plain <img> at its natural size up to now. The first
+    // time someone actually grabs a stretch handle, measure whatever
+    // height it's currently sitting at and lock that in as its starting
+    // point, then swap to the same inline-SVG technique curtains use —
+    // a plain <img> won't reliably distort, only an SVG's own
+    // preserveAspectRatio attribute does that consistently.
+    if (piece.height != null) return;
+    var stageEl = roomStageEl(piece.roomId);
+    if (!stageEl) return;
+    var rect = el.getBoundingClientRect();
+    var stageRect = stageEl.getBoundingClientRect();
+    if (!stageRect.height) return;
+    piece.height = clamp(rect.height / stageRect.height * 100, 2, 90);
+    var oldVisual = el.querySelector('.piece-visual');
+    if (oldVisual && oldVisual.tagName === 'IMG'){
+      var newVisual = document.createElement('div');
+      newVisual.className = 'piece-visual';
+      newVisual.style.opacity = oldVisual.style.opacity;
+      oldVisual.replaceWith(newVisual);
+      applyStretchStyle(el, piece);
+      loadStretchableSvg(viewSrcFor(piece, asset), newVisual);
+    } else {
+      applyStretchStyle(el, piece);
+    }
+  }
   function startStretch(e, uid, el, mode){
     e.preventDefault();
     selectPiece(uid);
     var piece = getPiece(uid);
+    var asset = getAsset(piece.assetId);
+    upgradeToStretchableVisual(el, piece, asset);
     var stageRect = roomStageEl(piece.roomId).getBoundingClientRect();
-    // stretchable items always get an explicit height at placement time
-    // (see addPiece), so there's nothing to lock in here — just drag.
     stretchDrag = {
       mode:mode, pointerId:e.pointerId, uid:uid, el:el, stageRect:stageRect,
       startX:e.clientX, startY:e.clientY,
@@ -2965,7 +3000,10 @@
       var vIdx = views.indexOf(piece.viewRotation || 'front');
       piece.viewRotation = views[(vIdx+1) % views.length];
       var visualEl = pieceEl(piece.uid).querySelector('.piece-visual');
-      if (visualEl && visualEl.tagName === 'IMG') visualEl.src = viewSrcFor(piece, viewAsset);
+      if (visualEl){
+        if (visualEl.tagName === 'IMG') visualEl.src = viewSrcFor(piece, viewAsset);
+        else loadStretchableSvg(viewSrcFor(piece, viewAsset), visualEl); // already upgraded by a stretch
+      }
       updateViewButtonUI();
     }
     if (action==='sway'){
