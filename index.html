@@ -1525,8 +1525,10 @@
     { id:'bowl-with-oranges', name:'Bowl With Oranges', category:'kitchen', defaultWidth:6, material:'Ceramic', color:'Multi', style1:'Cozy', style2:'Rustic', src:ITEMS_BASE+'kitchens/misc/items_bowl_with_oranges.svg' },
     { id:'chrome-teecup', name:'Chrome Teacup', category:'kitchen', defaultWidth:6, material:'Metal', color:'Chrome', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'kitchens/misc/items_chrome_teecup.svg' },
     { id:'coffee-maker-filter-hannes', name:'Hannes Filter Coffee Maker', category:'kitchen', defaultWidth:6, material:'Mixed', color:'Black', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'kitchens/misc/items_coffee_maker_filter_hannes.svg' },
-    { id:'coffeemaker-alana-empty', name:'Alana Coffee Maker Empty', category:'kitchen', defaultWidth:6, material:'Glass', color:'Clear', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'kitchens/misc/items_coffeemaker_Alana_empty.svg' },
-    { id:'coffeemaker-alana-full', name:'Alana Coffee Maker Full', category:'kitchen', defaultWidth:6, material:'Glass', color:'Clear', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'kitchens/misc/items_coffeemaker_Alana_full.svg' },
+    { id:'coffeemaker-alana', name:'Alana Coffee Maker', category:'kitchen', defaultWidth:6, material:'Glass', color:'Clear', style1:'Modern', style2:'Minimal',
+      src:ITEMS_BASE+'kitchens/misc/items_coffeemaker_Alana_empty.svg',
+      toggleSrc:ITEMS_BASE+'kitchens/misc/items_coffeemaker_Alana_full.svg',
+      toggleSound:'audio/CoffeeBrewWaterDribbleDripStyle_FnwBi_03.wav' },
     { id:'coffeemaschine-fika-grey', name:'Fika Coffee Machine Grey', category:'kitchen', defaultWidth:13, material:'Mixed', color:'Grey', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'kitchens/misc/items_coffeemaschine_fika_grey.svg' },
     { id:'coffeemaschine-fika-white', name:'Fika Coffee Machine White', category:'kitchen', defaultWidth:13, material:'Mixed', color:'White', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'kitchens/misc/items_coffeemaschine_fika_white.svg' },
     { id:'coffeemaschine-hime-green', name:'Hime Coffee Machine Green', category:'kitchen', defaultWidth:13, material:'Mixed', color:'Green', style1:'Modern', style2:'Eclectic', src:ITEMS_BASE+'kitchens/misc/items_coffeemaschine_hime_green.svg' },
@@ -2507,7 +2509,34 @@
   function viewSrcFor(piece, asset){
     var view = piece.viewRotation;
     if (view && view !== 'front' && asset.rotations && asset.rotations[view]) return asset.rotations[view];
+    if (piece.toggled && asset.toggleSrc) return asset.toggleSrc;
     return asset.src;
+  }
+  function toggleItemState(piece, asset, el){
+    piece.toggled = !piece.toggled;
+    var visualEl = el.querySelector('.piece-visual');
+    var newSrc = viewSrcFor(piece, asset);
+    if (visualEl){
+      // a quick fade-out/fade-in around the src swap, self-contained via
+      // inline styles so it can't collide with the transparency slider's
+      // own opacity value or any other feature that also touches opacity
+      var restoreOpacity = visualEl.style.opacity;
+      visualEl.style.transition = 'opacity .15s ease';
+      visualEl.style.opacity = 0;
+      setTimeout(function(){
+        if (visualEl.tagName === 'IMG') visualEl.src = newSrc;
+        else loadStretchableSvg(newSrc, visualEl); // item was stretched at some point
+        visualEl.style.opacity = restoreOpacity;
+        setTimeout(function(){ visualEl.style.transition = ''; }, 160);
+      }, 150);
+    }
+    if (asset.toggleSound){
+      try{
+        var sfx = new Audio(asset.toggleSound);
+        sfx.volume = 0.7;
+        sfx.play().catch(function(){});
+      }catch(err){}
+    }
   }
   function updateSwayEligibility(el, piece, asset){
     var level = piece.swayLevel || 0;
@@ -2861,6 +2890,8 @@
         piece.lampOn = !piece.lampOn;
         moveDrag.el.classList.toggle('lamp-off', !piece.lampOn);
         updateLampLighting();
+      } else if (asset.toggleSrc){
+        toggleItemState(piece, asset, moveDrag.el);
       }
     }
     moveDrag.el.classList.remove('dragging');
@@ -3085,7 +3116,7 @@
       updateOpacityButtonUI();
     }
     if (action==='duplicate'){
-      var copy = { uid:'p'+(state.uidCounter++), roomId:piece.roomId, assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, height:piece.height, rotation:piece.rotation, z:0, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel, transparency:piece.transparency, lightIntensity:piece.lightIntensity, viewRotation:piece.viewRotation };
+      var copy = { uid:'p'+(state.uidCounter++), roomId:piece.roomId, assetId:piece.assetId, x:clamp(piece.x+4,0,100), y:clamp(piece.y+4,0,100), width:piece.width, height:piece.height, rotation:piece.rotation, z:0, lampOn:piece.lampOn, flipped:piece.flipped, swayLevel:piece.swayLevel, transparency:piece.transparency, lightIntensity:piece.lightIntensity, viewRotation:piece.viewRotation, toggled:piece.toggled };
       state.placed.push(copy);
       reassignZIndices();
       renderPiece(copy, true);
