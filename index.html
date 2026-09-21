@@ -583,7 +583,7 @@
     85%  { transform:scale(0.9975); }
     100% { transform:scale(1); }
   }
-  .stage{ animation:roomBreathe 46s ease-in-out infinite; }
+  .stage{ animation:roomBreathe 46s ease-in-out infinite; will-change:transform; }
   .stage.breathing-paused{ animation-play-state:paused; }
 
   /* =========================================================
@@ -1942,8 +1942,9 @@
   }
 
   var LAMP_GLOW_RADIUS = 30; // max reach of the effect, in % of stage width
-  function updateLampProximityGlow(){
-    state.rooms.forEach(function(room){
+  function updateLampProximityGlow(onlyRoomId){
+    var rooms = onlyRoomId ? state.rooms.filter(function(r){ return r.id === onlyRoomId; }) : state.rooms;
+    rooms.forEach(function(room){
       var roomEl = roomStageEl(room.id);
       if (!roomEl) return;
       var dark = roomEl.classList.contains('lamps-lit');
@@ -2007,8 +2008,9 @@
     });
   }
 
-  function updateLampLightPools(){
-    state.rooms.forEach(function(room){
+  function updateLampLightPools(onlyRoomId){
+    var rooms = onlyRoomId ? state.rooms.filter(function(r){ return r.id === onlyRoomId; }) : state.rooms;
+    rooms.forEach(function(room){
       var roomEl = roomStageEl(room.id);
       if (!roomEl) return;
       var layer = roomEl.querySelector('.lamp-light-pools');
@@ -2031,10 +2033,14 @@
   }
 
   // both effects share the same "who's lit and where" question, so they're
-  // always refreshed together
-  function updateLampLighting(){
-    updateLampProximityGlow();
-    updateLampLightPools();
+  // always refreshed together. Pass a roomId when only one room's lamps
+  // could possibly have changed (a drag, a toggle, a single new piece) —
+  // every other room's lighting is still correct as it was, so recomputing
+  // it too is pure waste. Omit it for genuinely global changes (time of
+  // day, a full rebuild) where every room's lit state could shift at once.
+  function updateLampLighting(onlyRoomId){
+    updateLampProximityGlow(onlyRoomId);
+    updateLampLightPools(onlyRoomId);
   }
 
   function refreshRoomVisuals(){
@@ -2253,7 +2259,7 @@
     updateRoomNavButtons();
   }
 
-  function buildAddRoomButton(side){
+  function buildAddRoomButton(side, adjacentRoom){
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'add-room-btn add-room-btn-'+side;
@@ -2261,13 +2267,16 @@
     btn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>';
     btn.addEventListener('click', function(e){
       e.stopPropagation();
-      // new rooms are Twin Windows only for now — it's the only style with
-      // layout artwork so far
-      var bg = getBackground('sunlit-living-room-twin-windows');
+      // a new room always joins the same family as the room it's
+      // extending from — a Twin Windows flat grows more Twin Windows
+      // rooms, a future Bathroom flat grows more Bathrooms, and so on,
+      // with no per-style code needed here
+      var bg = getBackground(adjacentRoom.backgroundId);
+      if (!bg || !bg.architectures) return;
       var needsDoor = side === 'left' ? 'hasRightDoor' : 'hasLeftDoor';
       var options = bg.architectures.filter(function(a){ return a[needsDoor]; });
       openAddRoomPopover(btn, side, options, function(chosenArch){
-        var newRoom = { id:'room-'+(state.roomIdCounter++), backgroundId:'sunlit-living-room-twin-windows', architectureId:chosenArch.id };
+        var newRoom = { id:'room-'+(state.roomIdCounter++), backgroundId:adjacentRoom.backgroundId, architectureId:chosenArch.id };
         if (side === 'left') state.rooms.unshift(newRoom);
         else state.rooms.push(newRoom);
         renderRooms();
@@ -2316,10 +2325,10 @@
     var firstArch = architectureFor(firstRoom);
     var lastArch = architectureFor(lastRoom);
     if (firstArch && firstArch.hasLeftDoor){
-      roomStageEl(firstRoom.id).appendChild(buildAddRoomButton('left'));
+      roomStageEl(firstRoom.id).appendChild(buildAddRoomButton('left', firstRoom));
     }
     if (lastArch && lastArch.hasRightDoor){
-      roomStageEl(lastRoom.id).appendChild(buildAddRoomButton('right'));
+      roomStageEl(lastRoom.id).appendChild(buildAddRoomButton('right', lastRoom));
     }
     fullRerenderPieces();
     updateLampLighting();
@@ -2557,7 +2566,7 @@
     renderPiece(piece, true);
     selectPiece(piece.uid);
     updateAllHints();
-    updateLampLighting();
+    updateLampLighting(roomId);
   }
 
   var SWAY_LEVELS = {
@@ -3001,7 +3010,7 @@
     piece.y = clamp(moveDrag.startPctY + dyPct, 0, 100);
     moveDrag.el.style.left = piece.x + '%';
     moveDrag.el.style.top = piece.y + '%';
-    updateLampLighting();
+    updateLampLighting(piece.roomId);
     updateForegroundBlurFor(piece, moveDrag.el);
     positionToolbar();
   }
@@ -3013,7 +3022,7 @@
       if (asset.category === 'lighting'){
         piece.lampOn = !piece.lampOn;
         moveDrag.el.classList.toggle('lamp-off', !piece.lampOn);
-        updateLampLighting();
+        updateLampLighting(piece.roomId);
       } else if (asset.toggleSrc){
         toggleItemState(piece, asset, moveDrag.el);
       }
@@ -3137,7 +3146,7 @@
       applyStretchStyle(stretchDrag.el, piece);
       stretchDrag.el.style.top = piece.y + '%';
     }
-    updateLampLighting();
+    updateLampLighting(piece.roomId);
     updateForegroundBlurFor(piece, stretchDrag.el);
     positionToolbar();
   }
@@ -3231,7 +3240,7 @@
     if (action==='light'){
       piece.lightIntensity = (piece.lightIntensity % 3) + 1;
       updateLampIntensityVar(pieceEl(piece.uid), piece, getAsset(piece.assetId));
-      updateLampLighting();
+      updateLampLighting(piece.roomId);
       updateLightButtonUI();
     }
     if (action==='opacity'){
@@ -3247,7 +3256,7 @@
       reassignZIndices();
       renderPiece(copy, true);
       selectPiece(copy.uid);
-      updateLampLighting();
+      updateLampLighting(copy.roomId);
     }
     if (action==='delete'){
       state.placed = state.placed.filter(function(p){ return p.uid!==piece.uid; });
@@ -3256,7 +3265,7 @@
       reassignZIndices();
       deselect();
       updateAllHints();
-      updateLampLighting();
+      updateLampLighting(piece.roomId);
     }
   });
 
