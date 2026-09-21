@@ -2662,12 +2662,12 @@
     if (!el) return;
     var inner = el.querySelector('.piece-inner');
     if (!inner) return;
-    var bigness = clamp((piece.width - 18) / 32, 0, 1);
+    var bigness = clamp((piece.width - 15) / 28, 0, 1);
     var bottomness = clamp((piece.y - 65) / 35, 0, 1);
     var edgeDist = Math.min(piece.x, 100 - piece.x);
     var sideness = clamp((12 - edgeDist) / 12, 0, 1);
     var edgeness = Math.max(bottomness, sideness);
-    var blurPx = bigness * edgeness * 2.2;
+    var blurPx = bigness * edgeness * 6.5;
     inner.style.filter = blurPx > 0.05 ? 'blur(' + blurPx.toFixed(2) + 'px)' : '';
   }
 
