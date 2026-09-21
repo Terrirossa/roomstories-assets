@@ -570,6 +570,21 @@
   .stage.motion-off .dust-mote{ animation:none !important; opacity:0 !important; }
   .stage.motion-off .cloud-shadow{ animation:none !important; opacity:0 !important; }
   .stage.motion-off .breathing-light{ animation:none !important; opacity:0 !important; }
+  .stage.motion-off{ animation:none !important; }
+  /* camera breathing — a barely-perceptible, irregular scale drift so a
+     still room doesn't feel like a static photo. Kept to a fraction of a
+     percent and paused the moment the player actually touches anything,
+     so it never fights with precise dragging. */
+  @keyframes roomBreathe{
+    0%   { transform:scale(1); }
+    23%  { transform:scale(1.0021); }
+    44%  { transform:scale(0.9982); }
+    68%  { transform:scale(1.0035); }
+    85%  { transform:scale(0.9975); }
+    100% { transform:scale(1); }
+  }
+  .stage{ animation:roomBreathe 46s ease-in-out infinite; }
+  .stage.breathing-paused{ animation-play-state:paused; }
 
   /* =========================================================
      placed pieces
@@ -2637,6 +2652,25 @@
     }
   }
 
+  // fake depth-of-field: a piece that's both generously sized AND sitting
+  // near the bottom or side edges reads as "close to camera", so it gets
+  // a soft blur — framing the shot like a real lens would, rather than a
+  // flat top-down canvas. Applied to .piece-inner (not .piece-visual,
+  // which the lamp-glow effect already drives its own filter on) so the
+  // two effects never fight over the same CSS property.
+  function updateForegroundBlurFor(piece, el){
+    if (!el) return;
+    var inner = el.querySelector('.piece-inner');
+    if (!inner) return;
+    var bigness = clamp((piece.width - 18) / 32, 0, 1);
+    var bottomness = clamp((piece.y - 65) / 35, 0, 1);
+    var edgeDist = Math.min(piece.x, 100 - piece.x);
+    var sideness = clamp((12 - edgeDist) / 12, 0, 1);
+    var edgeness = Math.max(bottomness, sideness);
+    var blurPx = bigness * edgeness * 2.2;
+    inner.style.filter = blurPx > 0.05 ? 'blur(' + blurPx.toFixed(2) + 'px)' : '';
+  }
+
   /* ---------------- rendering placed pieces ---------------- */
   var svgTextCache = {};
   var svgNamespaceCounter = 0;
@@ -2789,6 +2823,7 @@
     if (stretchH) stretchH.addEventListener('pointerdown', function(e){ e.stopPropagation(); startStretch(e, piece.uid, el, 'h'); });
     var stretchV = el.querySelector('[data-handle="stretch-v"]');
     if (stretchV) stretchV.addEventListener('pointerdown', function(e){ e.stopPropagation(); startStretch(e, piece.uid, el, 'v'); });
+    updateForegroundBlurFor(piece, el);
   }
 
   function fullRerenderPieces(){
@@ -2966,6 +3001,7 @@
     moveDrag.el.style.left = piece.x + '%';
     moveDrag.el.style.top = piece.y + '%';
     updateLampLighting();
+    updateForegroundBlurFor(piece, moveDrag.el);
     positionToolbar();
   }
   function onMoveEnd(e){
@@ -3019,6 +3055,7 @@
       applyStretchStyle(resizeDrag.el, piece);
     }
     updateSwayEligibility(resizeDrag.el, piece, getAsset(piece.assetId));
+    updateForegroundBlurFor(piece, resizeDrag.el);
     positionToolbar();
   }
   function onResizeEnd(e){
@@ -3100,6 +3137,7 @@
       stretchDrag.el.style.top = piece.y + '%';
     }
     updateLampLighting();
+    updateForegroundBlurFor(piece, stretchDrag.el);
     positionToolbar();
   }
   function onStretchEnd(e){
@@ -3263,6 +3301,24 @@
   }
   roomsViewport.addEventListener('pointerup', endRoomPan);
   roomsViewport.addEventListener('pointercancel', endRoomPan);
+
+  // camera breathing pauses the instant anything is actually touched —
+  // dragging a piece, panning between rooms, grabbing a handle — and
+  // settles back in a couple of seconds after things go quiet again
+  var breathingIdleTimer = null;
+  function pauseBreathing(){
+    document.querySelectorAll('.room-stage').forEach(function(s){ s.classList.add('breathing-paused'); });
+    if (breathingIdleTimer){ clearTimeout(breathingIdleTimer); breathingIdleTimer = null; }
+  }
+  function scheduleResumeBreathing(){
+    if (breathingIdleTimer) clearTimeout(breathingIdleTimer);
+    breathingIdleTimer = setTimeout(function(){
+      document.querySelectorAll('.room-stage').forEach(function(s){ s.classList.remove('breathing-paused'); });
+    }, 2000);
+  }
+  roomsViewport.addEventListener('pointerdown', pauseBreathing);
+  document.addEventListener('pointerup', scheduleResumeBreathing);
+  document.addEventListener('pointercancel', scheduleResumeBreathing);
   window.addEventListener('resize', positionToolbar);
   window.addEventListener('scroll', positionToolbar, true);
 
