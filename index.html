@@ -143,6 +143,17 @@
     margin:0 0 30px;
     line-height:1.5;
   }
+  .title-fresh-link{
+    display:block;
+    margin:14px auto 0;
+    background:none;
+    border:none;
+    font-size:12.5px;
+    color:var(--ink-55);
+    text-decoration:underline;
+    cursor:pointer;
+  }
+  .title-fresh-link:hover{ color:var(--ink); }
 
   /* =========================================================
      ROOM PICKER SCREEN
@@ -1026,6 +1037,7 @@
     <h1 class="title-mark">Roomstories</h1>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary" id="titleStartBtn" style="font-size:15px; padding:13px 30px;">Pick a room</button>
+    <button class="title-fresh-link" id="titleFreshBtn" style="display:none;">Or start a brand new room</button>
   </div>
 </section>
 
@@ -1640,6 +1652,59 @@
     return bg.architectures.filter(function(a){ return a.id === room.architectureId; })[0] || bg.architectures[0];
   }
   function roomStageEl(id){ return document.querySelector('.room-stage[data-room-id="'+id+'"]'); }
+
+  /* ---------------- save / load (localStorage) ----------------
+     no backend, so the browser's own storage is the natural fit — this
+     is what makes "come back later and find your rooms as you left
+     them" actually work, without needing an account or a server. */
+  var SAVE_KEY = 'roomstories_save_v1';
+  function serializeState(){
+    return {
+      version: 1,
+      rooms: state.rooms,
+      placed: state.placed,
+      focusedRoomId: state.focusedRoomId,
+      roomIdCounter: state.roomIdCounter,
+      uidCounter: state.uidCounter,
+      activeTime: state.activeTime,
+      isNight: state.isNight
+    };
+  }
+  function saveGame(){
+    try{ localStorage.setItem(SAVE_KEY, JSON.stringify(serializeState())); }
+    catch(err){ /* storage full/unavailable — nothing more we can do here */ }
+  }
+  function loadSavedGame(){
+    try{
+      var raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (!data || data.version !== 1 || !Array.isArray(data.rooms) || !data.rooms.length) return null;
+      return data;
+    }catch(err){ return null; }
+  }
+  function clearSavedGame(){
+    try{ localStorage.removeItem(SAVE_KEY); }catch(err){}
+  }
+  function applySavedGame(data){
+    state.rooms = data.rooms;
+    state.placed = Array.isArray(data.placed) ? data.placed : [];
+    state.focusedRoomId = data.focusedRoomId || data.rooms[0].id;
+    state.roomIdCounter = data.roomIdCounter || (data.rooms.length + 1);
+    state.uidCounter = data.uidCounter || (state.placed.length + 1);
+    if (data.activeTime) state.activeTime = data.activeTime;
+    if (typeof data.isNight === 'boolean') state.isNight = data.isNight;
+  }
+  function resetToFreshGame(){
+    state.rooms = [{ id:'room-1', backgroundId: BACKGROUNDS[0].id, architectureId: null }];
+    state.placed = [];
+    state.focusedRoomId = 'room-1';
+    state.roomIdCounter = 2;
+    state.uidCounter = 1;
+    state.selectedUid = null;
+    state.isNight = false;
+    state.activeTime = 'day';
+  }
   function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
   /* ---------------- dom refs ---------------- */
@@ -1715,7 +1780,18 @@
     });
   }
 
+  var hasExistingSave = false;
   document.getElementById('titleStartBtn').addEventListener('click', function(){
+    showScreen(hasExistingSave ? 'builder' : 'picker');
+    playCurrentTrack();
+  });
+  document.getElementById('titleFreshBtn').addEventListener('click', function(){
+    hasExistingSave = false;
+    clearSavedGame();
+    resetToFreshGame();
+    renderRooms();
+    document.getElementById('titleStartBtn').textContent = 'Pick a room';
+    document.getElementById('titleFreshBtn').style.display = 'none';
     showScreen('picker');
     playCurrentTrack();
   });
@@ -3307,6 +3383,13 @@
   }
 
   /* ---------------- init ---------------- */
+  var existingSave = loadSavedGame();
+  if (existingSave){
+    hasExistingSave = true;
+    applySavedGame(existingSave);
+    document.getElementById('titleStartBtn').textContent = 'Continue Decorating';
+    document.getElementById('titleFreshBtn').style.display = 'block';
+  }
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   renderRoomGrid();
   renderRooms();
@@ -3314,6 +3397,16 @@
   renderTray();
   setTrayOpen(state.trayOpen);
   runWhenIdle(preloadAheadOfNeed);
+
+  // autosave: a periodic snapshot covers virtually every change without
+  // needing a save-hook wired into every single action in the game, and
+  // the unload/visibility handlers catch the moment right before the
+  // player actually leaves, so nothing from the last few seconds is lost
+  setInterval(saveGame, 4000);
+  window.addEventListener('beforeunload', saveGame);
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'hidden') saveGame();
+  });
 
 })();
 </script>
