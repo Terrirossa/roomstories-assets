@@ -2662,12 +2662,13 @@
     if (!el) return;
     var inner = el.querySelector('.piece-inner');
     if (!inner) return;
+    // left/right edges only — being low in the room doesn't count, since
+    // that's just where furniture normally sits and blurring it read as
+    // "the middle of the room is randomly blurry" rather than framing
     var bigness = clamp((piece.width - 15) / 28, 0, 1);
-    var bottomness = clamp((piece.y - 65) / 35, 0, 1);
     var edgeDist = Math.min(piece.x, 100 - piece.x);
-    var sideness = clamp((12 - edgeDist) / 12, 0, 1);
-    var edgeness = Math.max(bottomness, sideness);
-    var blurPx = bigness * edgeness * 6.5;
+    var sideness = clamp((8 - edgeDist) / 8, 0, 1);
+    var blurPx = bigness * sideness * 6.5;
     inner.style.filter = blurPx > 0.05 ? 'blur(' + blurPx.toFixed(2) + 'px)' : '';
   }
 
