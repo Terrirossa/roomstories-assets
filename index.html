@@ -1272,13 +1272,29 @@
     'book-collection-blue-22': 'decor::book-collection',
     'book-collection-earthy': 'decor::book-collection'
   };
+  // some items carry a size modifier after the color in their id (e.g.
+  // "couch-hennes-beige-long" / "...-short") rather than the color being
+  // the very last segment — strip a known trailing modifier first so the
+  // color match underneath it still resolves, and fold the modifier back
+  // into the group key so "Long" and "Short" versions form separate
+  // families rather than getting merged into one.
+  var TRAILING_SIZE_MODIFIERS = ['-long', '-short'];
   function variantBaseKey(item){
     if (VARIANT_GROUP_OVERRIDES[item.id]) return VARIANT_GROUP_OVERRIDES[item.id];
+    var id = item.id, modifier = '';
+    for (var m=0; m<TRAILING_SIZE_MODIFIERS.length; m++){
+      var mod = TRAILING_SIZE_MODIFIERS[m];
+      if (id.length > mod.length && id.slice(-mod.length) === mod){
+        modifier = mod;
+        id = id.slice(0, -mod.length);
+        break;
+      }
+    }
     var suffixes = colorSuffixVariants(item.color);
     for (var i=0;i<suffixes.length;i++){
       var suffix = '-' + suffixes[i];
-      if (suffixes[i] && item.id.length > suffix.length && item.id.slice(-suffix.length) === suffix){
-        return item.category + '::' + item.id.slice(0, -suffix.length);
+      if (suffixes[i] && id.length > suffix.length && id.slice(-suffix.length) === suffix){
+        return item.category + '::' + id.slice(0, -suffix.length) + modifier;
       }
     }
     return null;
@@ -1288,8 +1304,10 @@
     var esc = color.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     var suffixRe = new RegExp('\\s+'+esc+'$', 'i');
     var prefixRe = new RegExp('^'+esc+'\\s+', 'i');
+    var midRe = new RegExp('\\s+'+esc+'(?=\\s)', 'i');
     if (suffixRe.test(name)) return name.replace(suffixRe, '').trim();
     if (prefixRe.test(name)) return name.replace(prefixRe, '').trim();
+    if (midRe.test(name)) return name.replace(midRe, '').replace(/\s+/g,' ').trim();
     return name.trim();
   }
   var NEUTRAL_PREFERENCE = ['Black','White','Beige'];
