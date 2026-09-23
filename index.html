@@ -885,20 +885,24 @@
     pointer-events:none;
   }
 
-  /* grouped color variants — one card shown by default, others revealed
-     on tap so the tray doesn't need a separate slot per color */
+  /* grouped color variants — one neutral card shown by default, with a
+     row of true-color dots hinting at the other colors; tapping the card
+     reveals the rest (see renderGroupCard) so the tray doesn't need a
+     separate slot per color */
   .sticker-group{ grid-column:1 / -1; }
   .sticker-primary{ position:relative; }
   .variant-dots{
-    position:absolute;
-    top:5px; right:5px;
-    display:flex; gap:2px;
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:4px;
+    margin-top:5px;
     pointer-events:none;
   }
   .variant-dot{
-    width:5px; height:5px;
+    width:8px; height:8px;
     border-radius:50%;
-    background:var(--ink-35);
+    box-shadow:0 0 0 1px rgba(54,43,34,.18), inset 0 0 0 1px rgba(255,255,255,.35);
   }
   .sticker-group.expanded .sticker-primary{
     box-shadow:0 0 0 1.5px var(--gold);
@@ -1212,6 +1216,81 @@
     { id:'decor', label:'Decor' },
     { id:'textiles', label:'Textiles' },
   ];
+
+  /* ---------------- color-variant families ----------------
+     Items that are the same piece in different colors (e.g. "Hale Couch
+     Beige/Grey/Black...") are auto-detected from id + color, rather than
+     hand-tagged — so this keeps working as new colorways get added to
+     data.js with no extra bookkeeping. A family shows one neutral card in
+     the tray with small dots hinting at the other colors; tapping it
+     reveals the rest (see renderGroupCard). */
+  var SWATCH_COLORS = {
+    'White':'#F7F3EC','Beige':'#DCC9A8','Black':'#2E2822','Grey':'#9A948B','Brown':'#7A5A3E',
+    'Blue':'#7C93B8','Green':'#7C9270','Red':'#B65A4C','Yellow':'#DCB35C','Gold':'#C9A24C',
+    'Silver':'#BFC1C2','Pink':'#DDA6AE','Rosa':'#E0AEB8','Blush':'#E3BFB8','Greige':'#C3B6A0',
+    'Zebra':'linear-gradient(90deg,#2E2822 50%,#F7F3EC 50%)','Multi':'linear-gradient(90deg,#B65A4C,#DCB35C,#7C9270,#7C93B8)',
+    'Dark Wood':'#5A4028','Light Wood':'#CDA876','Medium Wood':'#9C7648','Warm Wood':'#A87A48',
+    'Natural':'#D8C6A6','Chrome':'#C7CACB','Brass':'#BD9A5A','Steel':'#A9ADB0',
+    'Clear':'#E7EEEA','Frosted':'#DCE4E0','Tinted':'#B9C4BE','Smoked':'#6C6E6C',
+    'Travertine':'#DCCFB4','Terrazzo':'#D3C9BC','Orange':'#C97C42','Carrara':'#E4E1D8',
+    'Calacatta':'#EDE7DA','Cognac':'#8C5A34'
+  };
+  function swatchStyleFor(color){
+    var val = SWATCH_COLORS[color] || 'var(--ink-35)';
+    return val.indexOf('gradient') === 0 ? 'background:'+val+';' : 'background-color:'+val+';';
+  }
+  function colorSuffixVariants(color){
+    var lower = (color||'').toLowerCase();
+    if (!lower) return [];
+    return [lower.replace(/\s+/g,'-'), lower.replace(/\s+/g,'')];
+  }
+  function variantBaseKey(item){
+    var suffixes = colorSuffixVariants(item.color);
+    for (var i=0;i<suffixes.length;i++){
+      var suffix = '-' + suffixes[i];
+      if (suffixes[i] && item.id.length > suffix.length && item.id.slice(-suffix.length) === suffix){
+        return item.category + '::' + item.id.slice(0, -suffix.length);
+      }
+    }
+    return null;
+  }
+  function stripColorFromName(name, color){
+    if (!name || !color) return name;
+    var esc = color.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    var suffixRe = new RegExp('\\s+'+esc+'$', 'i');
+    var prefixRe = new RegExp('^'+esc+'\\s+', 'i');
+    if (suffixRe.test(name)) return name.replace(suffixRe, '').trim();
+    if (prefixRe.test(name)) return name.replace(prefixRe, '').trim();
+    return name.trim();
+  }
+  var NEUTRAL_PREFERENCE = ['Black','White','Beige'];
+  function pickPrimaryVariant(members){
+    for (var i=0;i<NEUTRAL_PREFERENCE.length;i++){
+      var match = members.filter(function(m){ return m.color === NEUTRAL_PREFERENCE[i]; });
+      if (match.length) return match[0];
+    }
+    return members[0];
+  }
+  // groups a list of items (already filtered to one category) into
+  // { key -> { primary, label, variants:[...] } } for items with 2+
+  // color siblings; items with no siblings are left out, so callers
+  // should render those as ordinary single cards.
+  function groupVariants(itemsInCat){
+    var byKey = {};
+    itemsInCat.forEach(function(item){
+      var key = variantBaseKey(item);
+      if (!key) return;
+      (byKey[key] = byKey[key] || []).push(item);
+    });
+    var groups = {};
+    Object.keys(byKey).forEach(function(key){
+      var members = byKey[key];
+      if (members.length < 2) return;
+      var primary = pickPrimaryVariant(members);
+      groups[key] = { key:key, primary:primary, label:stripColorFromName(primary.name, primary.color), variants:members };
+    });
+    return groups;
+  }
 
   var MIN_WIDTH = 4, MAX_WIDTH = 65;
 
@@ -1966,13 +2045,15 @@
   function renderTray(){
     trayGrid.innerHTML = '';
     var itemsInCat = ITEMS.filter(function(it){ return it.category===state.activeCategory; });
-    var seenGroups = {};
+    var groups = groupVariants(itemsInCat);
+    var renderedGroupKeys = {};
     itemsInCat.forEach(function(item){
-      if (item.variantGroup){
-        if (seenGroups[item.variantGroup]) return;
-        seenGroups[item.variantGroup] = true;
-        var variants = itemsInCat.filter(function(it){ return it.variantGroup === item.variantGroup; });
-        renderGroupCard(item, variants);
+      var key = variantBaseKey(item);
+      var group = key && groups[key];
+      if (group){
+        if (renderedGroupKeys[group.key]) return;
+        renderedGroupKeys[group.key] = true;
+        renderGroupCard(group);
       } else {
         renderSingleCard(item);
       }
@@ -1990,8 +2071,9 @@
     trayGrid.appendChild(card);
   }
 
-  function renderGroupCard(primary, variants){
-    var expanded = state.expandedGroup === primary.variantGroup;
+  function renderGroupCard(group){
+    var primary = group.primary, variants = group.variants;
+    var expanded = state.expandedGroup === group.key;
     var wrap = document.createElement('div');
     wrap.className = 'sticker-group' + (expanded ? ' expanded' : '');
 
@@ -2000,13 +2082,13 @@
     card.style.setProperty('--tilt', tiltFor(primary.id)+'deg');
     card.innerHTML =
       '<div class="sticker-thumb"><img src="'+primary.src+'" alt=""></div>' +
-      '<div class="sticker-label">'+(primary.groupLabel||primary.name)+'</div>' +
-      '<div class="variant-dots">' + variants.map(function(){ return '<span class="variant-dot"></span>'; }).join('') + '</div>';
+      '<div class="sticker-label">'+group.label+'</div>' +
+      '<div class="variant-dots">' + variants.map(function(v){ return '<span class="variant-dot" style="'+swatchStyleFor(v.color)+'"></span>'; }).join('') + '</div>';
     // dragging still places this exact color immediately; a plain tap
     // toggles the other colors open instead of placing right away
     card.addEventListener('pointerdown', function(e){
       startTrayDrag(e, primary, card, function(){
-        state.expandedGroup = expanded ? null : primary.variantGroup;
+        state.expandedGroup = expanded ? null : group.key;
         renderTray();
       });
     });
@@ -2021,7 +2103,7 @@
         vcard.style.setProperty('--tilt', tiltFor(v.id)+'deg');
         vcard.innerHTML =
           '<div class="sticker-thumb"><img src="'+v.src+'" alt=""></div>' +
-          '<div class="sticker-label">'+(v.colorLabel||v.name)+'</div>';
+          '<div class="sticker-label">'+v.color+'</div>';
         vcard.addEventListener('pointerdown', function(e){ startTrayDrag(e, v, vcard); });
         row.appendChild(vcard);
       });
