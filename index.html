@@ -612,6 +612,21 @@
   @keyframes lampBreathe{ 0%,100%{ opacity:calc(.78 * var(--lamp-intensity, 1)); } 50%{ opacity:calc(.92 * var(--lamp-intensity, 1)); } }
   .stage.lamps-lit .piece:not(.lamp-off) .lamp-glow{ animation:lampBreathe 3.4s ease-in-out infinite; }
 
+  /* candles and similar small "flame" toggles (autoLightAtNight +
+     flickerWhenOn items) — an irregular warm glow, quicker and less even
+     than the steady lamp breathe above so it reads as a live flame rather
+     than an electric light */
+  @keyframes candleFlicker{
+    0%,100%{ filter:drop-shadow(0 0 5px rgba(255,178,90,.85)) brightness(1); }
+    18%{ filter:drop-shadow(0 0 7px rgba(255,190,110,.95)) brightness(1.08); }
+    34%{ filter:drop-shadow(0 0 4px rgba(255,160,70,.65)) brightness(.94); }
+    52%{ filter:drop-shadow(0 0 8px rgba(255,200,120,1)) brightness(1.12); }
+    68%{ filter:drop-shadow(0 0 5px rgba(255,170,85,.75)) brightness(.97); }
+    84%{ filter:drop-shadow(0 0 6px rgba(255,185,100,.9)) brightness(1.05); }
+  }
+  .piece.flicker-on .piece-visual{ animation:candleFlicker 1.8s ease-in-out infinite; }
+  .stage.motion-off .piece.flicker-on .piece-visual{ animation:none !important; filter:drop-shadow(0 0 6px rgba(255,190,110,.85)); }
+
   /* plant sway — pivots from the base, like it's rooted in a pot. Amplitude
      and speed come from --sway-amp/--sway-duration, set in JS per strength
      level, so one keyframe rule covers all three. */
@@ -889,7 +904,9 @@
      row of true-color dots hinting at the other colors; tapping the card
      reveals the rest (see renderGroupCard) so the tray doesn't need a
      separate slot per color */
-  .sticker-group{ grid-column:1 / -1; }
+  .sticker-group{ display:contents; }
+  .sticker-group.expanded{ display:block; grid-column:1 / -1; }
+  .sticker-group.expanded .sticker-primary{ max-width:calc(50% - 4px); }
   .sticker-primary{ position:relative; }
   .variant-dots{
     display:flex;
@@ -1244,7 +1261,19 @@
     if (!lower) return [];
     return [lower.replace(/\s+/g,'-'), lower.replace(/\s+/g,'')];
   }
+  // a handful of items don't follow the "...-colorname" id pattern the
+  // automatic grouping relies on (an odd filename, a purely descriptive
+  // name with no color word in it) — rather than trying to keep
+  // generalizing the pattern-matcher for every one-off, these are just
+  // told directly which family they belong to.
+  var VARIANT_GROUP_OVERRIDES = {
+    'curtain-siri-darkbrown': 'curtains::curtain-siri',
+    'book-collection-blue-21': 'decor::book-collection',
+    'book-collection-blue-22': 'decor::book-collection',
+    'book-collection-earthy': 'decor::book-collection'
+  };
   function variantBaseKey(item){
+    if (VARIANT_GROUP_OVERRIDES[item.id]) return VARIANT_GROUP_OVERRIDES[item.id];
     var suffixes = colorSuffixVariants(item.color);
     for (var i=0;i<suffixes.length;i++){
       var suffix = '-' + suffixes[i];
@@ -1619,6 +1648,20 @@
       nightOverlayEl.classList.add('tint-night');
     }
   }
+  // candles (and similar) with autoLightAtNight get switched to their lit
+  // state the moment the flat turns to dusk/night, same as someone walking
+  // through lighting them at sundown — but it's a one-time nudge at the
+  // transition, not a rule that's continuously re-applied, so turning one
+  // back off by hand sticks even while it's still evening.
+  function autoLightCandlesForEvening(){
+    state.placed.forEach(function(piece){
+      var asset = getAsset(piece.assetId);
+      if (asset.autoLightAtNight && !piece.toggled){
+        var el = pieceEl(piece.uid);
+        if (el) toggleItemState(piece, asset, el);
+      }
+    });
+  }
   function updateLampsLitForRoom(room){
     var roomEl = roomStageEl(room.id);
     if (!roomEl) return;
@@ -1757,7 +1800,10 @@
         btn.innerHTML = TIME_ICONS[t.icon];
         btn.addEventListener('click', function(){
           if (state.activeTime === t.id) return;
+          var wasEvening = (state.activeTime === 'dusk' || state.activeTime === 'night');
           state.activeTime = t.id;
+          var isEvening = (state.activeTime === 'dusk' || state.activeTime === 'night');
+          if (isEvening && !wasEvening) autoLightCandlesForEvening();
           refreshRoomVisuals();
           renderTimeControls();
         });
@@ -1771,7 +1817,9 @@
       btn.setAttribute('aria-label', btn.title);
       btn.innerHTML = TIME_ICONS[state.isNight ? 'moon' : 'sun'];
       btn.addEventListener('click', function(){
+        var wasNight = state.isNight;
         state.isNight = !state.isNight;
+        if (state.isNight && !wasNight) autoLightCandlesForEvening();
         refreshRoomVisuals();
         renderTimeControls();
       });
@@ -2304,6 +2352,7 @@
   }
   function toggleItemState(piece, asset, el){
     piece.toggled = !piece.toggled;
+    el.classList.toggle('flicker-on', piece.toggled && !!asset.flickerWhenOn);
     var newSrc = viewSrcFor(piece, asset);
     var inner = el.querySelector('.piece-inner');
     var visualEl = el.querySelector('.piece-visual');
@@ -2459,6 +2508,7 @@
     var el = document.createElement('div');
     el.className = 'piece' +
       (asset.category==='lighting' && !piece.lampOn ? ' lamp-off' : '') +
+      (piece.toggled && asset.flickerWhenOn ? ' flicker-on' : '') +
       (piece.flipped ? ' flipped' : '');
     el.dataset.uid = piece.uid;
     el.dataset.category = asset.category;
@@ -3143,6 +3193,12 @@
   if (existingSave){
     hasExistingSave = true;
     applySavedGame(existingSave);
+    // a save can carry z values from an older version of the game (or from
+    // before a stacking-order edge case was fixed); re-deriving them fresh
+    // from the loaded piece order guarantees they're always a clean 1..N
+    // range per room before anything is ever drawn, so nothing can load in
+    // already sunk behind the room background.
+    reassignZIndices();
     document.getElementById('titleStartBtn').textContent = 'Continue Decorating';
     document.getElementById('titleFreshBtn').style.display = 'block';
   }
