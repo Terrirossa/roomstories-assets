@@ -613,19 +613,31 @@
   .stage.lamps-lit .piece:not(.lamp-off) .lamp-glow{ animation:lampBreathe 3.4s ease-in-out infinite; }
 
   /* candles and similar small "flame" toggles (autoLightAtNight +
-     flickerWhenOn items) — an irregular warm glow, quicker and less even
-     than the steady lamp breathe above so it reads as a live flame rather
-     than an electric light */
-  @keyframes candleFlicker{
-    0%,100%{ filter:drop-shadow(0 0 5px rgba(255,178,90,.85)) brightness(1); }
-    18%{ filter:drop-shadow(0 0 7px rgba(255,190,110,.95)) brightness(1.08); }
-    34%{ filter:drop-shadow(0 0 4px rgba(255,160,70,.65)) brightness(.94); }
-    52%{ filter:drop-shadow(0 0 8px rgba(255,200,120,1)) brightness(1.12); }
-    68%{ filter:drop-shadow(0 0 5px rgba(255,170,85,.75)) brightness(.97); }
-    84%{ filter:drop-shadow(0 0 6px rgba(255,185,100,.9)) brightness(1.05); }
+     flickerWhenOn items) — a small circular glow sitting at the flame
+     itself (top of the piece), not an outline traced around the whole
+     item the way a filter on piece-visual would produce. Quicker and
+     less even than the steady lamp breathe above so it reads as a live
+     flame rather than an electric light. */
+  .flame-glow{
+    position:absolute;
+    top:6%; left:50%;
+    width:34%; aspect-ratio:1;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,200,120,.95) 0%, rgba(255,180,90,.5) 45%, rgba(255,180,90,0) 75%);
+    opacity:0;
+    pointer-events:none;
   }
-  .piece.flicker-on .piece-visual{ animation:candleFlicker 1.8s ease-in-out infinite; }
-  .stage.motion-off .piece.flicker-on .piece-visual{ animation:none !important; filter:drop-shadow(0 0 6px rgba(255,190,110,.85)); }
+  @keyframes candleFlicker{
+    0%,100%{ opacity:.75; transform:translate(-50%,-50%) scale(1); }
+    18%{ opacity:.92; transform:translate(-50%,-50%) scale(1.08); }
+    34%{ opacity:.6; transform:translate(-50%,-50%) scale(.93); }
+    52%{ opacity:1; transform:translate(-50%,-50%) scale(1.12); }
+    68%{ opacity:.7; transform:translate(-50%,-50%) scale(.97); }
+    84%{ opacity:.85; transform:translate(-50%,-50%) scale(1.04); }
+  }
+  .piece.flicker-on .flame-glow{ animation:candleFlicker 1.8s ease-in-out infinite; }
+  .stage.motion-off .piece.flicker-on .flame-glow{ animation:none !important; opacity:.85; }
 
   /* plant sway — pivots from the base, like it's rooted in a pot. Amplitude
      and speed come from --sway-amp/--sway-duration, set in JS per strength
@@ -1339,7 +1351,11 @@
     return groups;
   }
 
-  var MIN_WIDTH = 4, MAX_WIDTH = 65;
+  var MIN_WIDTH = 4, MAX_WIDTH = 65, MIN_WIDTH_DECOR = 1.2;
+  function minWidthFor(assetId){
+    var asset = getAsset(assetId);
+    return (asset && asset.category === 'decor') ? MIN_WIDTH_DECOR : MIN_WIDTH;
+  }
 
   function applyStretchStyle(el, piece){
     // Only ever touches curtains — anything without an explicit stored
@@ -2561,6 +2577,7 @@
     el.innerHTML =
       '<div class="piece-inner'+(animate?' pop':'')+'">' +
         (asset.category==='lighting' ? '<div class="lamp-glow"></div>' : '') +
+        (asset.flickerWhenOn ? '<div class="flame-glow"></div>' : '') +
         visualHtml +
         '<div class="piece-outline"></div>' +
         rotateHandle +
@@ -2813,7 +2830,7 @@
     var piece = getPiece(resizeDrag.uid);
     var dist = Math.hypot(e.clientX-resizeDrag.cx, e.clientY-resizeDrag.cy);
     var scale = dist / Math.max(resizeDrag.startDist, 1);
-    piece.width = clamp(resizeDrag.startWidth * scale, MIN_WIDTH, MAX_WIDTH);
+    piece.width = clamp(resizeDrag.startWidth * scale, minWidthFor(piece.assetId), MAX_WIDTH);
     resizeDrag.el.style.width = piece.width + '%';
     // once a piece has an independent height (stretched at some point),
     // the corner handle scales both dimensions together proportionally
@@ -2888,7 +2905,7 @@
     var piece = getPiece(stretchDrag.uid);
     if (stretchDrag.mode === 'h'){
       var dxPct = (e.clientX - stretchDrag.startX) / stretchDrag.stageRect.width * 100;
-      var newWidth = clamp(stretchDrag.startWidth + dxPct, MIN_WIDTH, 90);
+      var newWidth = clamp(stretchDrag.startWidth + dxPct, minWidthFor(piece.assetId), 90);
       var deltaW = newWidth - stretchDrag.startWidth;
       piece.width = newWidth;
       piece.x = clamp(stretchDrag.startPieceX + deltaW/2, 0, 100); // left edge stays put
