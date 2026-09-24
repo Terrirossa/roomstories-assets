@@ -1064,7 +1064,13 @@
   .result-bar-track{ height:8px; border-radius:99px; background:var(--line); overflow:hidden; }
   .result-bar-fill{ height:100%; border-radius:99px; background:var(--sage); transition:width .5s cubic-bezier(.2,.8,.3,1); }
   .results-actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-  .profile-link-btn{ display:block; width:100%; margin-bottom:14px; font-size:13px; }
+  .profile-link-btn{
+    display:block; width:100%; margin-bottom:14px;
+    background:linear-gradient(135deg, var(--clay), var(--gold));
+    color:#fff; border:none;
+    box-shadow:0 8px 20px rgba(189,123,82,.4);
+  }
+  .profile-link-btn:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(189,123,82,.5); }
 
   .profile-overlay{
     position:fixed; inset:0;
