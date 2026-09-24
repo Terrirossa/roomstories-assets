@@ -1078,24 +1078,64 @@
   .profile-overlay.active{ display:flex; }
   .profile-card{
     position:relative;
-    background:var(--paper-light);
-    border-radius:26px;
-    padding:34px 30px 28px;
-    max-width:440px;
+    background:var(--paper);
+    border-radius:28px;
+    padding:20px;
+    max-width:480px;
     width:100%;
-    max-height:86vh;
+    max-height:88vh;
     overflow-y:auto;
     box-shadow:0 24px 60px rgba(0,0,0,.35);
     animation:popIn .32s cubic-bezier(.2,.9,.3,1.15);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
   }
-  .profile-title{ font-size:20px; margin:2px 0 22px; text-align:center; }
-  .profile-section{ margin-bottom:22px; text-align:left; }
-  .profile-section:last-child{ margin-bottom:0; }
-  .profile-section-title{
-    font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
-    color:var(--ink-55); margin:0 0 10px;
+  .profile-card .results-close{ top:16px; right:16px; z-index:2; }
+
+  /* every tile's background is color-mix()'d live from --tile-tint, a hex
+     JS sets per tile from the room's own dominant material/color — so the
+     card colors ARE the room's data, not a decorative gradient laid on top */
+  .profile-tile{
+    --tile-tint:var(--line-strong);
+    position:relative;
+    background:linear-gradient(150deg, color-mix(in srgb, var(--tile-tint) 34%, var(--paper-light)) 0%, var(--paper-light) 78%);
+    border:1px solid var(--glass-border);
+    border-radius:22px;
+    padding:18px 20px;
+    box-shadow:var(--shadow-card);
   }
-  .profile-swatch-row{ display:flex; flex-wrap:wrap; gap:10px; }
+  .profile-tile-label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-55);
+    margin-bottom:10px;
+  }
+  .profile-row{ display:flex; gap:12px; }
+  .profile-tile-half{ flex:1; min-width:0; }
+
+  .profile-hero{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:22px 22px 22px 24px;
+  }
+  .profile-hero-label{ display:block; font-size:12.5px; color:var(--ink-55); margin-bottom:3px; }
+  .profile-hero-title{
+    font-family:'Fraunces',serif;
+    font-size:23px;
+    font-weight:560;
+    color:var(--ink);
+    margin:0 0 6px;
+    line-height:1.15;
+  }
+  .profile-hero-count{ font-size:13px; color:var(--ink-70); }
+  .profile-ring{ width:84px; height:84px; flex-shrink:0; }
+  .profile-ring-svg{ width:100%; height:100%; }
+
+  .profile-swatch-row{ display:flex; flex-wrap:wrap; gap:8px; }
   .profile-swatch-chip{
     display:flex; align-items:center; gap:6px;
     background:var(--glass-bg-strong);
@@ -1105,18 +1145,41 @@
     font-size:12px; font-weight:600; color:var(--ink-70);
   }
   .profile-swatch-dot{
-    width:14px; height:14px; border-radius:50%; flex-shrink:0;
+    width:15px; height:15px; border-radius:50%; flex-shrink:0;
     box-shadow:0 0 0 1px rgba(54,43,34,.18), inset 0 0 0 1px rgba(255,255,255,.35);
   }
-  .profile-category-list{ display:flex; flex-direction:column; gap:8px; }
-  .profile-category-row{
-    display:flex; justify-content:space-between;
-    font-size:13px; color:var(--ink-70);
-    padding:6px 10px;
-    background:var(--glass-bg-strong);
-    border-radius:10px;
+
+  .profile-ribbon{
+    display:flex;
+    height:15px;
+    border-radius:99px;
+    overflow:hidden;
+    background:var(--line);
+    margin-bottom:10px;
   }
-  .profile-category-row b{ color:var(--ink); }
+  .profile-ribbon-seg{ height:100%; }
+  .profile-ribbon-legend{ display:flex; flex-wrap:wrap; gap:8px 12px; }
+  .profile-legend-item{ display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--ink-55); }
+  .profile-legend-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+  .profile-chip-row{ display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start; }
+  .profile-mood-chip{
+    padding:6px 12px;
+    border-radius:99px;
+    font-size:12.5px; font-weight:600;
+    color:var(--paper-light);
+    white-space:nowrap;
+  }
+
+  .profile-category-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .profile-category-cell{
+    background:var(--glass-bg-strong);
+    border:1px solid rgba(255,255,255,.5);
+    border-radius:14px;
+    padding:8px 10px;
+  }
+  .profile-category-cell b{ display:block; font-size:16px; color:var(--ink); }
+  .profile-category-cell span{ font-size:11.5px; color:var(--ink-55); }
 
   .visually-hidden{
     position:absolute; width:1px; height:1px;
@@ -1281,27 +1344,37 @@
 <div class="profile-overlay" id="profileOverlay">
   <div class="profile-card">
     <button class="results-close" id="profileClose" aria-label="Close">&times;</button>
-    <span class="results-eyebrow">Design profile</span>
-    <h2 class="profile-title" id="profileTotal">0 items placed</h2>
 
-    <div class="profile-section">
-      <h3 class="profile-section-title">Dominant colors</h3>
-      <div class="profile-swatch-row" id="profileColors"></div>
+    <div class="profile-tile profile-hero" id="profileHero">
+      <div class="profile-hero-text">
+        <span class="profile-hero-label">Your room, in short</span>
+        <h2 class="profile-hero-title" id="profileCharacter">Your Room</h2>
+        <span class="profile-hero-count" id="profileTotal">0 items</span>
+      </div>
+      <div class="profile-ring" id="profileRing"></div>
     </div>
 
-    <div class="profile-section">
-      <h3 class="profile-section-title">Materials</h3>
-      <div class="results-bars" id="profileMaterials"></div>
+    <div class="profile-row">
+      <div class="profile-tile profile-tile-half" id="profileColorTile">
+        <span class="profile-tile-label">Palette</span>
+        <div class="profile-swatch-row" id="profileColors"></div>
+      </div>
+      <div class="profile-tile profile-tile-half" id="profileMaterialTile">
+        <span class="profile-tile-label">Materials</span>
+        <div class="profile-ribbon" id="profileMaterialRibbon"></div>
+        <div class="profile-ribbon-legend" id="profileMaterialLegend"></div>
+      </div>
     </div>
 
-    <div class="profile-section">
-      <h3 class="profile-section-title">Style mood</h3>
-      <div class="results-bars" id="profileStyles"></div>
-    </div>
-
-    <div class="profile-section">
-      <h3 class="profile-section-title">What's in the room</h3>
-      <div class="profile-category-list" id="profileCategories"></div>
+    <div class="profile-row">
+      <div class="profile-tile profile-tile-half" id="profileStyleTile">
+        <span class="profile-tile-label">Style mood</span>
+        <div class="profile-chip-row" id="profileStyles"></div>
+      </div>
+      <div class="profile-tile profile-tile-half">
+        <span class="profile-tile-label">What's in the room</span>
+        <div class="profile-category-grid" id="profileCategories"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -3226,6 +3299,54 @@
   // groundwork for a later "story mode" brief/rating system — a brief can
   // eventually be checked against this same profile — but for now it just
   // powers the Design Profile view.
+  // tints for the profile view's material/style visuals — drawn from the
+  // game's own palette family (sage/clay/gold/ink) rather than arbitrary
+  // colors, so a tile never feels like it wandered in from another app
+  var MATERIAL_TINTS = {
+    'Wood':'#9C7648','Fabric':'#BD7B52','Metal':'#8B8D89','Marble':'#DCD4C4','Glass':'#A9BFC0',
+    'Ceramic':'#D9A344','Plant':'#77896B','Leather':'#8C5A34','Rattan':'#C3A06C','Canvas':'#C7B99A',
+    'Plastic':'#B9AF9E','Mixed':'#A99A85','Stone':'#ABA294'
+  };
+  var STYLE_TINTS = {
+    'Modern':'#8B8D89','Minimal':'#C7B99A','Cozy':'#BD7B52','Scandinavian':'#77896B','Mid-Century':'#D9A344',
+    'Vintage':'#B08A8A','Traditional':'#A6813F','Rustic':'#8C5A34','Industrial':'#6B6B68','Bohemian':'#A8623F',
+    'Organic':'#5C6E55','Eclectic':'#8A6B8F'
+  };
+  function solidSwatchColor(color){
+    var val = SWATCH_COLORS[color];
+    if (!val || val.indexOf('gradient') === 0) return '#B8AA92';
+    return val;
+  }
+  // a soft segmented ring — the room's own color mix laid out as arcs,
+  // rather than a generic progress ring standing in for a single number
+  function buildColorRingSvg(byColor){
+    var r = 40, cx = 50, cy = 50;
+    var circumference = 2 * Math.PI * r;
+    var cumulative = 0;
+    var gap = byColor.length > 1 ? 2.2 : 0;
+    var segments = byColor.map(function(row){
+      var raw = row.pct / 100 * circumference;
+      var dash = Math.max(raw - gap, raw * 0.15);
+      var circle = '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+solidSwatchColor(row.key)+'" ' +
+        'stroke-width="11" stroke-linecap="round" ' +
+        'stroke-dasharray="'+dash.toFixed(2)+' '+(circumference-dash).toFixed(2)+'" ' +
+        'stroke-dashoffset="'+(-cumulative).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
+      cumulative += raw;
+      return circle;
+    }).join('');
+    return '<svg viewBox="0 0 100 100" class="profile-ring-svg">'+segments+'</svg>';
+  }
+  // a short, natural-reading line describing the room's overall character,
+  // built from whatever style/material actually dominates it
+  function roomCharacterLine(profile){
+    var style = profile.byStyle[0] ? profile.byStyle[0].label : null;
+    var material = profile.byMaterial[0] ? profile.byMaterial[0].label : null;
+    if (style && material) return style + ' ' + material + ' Room';
+    if (style) return style + ' Room';
+    if (material) return material + ' Room';
+    return 'Your Room';
+  }
+
   function computeAttributeProfile(roomId){
     var placed = state.placed.filter(function(p){ return p.roomId === roomId; });
     var total = placed.length;
@@ -3333,23 +3454,36 @@
   document.getElementById('viewProfileBtn').addEventListener('click', function(){
     var profile = computeAttributeProfile(state.focusedRoomId);
     if (!profile) return;
-    document.getElementById('profileTotal').textContent = profile.total + (profile.total===1 ? ' item placed' : ' items placed');
+
+    document.getElementById('profileCharacter').textContent = roomCharacterLine(profile);
+    document.getElementById('profileTotal').textContent = profile.total + (profile.total===1 ? ' item' : ' items');
+    document.getElementById('profileRing').innerHTML = buildColorRingSvg(profile.byColor);
+    var topColorHex = solidSwatchColor(profile.byColor[0].key);
+    document.getElementById('profileHero').style.setProperty('--tile-tint', topColorHex);
+    document.getElementById('profileColorTile').style.setProperty('--tile-tint', topColorHex);
+    document.getElementById('profileMaterialTile').style.setProperty('--tile-tint', MATERIAL_TINTS[profile.byMaterial[0].key] || topColorHex);
 
     document.getElementById('profileColors').innerHTML = profile.byColor.map(function(row){
-      return '<div class="profile-swatch-chip"><span class="profile-swatch-dot" style="'+swatchStyleFor(row.key)+'"></span>'+row.label+' · '+row.pct+'%</div>';
+      return '<div class="profile-swatch-chip"><span class="profile-swatch-dot" style="'+swatchStyleFor(row.key)+'"></span>'+row.label+' '+row.pct+'%</div>';
     }).join('');
 
-    function barsHtml(rows){
-      return rows.map(function(row){
-        return '<div class="result-bar-row"><div class="label-row"><span>'+row.label+'</span><span>'+row.pct+'%</span></div>' +
-               '<div class="result-bar-track"><div class="result-bar-fill" style="width:'+row.pct+'%"></div></div></div>';
-      }).join('');
-    }
-    document.getElementById('profileMaterials').innerHTML = barsHtml(profile.byMaterial);
-    document.getElementById('profileStyles').innerHTML = barsHtml(profile.byStyle);
+    document.getElementById('profileMaterialRibbon').innerHTML = profile.byMaterial.map(function(row){
+      var tint = MATERIAL_TINTS[row.key] || '#B8AA92';
+      return '<div class="profile-ribbon-seg" style="width:'+row.pct+'%; background:'+tint+'"></div>';
+    }).join('');
+    document.getElementById('profileMaterialLegend').innerHTML = profile.byMaterial.map(function(row){
+      var tint = MATERIAL_TINTS[row.key] || '#B8AA92';
+      return '<div class="profile-legend-item"><span class="profile-legend-dot" style="background:'+tint+'"></span>'+row.label+' '+row.pct+'%</div>';
+    }).join('');
+
+    document.getElementById('profileStyles').innerHTML = profile.byStyle.map(function(row, i){
+      var tint = STYLE_TINTS[row.key] || '#8B8D89';
+      var scale = i===0 ? '13.5px' : (i<3 ? '12.5px' : '11.5px');
+      return '<span class="profile-mood-chip" style="background:'+tint+'; font-size:'+scale+'">'+row.label+'</span>';
+    }).join('');
 
     document.getElementById('profileCategories').innerHTML = profile.byCategory.map(function(row){
-      return '<div class="profile-category-row"><span>'+row.label+'</span><b>'+row.count+'</b></div>';
+      return '<div class="profile-category-cell"><b>'+row.count+'</b><span>'+row.label+'</span></div>';
     }).join('');
 
     resultsOverlay.classList.remove('active');
