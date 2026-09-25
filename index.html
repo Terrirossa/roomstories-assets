@@ -1072,6 +1072,32 @@
   }
   .profile-link-btn:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(189,123,82,.5); }
 
+  .achievement-toast{
+    position:fixed;
+    top:24px; left:50%;
+    transform:translate(-50%,-140%);
+    z-index:6500;
+    display:flex; align-items:center; gap:12px;
+    background:var(--paper-light);
+    border:1px solid var(--glass-border);
+    border-radius:99px;
+    padding:8px 20px 8px 8px;
+    box-shadow:0 14px 34px rgba(20,15,10,.28);
+    transition:transform .5s cubic-bezier(.2,.9,.3,1.1);
+    pointer-events:none;
+  }
+  .achievement-toast.active{ transform:translate(-50%,0); }
+  .achievement-toast-medal{
+    width:40px; height:40px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(155deg, var(--gold), var(--clay));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 0 3px rgba(217,163,68,.25);
+  }
+  .achievement-toast-letter{ font-family:'Fraunces',serif; font-size:18px; font-weight:650; color:#fff; }
+  .achievement-toast-text{ display:flex; flex-direction:column; }
+  .achievement-toast-eyebrow{ font-size:11.5px; color:var(--ink-55); }
+  .achievement-toast-name{ font-family:'Fraunces',serif; font-size:15.5px; font-weight:560; color:var(--ink); }
+
   .profile-overlay{
     position:fixed; inset:0;
     background:var(--overlay-dim);
@@ -1366,6 +1392,14 @@
   </div>
 </div>
 
+<div class="achievement-toast" id="achievementToast">
+  <div class="achievement-toast-medal"><span class="achievement-toast-letter">C</span></div>
+  <div class="achievement-toast-text">
+    <span class="achievement-toast-eyebrow">You discovered</span>
+    <span class="achievement-toast-name">Conversation Corner</span>
+  </div>
+</div>
+
 <div class="profile-overlay" id="profileOverlay">
   <div class="profile-backdrop" id="profileBackdrop"></div>
   <div class="profile-card">
@@ -1594,7 +1628,8 @@
     isNight: false,
     activeTime: 'day',
     motionOff: false,
-    expandedGroup: null
+    expandedGroup: null,
+    discoveredAchievements: []
   };
 
   function getAsset(id){ for (var i=0;i<ITEMS.length;i++) if (ITEMS[i].id===id) return ITEMS[i]; return null; }
@@ -1623,7 +1658,8 @@
       roomIdCounter: state.roomIdCounter,
       uidCounter: state.uidCounter,
       activeTime: state.activeTime,
-      isNight: state.isNight
+      isNight: state.isNight,
+      discoveredAchievements: state.discoveredAchievements
     };
   }
   function saveGame(){
@@ -1650,6 +1686,7 @@
     state.uidCounter = data.uidCounter || (state.placed.length + 1);
     if (data.activeTime) state.activeTime = data.activeTime;
     if (typeof data.isNight === 'boolean') state.isNight = data.isNight;
+    if (Array.isArray(data.discoveredAchievements)) state.discoveredAchievements = data.discoveredAchievements;
   }
   function resetToFreshGame(){
     state.rooms = [{ id:'room-1', backgroundId: BACKGROUNDS[0].id, architectureId: null }];
@@ -2530,6 +2567,7 @@
     selectPiece(piece.uid);
     updateAllHints();
     updateLampLighting(roomId);
+    checkAchievements(roomId);
   }
 
   var SWAY_LEVELS = {
@@ -2992,6 +3030,8 @@
       } else if (asset.toggleSrc){
         toggleItemState(piece, asset, moveDrag.el);
       }
+    } else {
+      checkAchievements(getPiece(moveDrag.uid).roomId);
     }
     moveDrag.el.classList.remove('dragging');
     moveDrag.el.removeEventListener('pointermove', onMoveMove);
@@ -3223,6 +3263,7 @@
       renderPiece(copy, true);
       selectPiece(copy.uid);
       updateLampLighting(copy.roomId);
+      checkAchievements(copy.roomId);
     }
     if (action==='delete'){
       state.placed = state.placed.filter(function(p){ return p.uid!==piece.uid; });
@@ -3388,6 +3429,132 @@
     if (style) return style + ' Room';
     if (material) return material + ' Room';
     return 'Your Room';
+  }
+
+  // ---------------- achievements ----------------
+  // item groupings a player can stumble into just by how they place
+  // things — unlocked once, permanently, the moment a room satisfies the
+  // pattern. Proximity uses a simple "N pieces within radius of a common
+  // point" check rather than full spatial clustering — good enough for
+  // "these are sitting together" without needing real geometry — but it
+  // works off each item's actual center, not its raw x/y (which the
+  // renderer treats as the top-left corner), so items of different sizes
+  // compare fairly.
+  var ACHIEVEMENT_PROXIMITY_RADIUS = 24;
+  function pieceCenter(piece){
+    return { cx: piece.x + (piece.width||0)/2, cy: piece.y + (piece.height||0)/2 };
+  }
+  function pieceDistance(a, b){
+    var ca = pieceCenter(a), cb = pieceCenter(b);
+    var dx = ca.cx - cb.cx, dy = ca.cy - cb.cy;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+  function hasProximityCluster(pieces, minSize, radius){
+    if (pieces.length < minSize) return false;
+    for (var i=0;i<pieces.length;i++){
+      var count = 1;
+      for (var j=0;j<pieces.length;j++){
+        if (i===j) continue;
+        if (pieceDistance(pieces[i], pieces[j]) <= radius) count++;
+      }
+      if (count >= minSize) return true;
+    }
+    return false;
+  }
+  // "Facing" leans on the one directional signal a placed piece actually
+  // has: flipped (a real horizontal mirror — confirmed via .piece.flipped's
+  // scaleX(-1) — meaningful for furniture art drawn at an angle rather
+  // than dead-on). ASSUMPTION, not verified against the actual art:
+  // unflipped pieces face right by default. If that's backwards for this
+  // game's illustrations, flip this one constant and every "facing"
+  // achievement corrects itself.
+  var UNFLIPPED_FACES_RIGHT = true;
+  function facesToward(piece, otherPiece){
+    var dx = pieceCenter(otherPiece).cx - pieceCenter(piece).cx;
+    if (Math.abs(dx) < 0.5) return true; // stacked ~vertically — no clear left/right to violate
+    var facesRight = UNFLIPPED_FACES_RIGHT ? !piece.flipped : !!piece.flipped;
+    return (dx > 0) === facesRight;
+  }
+  function faceEachOther(a, b){
+    return facesToward(a, b) && facesToward(b, a);
+  }
+  function hasFacingPair(pieces, radius){
+    for (var i=0;i<pieces.length;i++){
+      for (var j=i+1;j<pieces.length;j++){
+        if (pieceDistance(pieces[i], pieces[j]) <= radius && faceEachOther(pieces[i], pieces[j])) return true;
+      }
+    }
+    return false;
+  }
+  var ACHIEVEMENTS = [
+    { id:'conversation-corner', name:'Conversation Corner',
+      check:function(entries){
+        var seats = entries.filter(function(e){ return e.asset.category==='seating'; }).map(function(e){ return e.piece; });
+        return hasFacingPair(seats, ACHIEVEMENT_PROXIMITY_RADIUS);
+      } },
+    { id:'library', name:'Library',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.name.toLowerCase().indexOf('book')!==-1; }).length >= 5;
+      } },
+    { id:'art-studio', name:'Art Studio',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.category==='wall-art'; }).length >= 3;
+      } },
+    { id:'green-corner', name:'Green Corner',
+      check:function(entries){
+        var plants = entries.filter(function(e){ return e.asset.category==='plants'; }).map(function(e){ return e.piece; });
+        return hasProximityCluster(plants, 4, ACHIEVEMENT_PROXIMITY_RADIUS);
+      } },
+    { id:'chefs-kitchen', name:"Chef's Kitchen",
+      check:function(entries){
+        var isAnchor = function(a){ return a.id.indexOf('kitchen-counter')===0 || a.id.indexOf('kitchen-island')===0; };
+        if (!entries.some(function(e){ return isAnchor(e.asset); })) return false;
+        return entries.filter(function(e){ return e.asset.category==='kitchen' && !isAnchor(e.asset); }).length >= 4;
+      } },
+    { id:'pink-parade', name:'Pink Parade',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.color==='Pink' || e.asset.color==='Rosa'; }).length >= 5;
+      } },
+    { id:'fireside-lounge', name:'Fireside Lounge',
+      check:function(entries){
+        var hasFireplace = entries.some(function(e){ return e.asset.id.indexOf('fireplace')===0; });
+        var hasCouch = entries.some(function(e){ return e.asset.id.indexOf('couch-')===0; });
+        var bookCount = entries.filter(function(e){ return e.asset.name.toLowerCase().indexOf('book')!==-1; }).length;
+        return hasFireplace && hasCouch && bookCount >= 4;
+      } }
+  ];
+  function checkAchievements(roomId){
+    var entries = state.placed.filter(function(p){ return p.roomId === roomId; })
+      .map(function(p){ return { piece:p, asset:getAsset(p.assetId) }; })
+      .filter(function(e){ return e.asset; });
+    var newlyFound = [];
+    ACHIEVEMENTS.forEach(function(ach){
+      if (state.discoveredAchievements.indexOf(ach.id) !== -1) return;
+      if (ach.check(entries)){
+        state.discoveredAchievements.push(ach.id);
+        newlyFound.push(ach);
+      }
+    });
+    if (newlyFound.length) queueAchievementToasts(newlyFound);
+  }
+  var achievementToastQueue = [];
+  var achievementToastShowing = false;
+  function queueAchievementToasts(list){
+    achievementToastQueue = achievementToastQueue.concat(list);
+    if (!achievementToastShowing) showNextAchievementToast();
+  }
+  function showNextAchievementToast(){
+    var ach = achievementToastQueue.shift();
+    if (!ach){ achievementToastShowing = false; return; }
+    achievementToastShowing = true;
+    var el = document.getElementById('achievementToast');
+    el.querySelector('.achievement-toast-letter').textContent = ach.name.charAt(0);
+    el.querySelector('.achievement-toast-name').textContent = ach.name;
+    el.classList.add('active');
+    setTimeout(function(){
+      el.classList.remove('active');
+      setTimeout(showNextAchievementToast, 400);
+    }, 3600);
   }
 
   function computeAttributeProfile(roomId){
