@@ -1072,6 +1072,50 @@
   }
   .profile-link-btn:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(189,123,82,.5); }
 
+  .achievements-overlay{
+    position:fixed; inset:0;
+    background:var(--overlay-dim);
+    z-index:6200;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .achievements-overlay.active{ display:flex; }
+  .achievements-card{
+    position:relative;
+    background:var(--paper);
+    border-radius:28px;
+    padding:28px;
+    max-width:640px;
+    width:100%;
+    max-height:86vh;
+    overflow-y:auto;
+    box-shadow:0 24px 60px rgba(0,0,0,.35);
+    animation:popIn .32s cubic-bezier(.2,.9,.3,1.15);
+  }
+  .achievements-title{ font-family:'Fraunces',serif; font-size:24px; margin:0 0 2px; color:var(--ink); }
+  .achievements-subtitle{ display:block; font-size:13px; color:var(--ink-55); margin-bottom:18px; }
+  .achievements-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .achievement-card{
+    display:flex; align-items:flex-start; gap:12px;
+    background:var(--glass-bg-strong);
+    border:1px solid rgba(255,255,255,.6);
+    border-radius:16px;
+    padding:12px 14px;
+  }
+  .achievement-card-medal{
+    width:38px; height:38px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(155deg, var(--gold), var(--clay));
+  }
+  .achievement-card-medal span{ font-family:'Fraunces',serif; font-size:16px; font-weight:650; color:#fff; }
+  .achievement-card-name{ font-family:'Fraunces',serif; font-size:14.5px; font-weight:560; color:var(--ink); display:block; margin-bottom:2px; }
+  .achievement-card-desc{ font-size:11.5px; color:var(--ink-55); line-height:1.35; }
+  .achievement-card.locked{ opacity:.6; }
+  .achievement-card.locked .achievement-card-medal{ background:var(--ink-35); }
+  .achievement-card.locked .achievement-card-name{ color:var(--ink-55); }
+
   .achievement-toast{
     position:fixed;
     top:24px; left:50%;
@@ -1231,6 +1275,15 @@
   }
   .profile-category-cell b{ display:block; font-size:16px; color:var(--ink); }
   .profile-category-cell span{ font-size:11.5px; color:var(--ink-55); }
+  .profile-roomtype-tile{ grid-column:span 4; }
+  .profile-chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .profile-roomtype-chip{
+    padding:6px 14px;
+    border-radius:99px;
+    font-size:13px; font-weight:600;
+    background:linear-gradient(135deg, var(--clay), var(--gold));
+    color:#fff;
+  }
 
   .visually-hidden{
     position:absolute; width:1px; height:1px;
@@ -1385,10 +1438,20 @@
     <div class="results-score" id="resultsScore">0<span>/100</span></div>
     <div class="results-bars" id="resultsBars"></div>
     <button class="btn-ghost profile-link-btn" id="viewProfileBtn" type="button">View design profile</button>
+    <button class="btn-ghost" id="viewAchievementsBtn" type="button" style="display:block; width:100%; margin-bottom:14px;">Achievements (<span id="achievementCountLabel">0</span>/<span id="achievementTotalLabel">0</span>)</button>
     <div class="results-actions">
       <button class="btn-ghost" id="resultsKeepBtn">Keep decorating</button>
       <button class="btn-ghost" id="resultsChangeRoomBtn">Try a new room</button>
     </div>
+  </div>
+</div>
+
+<div class="achievements-overlay" id="achievementsOverlay">
+  <div class="achievements-card">
+    <button class="results-close" id="achievementsClose" aria-label="Close">&times;</button>
+    <h2 class="achievements-title">Achievements</h2>
+    <span class="achievements-subtitle" id="achievementsSubtitle">0 of 0 discovered</span>
+    <div class="achievements-grid" id="achievementsGrid"></div>
   </div>
 </div>
 
@@ -1445,6 +1508,11 @@
       <div class="profile-tile profile-category-tile">
         <span class="profile-tile-label">What's in the room</span>
         <div class="profile-category-grid" id="profileCategories"></div>
+      </div>
+
+      <div class="profile-tile profile-roomtype-tile" id="profileRoomTypeTile" style="display:none">
+        <span class="profile-tile-label">This room reads as</span>
+        <div class="profile-chip-row" id="profileRoomTypes"></div>
       </div>
     </div>
   </div>
@@ -3486,47 +3554,127 @@
     }
     return false;
   }
+  // type 'novelty' = a fun one-off discovery, celebrated once and then
+  // just part of the collection. type 'room-type' = describes what kind
+  // of room this is — re-checked live against a room's current state (see
+  // liveAchievementsForRoom below) so it can also show up in that room's
+  // results and later be matched against a story-mode brief, not just
+  // recorded as a historical first-time discovery.
   var ACHIEVEMENTS = [
-    { id:'conversation-corner', name:'Conversation Corner',
+    { id:'conversation-corner', name:'Conversation Corner', type:'novelty',
+      description:'Two seats placed close together, facing each other',
       check:function(entries){
         var seats = entries.filter(function(e){ return e.asset.category==='seating'; }).map(function(e){ return e.piece; });
         return hasFacingPair(seats, ACHIEVEMENT_PROXIMITY_RADIUS);
       } },
-    { id:'library', name:'Library',
+    { id:'library', name:'Library', type:'novelty',
+      description:'5 or more book items in one room',
       check:function(entries){
         return entries.filter(function(e){ return e.asset.name.toLowerCase().indexOf('book')!==-1; }).length >= 5;
       } },
-    { id:'art-studio', name:'Art Studio',
+    { id:'art-studio', name:'Art Studio', type:'novelty',
+      description:'3 or more wall art pieces in one room',
       check:function(entries){
         return entries.filter(function(e){ return e.asset.category==='wall-art'; }).length >= 3;
       } },
-    { id:'green-corner', name:'Green Corner',
+    { id:'green-corner', name:'Green Corner', type:'novelty',
+      description:'4 or more plants clustered together',
       check:function(entries){
         var plants = entries.filter(function(e){ return e.asset.category==='plants'; }).map(function(e){ return e.piece; });
         return hasProximityCluster(plants, 4, ACHIEVEMENT_PROXIMITY_RADIUS);
       } },
-    { id:'chefs-kitchen', name:"Chef's Kitchen",
+    { id:'chefs-kitchen', name:"Chef's Kitchen", type:'room-type',
+      description:'A counter or island, plus 4 or more other kitchen appliances',
       check:function(entries){
         var isAnchor = function(a){ return a.id.indexOf('kitchen-counter')===0 || a.id.indexOf('kitchen-island')===0; };
         if (!entries.some(function(e){ return isAnchor(e.asset); })) return false;
         return entries.filter(function(e){ return e.asset.category==='kitchen' && !isAnchor(e.asset); }).length >= 4;
       } },
-    { id:'pink-parade', name:'Pink Parade',
+    { id:'pink-parade', name:'Pink Parade', type:'novelty',
+      description:'5 or more pink or rosa items in one room',
       check:function(entries){
         return entries.filter(function(e){ return e.asset.color==='Pink' || e.asset.color==='Rosa'; }).length >= 5;
       } },
-    { id:'fireside-lounge', name:'Fireside Lounge',
+    { id:'fireside-lounge', name:'Fireside Lounge', type:'novelty',
+      description:'A fireplace, a couch, and 4 or more books together',
       check:function(entries){
         var hasFireplace = entries.some(function(e){ return e.asset.id.indexOf('fireplace')===0; });
         var hasCouch = entries.some(function(e){ return e.asset.id.indexOf('couch-')===0; });
         var bookCount = entries.filter(function(e){ return e.asset.name.toLowerCase().indexOf('book')!==-1; }).length;
         return hasFireplace && hasCouch && bookCount >= 4;
+      } },
+    { id:'breakfast-area', name:'Breakfast Area', type:'room-type',
+      description:'A kitchen island with 2+ stools or chairs, a fruit bowl, and a cup nearby',
+      check:function(entries){
+        var islands = entries.filter(function(e){ return e.asset.id.indexOf('kitchen-island')===0; });
+        return islands.some(function(isl){
+          var anchor = isl.piece;
+          var seatsNear = entries.filter(function(e){
+            return (e.asset.id.indexOf('stool')!==-1 || e.asset.id.indexOf('chair-')===0) &&
+              pieceDistance(anchor, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS;
+          }).length;
+          var fruitNear = entries.some(function(e){
+            return e.asset.name.toLowerCase().indexOf('fruit')!==-1 && pieceDistance(anchor, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS;
+          });
+          var cupNear = entries.some(function(e){
+            var n = e.asset.name.toLowerCase();
+            return n.indexOf('cup')!==-1 && n.indexOf('paintbrush')===-1 && pieceDistance(anchor, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS;
+          });
+          return seatsNear >= 2 && fruitNear && cupNear;
+        });
+      } },
+    { id:'kitchen', name:'Kitchen', type:'room-type',
+      description:'A counter or island, a fridge, a light, and at least one more appliance',
+      check:function(entries){
+        var isAnchor = function(a){ return a.id.indexOf('kitchen-counter')===0 || a.id.indexOf('kitchen-island')===0; };
+        var hasAnchor = entries.some(function(e){ return isAnchor(e.asset); });
+        var hasFridge = entries.some(function(e){ return e.asset.id.indexOf('fridge-')===0; });
+        var hasLamp = entries.some(function(e){ return e.asset.category==='lighting'; });
+        var applianceCount = entries.filter(function(e){ return e.asset.category==='kitchen' && !isAnchor(e.asset) && e.asset.id.indexOf('fridge-')!==0; }).length;
+        return hasAnchor && hasFridge && hasLamp && applianceCount >= 1;
+      } },
+    { id:'bedroom', name:'Bedroom', type:'room-type',
+      description:'A bed with 2 nightstands',
+      check:function(entries){
+        var bedCount = entries.filter(function(e){ return e.asset.category==='bed'; }).length;
+        var nightstandCount = entries.filter(function(e){ return e.asset.id.indexOf('bedsidetable-')===0; }).length;
+        return bedCount >= 1 && nightstandCount >= 2;
+      } },
+    { id:'cozy-bedroom', name:'Cozy Bedroom', type:'room-type',
+      description:'A bed, 2 nightstands, 2+ lights, and 3+ cushions',
+      check:function(entries){
+        var bedCount = entries.filter(function(e){ return e.asset.category==='bed'; }).length;
+        var nightstandCount = entries.filter(function(e){ return e.asset.id.indexOf('bedsidetable-')===0; }).length;
+        var lightCount = entries.filter(function(e){ return e.asset.category==='lighting'; }).length;
+        var cushionCount = entries.filter(function(e){ return e.asset.name.toLowerCase().indexOf('cushion')!==-1; }).length;
+        return bedCount >= 1 && nightstandCount >= 2 && lightCount >= 2 && cushionCount >= 3;
+      } },
+    { id:'fire-hazard', name:'Fire Hazard', type:'novelty',
+      description:'5 or more candles in one room — please be careful',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.name.toLowerCase().indexOf('candle')!==-1; }).length >= 5;
+      } },
+    { id:'people-person', name:'People Person', type:'novelty',
+      description:'5 or more seats in one room',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.category==='seating'; }).length >= 5;
+      } },
+    { id:'living-room', name:'Living Room', type:'room-type',
+      description:'A couch, a coffee table, and a lamp',
+      check:function(entries){
+        var hasCouch = entries.some(function(e){ return e.asset.id.indexOf('couch-')===0; });
+        var hasCouchtable = entries.some(function(e){ return e.asset.category==='tables' && e.asset.id.indexOf('couchtable')!==-1; });
+        var hasLamp = entries.some(function(e){ return e.asset.category==='lighting'; });
+        return hasCouch && hasCouchtable && hasLamp;
       } }
   ];
-  function checkAchievements(roomId){
-    var entries = state.placed.filter(function(p){ return p.roomId === roomId; })
+  function roomAchievementEntries(roomId){
+    return state.placed.filter(function(p){ return p.roomId === roomId; })
       .map(function(p){ return { piece:p, asset:getAsset(p.assetId) }; })
       .filter(function(e){ return e.asset; });
+  }
+  function checkAchievements(roomId){
+    var entries = roomAchievementEntries(roomId);
     var newlyFound = [];
     ACHIEVEMENTS.forEach(function(ach){
       if (state.discoveredAchievements.indexOf(ach.id) !== -1) return;
@@ -3536,6 +3684,15 @@
       }
     });
     if (newlyFound.length) queueAchievementToasts(newlyFound);
+  }
+  // read-only: which achievements does this room satisfy right now,
+  // regardless of whether they were already discovered elsewhere before.
+  // This is what results/profile display, and what a future story-mode
+  // brief would check a room against — a live fact about the room, not a
+  // historical record.
+  function liveAchievementsForRoom(roomId){
+    var entries = roomAchievementEntries(roomId);
+    return ACHIEVEMENTS.filter(function(ach){ return ach.check(entries); });
   }
   var achievementToastQueue = [];
   var achievementToastShowing = false;
@@ -3649,6 +3806,8 @@
       return '<div class="result-bar-row"><div class="label-row"><span>'+r.label+'</span><span>'+r.value+'</span></div>' +
              '<div class="result-bar-track"><div class="result-bar-fill" style="width:'+r.value+'%"></div></div></div>';
     }).join('');
+    document.getElementById('achievementCountLabel').textContent = state.discoveredAchievements.length;
+    document.getElementById('achievementTotalLabel').textContent = ACHIEVEMENTS.length;
     resultsOverlay.classList.add('active');
   });
 
@@ -3706,10 +3865,41 @@
       return '<div class="profile-category-cell"><b>'+row.count+'</b><span>'+row.label+'</span></div>';
     }).join('');
 
+    var roomTypes = liveAchievementsForRoom(state.focusedRoomId).filter(function(a){ return a.type==='room-type'; });
+    var roomTypeTile = document.getElementById('profileRoomTypeTile');
+    if (roomTypes.length){
+      roomTypeTile.style.display = '';
+      document.getElementById('profileRoomTypes').innerHTML = roomTypes.map(function(a){
+        return '<span class="profile-roomtype-chip">'+a.name+'</span>';
+      }).join('');
+    } else {
+      roomTypeTile.style.display = 'none';
+    }
+
     resultsOverlay.classList.remove('active');
     profileOverlay.classList.add('active');
   });
   document.getElementById('profileClose').addEventListener('click', function(){ profileOverlay.classList.remove('active'); });
+
+  document.getElementById('viewAchievementsBtn').addEventListener('click', function(){
+    var grid = document.getElementById('achievementsGrid');
+    grid.innerHTML = ACHIEVEMENTS.map(function(ach){
+      var unlocked = state.discoveredAchievements.indexOf(ach.id) !== -1;
+      if (unlocked){
+        return '<div class="achievement-card"><div class="achievement-card-medal"><span>'+ach.name.charAt(0)+'</span></div>' +
+          '<div><span class="achievement-card-name">'+ach.name+'</span><span class="achievement-card-desc">'+ach.description+'</span></div></div>';
+      }
+      return '<div class="achievement-card locked"><div class="achievement-card-medal"><span>?</span></div>' +
+        '<div><span class="achievement-card-name">???</span><span class="achievement-card-desc">Not discovered yet</span></div></div>';
+    }).join('');
+    var count = state.discoveredAchievements.length;
+    document.getElementById('achievementsSubtitle').textContent = count + ' of ' + ACHIEVEMENTS.length + ' discovered';
+    resultsOverlay.classList.remove('active');
+    document.getElementById('achievementsOverlay').classList.add('active');
+  });
+  document.getElementById('achievementsClose').addEventListener('click', function(){
+    document.getElementById('achievementsOverlay').classList.remove('active');
+  });
 
   /* ---------------- ambient dust motes ---------------- */
   function createDustMotes(roomEl){
