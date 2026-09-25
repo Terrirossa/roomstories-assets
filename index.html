@@ -854,6 +854,36 @@
     gap:4px;
     margin-bottom:8px;
   }
+  .tray-filter-row{
+    display:flex;
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .tray-filter-select{
+    flex:1;
+    font-family:inherit;
+    font-size:11px;
+    font-weight:600;
+    color:var(--ink-70);
+    background:var(--glass-bg-strong);
+    border:1px solid var(--glass-border);
+    border-radius:99px;
+    padding:5px 10px;
+    cursor:pointer;
+    min-width:0;
+  }
+  .tray-filter-select.active{
+    background:var(--sage);
+    color:#fff;
+    border-color:var(--sage);
+  }
+  .tray-empty-note{
+    grid-column:1 / -1;
+    text-align:center;
+    font-size:12.5px;
+    color:var(--ink-55);
+    padding:24px 12px;
+  }
   .tab{
     font-size:11.5px;
     font-weight:600;
@@ -893,10 +923,31 @@
     box-shadow:0 6px 16px rgba(20,15,10,.20);
   }
   .sticker-thumb{
+    position:relative;
     width:100%; aspect-ratio:1/1;
     display:flex; align-items:center; justify-content:center;
     margin-bottom:4px;
     pointer-events:none;
+  }
+  .sticker-attr-overlay{
+    position:absolute; inset:0;
+    background:rgba(54,43,34,.55);
+    border-radius:10px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:5px;
+    padding:8px;
+    opacity:0;
+    transition:opacity .15s ease;
+  }
+  .sticker:hover .sticker-attr-overlay{ opacity:1; }
+  .sticker-attr-pill{
+    background:var(--paper-light);
+    color:var(--ink);
+    font-size:10.5px;
+    font-weight:600;
+    padding:4px 10px;
+    border-radius:99px;
+    white-space:nowrap;
   }
   .sticker-thumb img{
     max-width:88%; max-height:88%;
@@ -1365,6 +1416,10 @@
   <div class="tray-panel" id="trayPanel">
     <div class="tray-drag-handle" id="trayDragHandle" aria-label="Drag to move"><span></span></div>
     <div class="tray-tabs" id="trayTabs"></div>
+    <div class="tray-filter-row">
+      <select class="tray-filter-select" id="styleFilterSelect"><option value="">Any style</option></select>
+      <select class="tray-filter-select" id="colorFilterSelect"><option value="">Any color</option></select>
+    </div>
     <div class="tray-grid" id="trayGrid"></div>
   </div>
 </section>
@@ -1561,6 +1616,15 @@
     var val = SWATCH_COLORS[color] || 'var(--ink-35)';
     return val.indexOf('gradient') === 0 ? 'background:'+val+';' : 'background-color:'+val+';';
   }
+  // color temperature groups, used by the Statement Piece achievement to
+  // tell a deliberate "neutral room, one bold accent" apart from just any
+  // random mix. Zebra/Multi are patterns rather than a single hue, so they
+  // sit in neither bucket and are simply left out of that achievement.
+  var NEUTRAL_COLORS = ['Beige','White','Black','Grey','Greige','Brown','Dark Wood','Light Wood','Medium Wood',
+    'Warm Wood','Natural','Silver','Chrome','Steel','Clear','Frosted','Tinted','Smoked','Travertine','Terrazzo',
+    'Carrara','Calacatta'];
+  var COLD_COLORS = ['Blue','Green','Purple'];
+  var WARM_COLORS = ['Red','Orange','Yellow','Pink','Rosa','Blush','Gold','Brass','Cognac'];
   function colorSuffixVariants(color){
     var lower = (color||'').toLowerCase();
     if (!lower) return [];
@@ -1697,7 +1761,9 @@
     activeTime: 'day',
     motionOff: false,
     expandedGroup: null,
-    discoveredAchievements: []
+    discoveredAchievements: [],
+    styleFilter: '',
+    colorFilter: ''
   };
 
   function getAsset(id){ for (var i=0;i<ITEMS.length;i++) if (ITEMS[i].id===id) return ITEMS[i]; return null; }
@@ -2420,9 +2486,55 @@
     });
   }
 
+  function setupTrayFilters(){
+    var styles = {}, colors = {};
+    ITEMS.forEach(function(it){
+      if (it.style1) styles[it.style1] = true;
+      if (it.style2) styles[it.style2] = true;
+      if (it.color) colors[it.color] = true;
+    });
+    var styleSelect = document.getElementById('styleFilterSelect');
+    var colorSelect = document.getElementById('colorFilterSelect');
+    Object.keys(styles).sort().forEach(function(s){
+      var opt = document.createElement('option'); opt.value = s; opt.textContent = s;
+      styleSelect.appendChild(opt);
+    });
+    Object.keys(colors).sort().forEach(function(c){
+      var opt = document.createElement('option'); opt.value = c; opt.textContent = c;
+      colorSelect.appendChild(opt);
+    });
+    styleSelect.addEventListener('change', function(){
+      state.styleFilter = styleSelect.value;
+      styleSelect.classList.toggle('active', !!styleSelect.value);
+      renderTray();
+    });
+    colorSelect.addEventListener('change', function(){
+      state.colorFilter = colorSelect.value;
+      colorSelect.classList.toggle('active', !!colorSelect.value);
+      renderTray();
+    });
+  }
+
   function renderTray(){
     trayGrid.innerHTML = '';
     var itemsInCat = ITEMS.filter(function(it){ return it.category===state.activeCategory; });
+    var filtering = !!(state.styleFilter || state.colorFilter);
+    if (state.styleFilter){
+      itemsInCat = itemsInCat.filter(function(it){ return it.style1===state.styleFilter || it.style2===state.styleFilter; });
+    }
+    if (state.colorFilter){
+      itemsInCat = itemsInCat.filter(function(it){ return it.color===state.colorFilter; });
+    }
+    if (filtering){
+      // filtering is about finding a specific item, so show exact matches
+      // plainly rather than folding them back into a color-family card
+      if (!itemsInCat.length){
+        trayGrid.innerHTML = '<div class="tray-empty-note">No items match that filter</div>';
+        return;
+      }
+      itemsInCat.forEach(function(item){ renderSingleCard(item); });
+      return;
+    }
     var groups = groupVariants(itemsInCat);
     var renderedGroupKeys = {};
     itemsInCat.forEach(function(item){
@@ -2438,12 +2550,21 @@
     });
   }
 
+  // style + material shown as small pills over the thumbnail on hover —
+  // color is left out since the picture already shows that at a glance
+  function attributePillsHtml(item){
+    var attrs = [item.style1, item.style2, item.material].filter(Boolean);
+    if (!attrs.length) return '';
+    return '<div class="sticker-attr-overlay">' +
+      attrs.map(function(a){ return '<span class="sticker-attr-pill">'+a+'</span>'; }).join('') +
+      '</div>';
+  }
   function renderSingleCard(item){
     var card = document.createElement('div');
     card.className = 'sticker';
     card.style.setProperty('--tilt', tiltFor(item.id)+'deg');
     card.innerHTML =
-      '<div class="sticker-thumb"><img src="'+item.src+'" alt=""></div>' +
+      '<div class="sticker-thumb"><img src="'+item.src+'" alt="">'+attributePillsHtml(item)+'</div>' +
       '<div class="sticker-label">'+item.name+'</div>';
     card.addEventListener('pointerdown', function(e){ startTrayDrag(e, item, card); });
     trayGrid.appendChild(card);
@@ -2459,7 +2580,7 @@
     card.className = 'sticker sticker-primary';
     card.style.setProperty('--tilt', tiltFor(primary.id)+'deg');
     card.innerHTML =
-      '<div class="sticker-thumb"><img src="'+primary.src+'" alt=""></div>' +
+      '<div class="sticker-thumb"><img src="'+primary.src+'" alt="">'+attributePillsHtml(primary)+'</div>' +
       '<div class="sticker-label">'+group.label+'</div>' +
       '<div class="variant-dots">' + variants.map(function(v){ return '<span class="variant-dot" style="'+swatchStyleFor(v.color)+'"></span>'; }).join('') + '</div>';
     // dragging still places this exact color immediately; a plain tap
@@ -2480,7 +2601,7 @@
         vcard.className = 'sticker';
         vcard.style.setProperty('--tilt', tiltFor(v.id)+'deg');
         vcard.innerHTML =
-          '<div class="sticker-thumb"><img src="'+v.src+'" alt=""></div>' +
+          '<div class="sticker-thumb"><img src="'+v.src+'" alt="">'+attributePillsHtml(v)+'</div>' +
           '<div class="sticker-label">'+v.color+'</div>';
         vcard.addEventListener('pointerdown', function(e){ startTrayDrag(e, v, vcard); });
         row.appendChild(vcard);
@@ -3666,33 +3787,321 @@
         var hasCouchtable = entries.some(function(e){ return e.asset.category==='tables' && e.asset.id.indexOf('couchtable')!==-1; });
         var hasLamp = entries.some(function(e){ return e.asset.category==='lighting'; });
         return hasCouch && hasCouchtable && hasLamp;
-      } }
+      } },
+    { id:'dining-room', name:'Dining Room', type:'room-type',
+      description:'A dining table with 4 or more seats nearby',
+      check:function(entries){
+        var tables = entries.filter(function(e){ return e.asset.id.indexOf('diningtable-')===0; });
+        return tables.some(function(t){
+          return entries.filter(function(e){ return e.asset.category==='seating' && pieceDistance(t.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS; }).length >= 4;
+        });
+      } },
+    { id:'reading-nook', name:'Reading Nook', type:'room-type',
+      description:'A chair or armchair, a lamp, and 2+ books, all close together',
+      check:function(entries){
+        var seats = entries.filter(function(e){ return e.asset.category==='seating'; });
+        return seats.some(function(s){
+          var hasLampNear = entries.some(function(e){ return e.asset.category==='lighting' && pieceDistance(s.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS; });
+          var booksNear = entries.filter(function(e){ return e.asset.name.toLowerCase().indexOf('book')!==-1 && pieceDistance(s.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS; }).length;
+          return hasLampNear && booksNear >= 2;
+        });
+      } },
+    { id:'walk-in-closet', name:'Walk-in Closet', type:'room-type',
+      description:'6 or more storage items in one room',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.category==='storage'; }).length >= 6;
+      } },
+    { id:'monochrome', name:'Monochrome', type:'novelty',
+      description:'8 or more items in one room, all the exact same color',
+      check:function(entries){
+        var counts = {};
+        entries.forEach(function(e){ if (e.asset.color) counts[e.asset.color] = (counts[e.asset.color]||0)+1; });
+        return Object.keys(counts).some(function(c){ return counts[c] >= 8; });
+      } },
+    { id:'rainbow-room', name:'Rainbow Room', type:'novelty',
+      description:'6 or more different colors represented in one room',
+      check:function(entries){
+        var colors = {};
+        entries.forEach(function(e){ if (e.asset.color) colors[e.asset.color] = true; });
+        return Object.keys(colors).length >= 6;
+      } },
+    { id:'wood-works', name:'Wood Works', type:'novelty',
+      description:'8 or more items with Wood material',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.material==='Wood'; }).length >= 8;
+      } },
+    { id:'marble-palace', name:'Marble Palace', type:'novelty',
+      description:'4 or more items with Marble material',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.material==='Marble'; }).length >= 4;
+      } },
+    { id:'gold-standard', name:'Gold Standard', type:'novelty',
+      description:'4 or more items colored Gold or Brass',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.color==='Gold' || e.asset.color==='Brass'; }).length >= 4;
+      } },
+    { id:'wild-side', name:'Wild Side', type:'novelty',
+      description:'4 or more items with a Zebra or Multi pattern',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.color==='Zebra' || e.asset.color==='Multi'; }).length >= 4;
+      } },
+    { id:'time-traveler', name:'Time Traveler', type:'novelty',
+      description:'6 or more items tagged Vintage style',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.style1==='Vintage' || e.asset.style2==='Vintage'; }).length >= 6;
+      } },
+    { id:'factory-floor', name:'Factory Floor', type:'novelty',
+      description:'4+ Industrial-style items, plus at least 1 Metal item',
+      check:function(entries){
+        var industrial = entries.filter(function(e){ return e.asset.style1==='Industrial' || e.asset.style2==='Industrial'; }).length;
+        var hasMetal = entries.some(function(e){ return e.asset.material==='Metal'; });
+        return industrial >= 4 && hasMetal;
+      } },
+    { id:'boho-spirit', name:'Boho Spirit', type:'novelty',
+      description:'6 or more items tagged Bohemian style',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.style1==='Bohemian' || e.asset.style2==='Bohemian'; }).length >= 6;
+      } },
+    { id:'less-is-more', name:'Less Is More', type:'novelty',
+      description:'A finished room with 5 or fewer items, all Minimal or Scandinavian',
+      check:function(entries){
+        if (entries.length < 1 || entries.length > 5) return false;
+        return entries.every(function(e){
+          return ['Minimal','Scandinavian'].indexOf(e.asset.style1)!==-1 || ['Minimal','Scandinavian'].indexOf(e.asset.style2)!==-1;
+        });
+      } },
+    { id:'maximalist', name:'Maximalist', type:'novelty',
+      description:'20+ items in one room, spanning 5 or more different styles',
+      check:function(entries){
+        if (entries.length < 20) return false;
+        var styles = {};
+        entries.forEach(function(e){ if (e.asset.style1) styles[e.asset.style1]=true; if (e.asset.style2) styles[e.asset.style2]=true; });
+        return Object.keys(styles).length >= 5;
+      } },
+    { id:'rug-collector', name:'Rug Collector', type:'novelty',
+      description:'3 or more rugs in one room',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.category==='rugs'; }).length >= 3;
+      } },
+    { id:'curtain-call', name:'Curtain Call', type:'novelty', scope:'flat',
+      description:'8 or more curtain items across the whole apartment',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.category==='curtains'; }).length >= 8;
+      } },
+    { id:'full-bloom', name:'Full Bloom', type:'novelty',
+      description:'7 or more flower items in one room',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.id.indexOf('flowers-')===0; }).length >= 7;
+      } },
+    { id:'vase-collector', name:'Vase Collector', type:'novelty',
+      description:'5 or more vases in one room',
+      check:function(entries){
+        return entries.filter(function(e){ return e.asset.name.toLowerCase().indexOf('vase')!==-1; }).length >= 5;
+      } },
+    { id:'night-in', name:'Night In', type:'novelty',
+      description:'2 or more lamps or candles lit while the flat is set to Night',
+      check:function(entries){
+        var isNightNow = state.activeTime === 'night' || state.isNight;
+        if (!isNightNow) return false;
+        var litCount = entries.filter(function(e){
+          if (e.asset.category==='lighting') return !!e.piece.lampOn;
+          if (e.asset.flickerWhenOn) return !!e.piece.toggled;
+          return false;
+        }).length;
+        return litCount >= 2;
+      } },
+    { id:'perfect-match', name:'Perfect Match', type:'novelty',
+      description:'The exact same item placed twice or more in one room',
+      check:function(entries){
+        var counts = {};
+        entries.forEach(function(e){ counts[e.asset.id] = (counts[e.asset.id]||0)+1; });
+        return Object.keys(counts).some(function(id){ return counts[id] >= 2; });
+      } },
+    { id:'his-and-hers', name:'His & Hers', type:'novelty',
+      description:'Two colorways of the same item design placed in the same room',
+      check:function(entries){
+        var keys = {};
+        entries.forEach(function(e){
+          var key = variantBaseKey(e.asset);
+          if (key){
+            keys[key] = keys[key] || {};
+            keys[key][e.asset.id] = true;
+          }
+        });
+        return Object.keys(keys).some(function(k){ return Object.keys(keys[k]).length >= 2; });
+      } },
+    { id:'golden-hour', name:'Golden Hour', type:'novelty',
+      description:'A Gold or Brass item present while the flat is set to Dusk',
+      check:function(entries){
+        if (state.activeTime !== 'dusk') return false;
+        return entries.some(function(e){ return e.asset.color==='Gold' || e.asset.color==='Brass'; });
+      } },
+    { id:'odd-one-out', name:'The Odd One Out', type:'novelty',
+      description:'5+ items sharing one style, plus exactly one item of a totally different style',
+      check:function(entries){
+        var styleSets = entries.map(function(e){
+          var s = []; if (e.asset.style1) s.push(e.asset.style1); if (e.asset.style2) s.push(e.asset.style2); return s;
+        });
+        var counts = {};
+        styleSets.forEach(function(s){ s.forEach(function(x){ counts[x] = (counts[x]||0)+1; }); });
+        return Object.keys(counts).some(function(dominant){
+          if (counts[dominant] < 5) return false;
+          var outsiders = entries.filter(function(e){ return e.asset.style1!==dominant && e.asset.style2!==dominant; });
+          return outsiders.length === 1;
+        });
+      } },
+    { id:'bedside-manner', name:'Bedside Manner', type:'novelty',
+      description:'2 lamps placed one on each side of a bed',
+      check:function(entries){
+        var beds = entries.filter(function(e){ return e.asset.category==='bed'; });
+        return beds.some(function(b){
+          var bedX = pieceCenter(b.piece).cx;
+          var lampsNear = entries.filter(function(e){ return e.asset.category==='lighting' && pieceDistance(b.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS; });
+          var left = lampsNear.some(function(e){ return pieceCenter(e.piece).cx < bedX; });
+          var right = lampsNear.some(function(e){ return pieceCenter(e.piece).cx > bedX; });
+          return left && right;
+        });
+      } },
+    { id:'fresh-air', name:'Fresh Air', type:'novelty',
+      description:'A curtain at maximum sway, and a plant, placed close together',
+      check:function(entries){
+        var maxSwayCurtains = entries.filter(function(e){ return e.asset.category==='curtains' && e.piece.swayLevel===3; });
+        return maxSwayCurtains.some(function(c){
+          return entries.some(function(e){ return e.asset.category==='plants' && pieceDistance(c.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS; });
+        });
+      } },
+    { id:'well-rounded', name:'Well Rounded', type:'novelty',
+      description:'6 or more different item categories represented in one room',
+      check:function(entries){
+        var cats = {};
+        entries.forEach(function(e){ cats[e.asset.category] = true; });
+        return Object.keys(cats).length >= 6;
+      } },
+    { id:'warm-and-cozy', name:'Warm & Cozy', type:'novelty',
+      description:'A lit fireplace or lit candle, plus a plant, together',
+      check:function(entries){
+        var litFireOrCandle = entries.filter(function(e){
+          return (e.asset.id.indexOf('fireplace')===0 || e.asset.flickerWhenOn) && e.piece.toggled;
+        });
+        return litFireOrCandle.some(function(f){
+          return entries.some(function(e){ return e.asset.category==='plants' && pieceDistance(f.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS; });
+        });
+      } },
+    { id:'sole-survivor', name:'Sole Survivor', type:'novelty',
+      description:'A finished room with exactly 1 item in it',
+      check:function(entries){ return entries.length === 1; } },
+    { id:'coffee-break', name:'Coffee Break', type:'novelty',
+      description:'A coffee maker in its "on" state near a coffee cup',
+      check:function(entries){
+        var onMakers = entries.filter(function(e){ return e.asset.id==='coffeemaker-alana' && e.piece.toggled; });
+        return onMakers.some(function(m){
+          return entries.some(function(e){
+            var n = e.asset.name.toLowerCase();
+            return n.indexOf('cup')!==-1 && n.indexOf('paintbrush')===-1 && pieceDistance(m.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS;
+          });
+        });
+      } },
+    { id:'midnight-snack', name:'Midnight Snack', type:'novelty',
+      description:'The flat set to Night while a Kitchen-type room is in view',
+      check:function(entries){
+        var isNightNow = state.activeTime === 'night' || state.isNight;
+        if (!isNightNow) return false;
+        var isAnchor = function(a){ return a.id.indexOf('kitchen-counter')===0 || a.id.indexOf('kitchen-island')===0; };
+        return entries.some(function(e){ return isAnchor(e.asset); }) && entries.some(function(e){ return e.asset.id.indexOf('fridge-')===0; });
+      } },
+    { id:'gallery-wall', name:'Gallery Wall', type:'novelty',
+      description:'5+ wall-art pieces of different styles, clustered together',
+      check:function(entries){
+        var art = entries.filter(function(e){ return e.asset.category==='wall-art'; });
+        return art.some(function(anchor){
+          var cluster = art.filter(function(e){ return pieceDistance(anchor.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS; });
+          if (cluster.length < 5) return false;
+          var styles = {};
+          cluster.forEach(function(e){ if (e.asset.style1) styles[e.asset.style1]=true; if (e.asset.style2) styles[e.asset.style2]=true; });
+          return Object.keys(styles).length >= 2;
+        });
+      } },
+    { id:'green-thumb', name:'Green Thumb', type:'novelty',
+      description:'A plant placed right on or next to a storage piece',
+      check:function(entries){
+        var storage = entries.filter(function(e){ return e.asset.category==='storage'; });
+        return storage.some(function(s){
+          return entries.some(function(e){ return e.asset.category==='plants' && pieceDistance(s.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS; });
+        });
+      } },
+    { id:'statement-piece', name:'Statement Piece', type:'novelty',
+      description:'One vividly colored item standing alone among an otherwise neutral room',
+      check:function(entries){
+        if (entries.length < 4) return false;
+        var vivid = entries.filter(function(e){ return COLD_COLORS.indexOf(e.asset.color)!==-1 || WARM_COLORS.indexOf(e.asset.color)!==-1; });
+        if (vivid.length !== 1) return false;
+        var rest = entries.filter(function(e){ return e !== vivid[0]; });
+        return rest.every(function(e){ return NEUTRAL_COLORS.indexOf(e.asset.color)!==-1; });
+      } },
+    { id:'deep-cut', name:'Deep Cut', type:'novelty', meta:true,
+      description:'Discover 10 achievements in total' },
+    { id:'first-steps', name:'First Steps', type:'novelty', meta:true,
+      description:"Your very first discovery — whatever it turns out to be" }
   ];
   function roomAchievementEntries(roomId){
     return state.placed.filter(function(p){ return p.roomId === roomId; })
       .map(function(p){ return { piece:p, asset:getAsset(p.assetId) }; })
       .filter(function(e){ return e.asset; });
   }
+  // for achievements whose scope is 'flat' rather than 'room' — counted
+  // across every room in the apartment at once (e.g. Curtain Call)
+  function flatAchievementEntries(){
+    return state.placed.map(function(p){ return { piece:p, asset:getAsset(p.assetId) }; })
+      .filter(function(e){ return e.asset; });
+  }
   function checkAchievements(roomId){
-    var entries = roomAchievementEntries(roomId);
+    var roomEntries = roomAchievementEntries(roomId);
+    var flatEntries = null; // computed lazily, only if a flat-scope achievement is still locked
+    var hadNonePreviously = state.discoveredAchievements.length === 0;
     var newlyFound = [];
     ACHIEVEMENTS.forEach(function(ach){
+      if (ach.meta) return; // meta achievements (e.g. First Steps) are granted, never checked directly
       if (state.discoveredAchievements.indexOf(ach.id) !== -1) return;
+      var entries = roomEntries;
+      if (ach.scope === 'flat'){
+        if (!flatEntries) flatEntries = flatAchievementEntries();
+        entries = flatEntries;
+      }
       if (ach.check(entries)){
         state.discoveredAchievements.push(ach.id);
         newlyFound.push(ach);
       }
     });
+    // First Steps rides along with whatever the player's very first real
+    // discovery turns out to be, rather than being hunted for directly
+    if (newlyFound.length && hadNonePreviously){
+      var firstSteps = ACHIEVEMENTS.filter(function(a){ return a.id==='first-steps'; })[0];
+      if (firstSteps && state.discoveredAchievements.indexOf('first-steps')===-1){
+        state.discoveredAchievements.push('first-steps');
+        newlyFound.push(firstSteps);
+      }
+    }
+    // Deep Cut is a milestone on top of everything else — once the
+    // collection itself reaches 10, that's worth its own recognition
+    if (state.discoveredAchievements.length >= 10 && state.discoveredAchievements.indexOf('deep-cut')===-1){
+      var deepCut = ACHIEVEMENTS.filter(function(a){ return a.id==='deep-cut'; })[0];
+      if (deepCut){
+        state.discoveredAchievements.push('deep-cut');
+        newlyFound.push(deepCut);
+      }
+    }
     if (newlyFound.length) queueAchievementToasts(newlyFound);
   }
   // read-only: which achievements does this room satisfy right now,
   // regardless of whether they were already discovered elsewhere before.
   // This is what results/profile display, and what a future story-mode
   // brief would check a room against — a live fact about the room, not a
-  // historical record.
+  // historical record. Flat-scope and meta achievements are excluded here
+  // since "does this one room count as X" isn't a meaningful question for
+  // either of those.
   function liveAchievementsForRoom(roomId){
     var entries = roomAchievementEntries(roomId);
-    return ACHIEVEMENTS.filter(function(ach){ return ach.check(entries); });
+    return ACHIEVEMENTS.filter(function(ach){ return !ach.meta && ach.scope !== 'flat' && ach.check(entries); });
   }
   var achievementToastQueue = [];
   var achievementToastShowing = false;
@@ -3939,6 +4348,7 @@
   renderRoomGrid();
   renderRooms();
   renderTabs();
+  setupTrayFilters();
   renderTray();
   setTrayOpen(state.trayOpen);
   runWhenIdle(preloadAheadOfNeed);
