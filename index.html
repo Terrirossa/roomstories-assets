@@ -931,18 +931,20 @@
   }
   .sticker-attr-overlay{
     position:absolute; inset:0;
-    background:rgba(54,43,34,.55);
-    border-radius:10px;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:5px;
     padding:8px;
     opacity:0;
-    transition:opacity .15s ease;
+    transition:opacity .3s ease .05s;
+    pointer-events:none;
   }
   .sticker:hover .sticker-attr-overlay{ opacity:1; }
   .sticker-attr-pill{
-    background:var(--paper-light);
-    color:var(--ink);
+    background:rgba(46,36,26,.42);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    border:1px solid rgba(120,105,85,.4);
+    color:#fff;
     font-size:10.5px;
     font-weight:600;
     padding:4px 10px;
@@ -953,6 +955,10 @@
     max-width:88%; max-height:88%;
     object-fit:contain;
     filter:drop-shadow(0 6px 8px rgba(30,22,14,.20));
+    transition:filter .35s ease;
+  }
+  .sticker:hover .sticker-thumb img{
+    filter:drop-shadow(0 6px 8px rgba(30,22,14,.20)) blur(3.5px);
   }
   .sticker-label{
     font-size:9px;
@@ -3987,9 +3993,6 @@
           return entries.some(function(e){ return e.asset.category==='plants' && pieceDistance(f.piece, e.piece) <= ACHIEVEMENT_PROXIMITY_RADIUS; });
         });
       } },
-    { id:'sole-survivor', name:'Sole Survivor', type:'novelty',
-      description:'A finished room with exactly 1 item in it',
-      check:function(entries){ return entries.length === 1; } },
     { id:'coffee-break', name:'Coffee Break', type:'novelty',
       description:'A coffee maker in its "on" state near a coffee cup',
       check:function(entries){
