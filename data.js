@@ -103,25 +103,65 @@
     { id:'cozy-cabin', name:'Cozy Cabin',
       architectures:[
         { id:'bigwindow-bothdoors', label:'Big Window + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_bigwindow_bothdoors.jpg' },
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_bigwindow_bothdoors.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_bigwindow_bothdoors.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_bigwindow_bothdoors.jpg' }
+          ] },
         { id:'bigwindow-leftdoor', label:'Big Window + Left Door', hasLeftDoor:true, hasRightDoor:false,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_bigwindow_leftdoor.jpg' },
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_bigwindow_leftdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_bigwindow_leftdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_bigwindow_leftdoor.jpg' }
+          ] },
         { id:'bigwindow-rightdoor', label:'Big Window + Right Door', hasLeftDoor:false, hasRightDoor:true,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_bigwindow_rightdoor.jpg' },
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_bigwindow_rightdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_bigwindow_rightdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_bigwindow_rightdoor.jpg' }
+          ] },
         { id:'bigwindow-nodoors', label:'Big Window', hasLeftDoor:false, hasRightDoor:false,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_bigwindow_nodoor.jpg' },
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_bigwindow_nodoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_bigwindow_nodoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_bigwindow_nodoor.jpg' }
+          ] },
         { id:'smallwindow-bothdoors', label:'Small Window + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_smallwindow_bothdoors.jpg' },
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_smallwindow_bothdoors.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_smallwindow_bothdoors.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_smallwindow_bothdoors.jpg' }
+          ] },
         { id:'smallwindow-leftdoor', label:'Small Window + Left Door', hasLeftDoor:true, hasRightDoor:false,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_smallwindow_leftdoor.jpg' },
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_smallwindow_leftdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_smallwindow_leftdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_smallwindow_leftdoor.jpg' }
+          ] },
         { id:'smallwindow-rightdoor', label:'Small Window + Right Door', hasLeftDoor:false, hasRightDoor:true,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_smallwindow_rightdoor.jpg' },
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_smallwindow_rightdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_smallwindow_rightdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_smallwindow_rightdoor.jpg' }
+          ] },
         { id:'woodenroom-bothdoors', label:'Wooden Room + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_woodenroom_bothdoors.jpg' },
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_woodenroom_bothdoors.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_woodenroom_bothdoors.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_woodenroom_bothdoors.jpg' }
+          ] },
         { id:'woodenroom-leftdoor', label:'Wooden Room + Left Door', hasLeftDoor:true, hasRightDoor:false,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_woodenroom_leftdoor.jpg' },
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_woodenroom_leftdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_woodenroom_leftdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_woodenroom_leftdoor.jpg' }
+          ] },
         { id:'woodenroom-rightdoor', label:'Wooden Room + Right Door', hasLeftDoor:false, hasRightDoor:true,
-          src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_woodenroom_rightdoor.jpg' }
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'cabin/daytime/cabin_woodenroom_rightdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'cabin/dawn/cabin_woodenroom_rightdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'cabin/evening/cabin_woodenroom_rightdoor.jpg' }
+          ] }
       ] },
     { id:'loft', name:'Loft',
       architectures:[

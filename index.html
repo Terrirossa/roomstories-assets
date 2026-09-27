@@ -1997,10 +1997,16 @@
         (isActive ? '<span class="room-card-check"><svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14l8-8"/></svg></span>' : '');
       card.querySelector('img').addEventListener('error', function(){ card.classList.add('img-error'); });
       card.addEventListener('click', function(){
-        var room = getRoom(state.focusedRoomId);
-        if (!room) return;
-        room.backgroundId = bg.id;
-        room.architectureId = bg.architectures ? bg.architectures[0].id : null;
+        // a flat is always exactly one room family — Twin Windows rooms
+        // only ever connect to more Twin Windows rooms, Loft to more
+        // Loft, etc. (see buildAddRoomButton). So picking a style here
+        // isn't "reskin the room I'm looking at", it's "start this flat
+        // over" — replace every room and clear every placed item, rather
+        // than leaving old rooms (and their items) stranded behind it.
+        var newRoom = { id:'room-'+(state.roomIdCounter++), backgroundId:bg.id, architectureId: bg.architectures ? bg.architectures[0].id : null };
+        state.rooms = [newRoom];
+        state.placed = [];
+        state.focusedRoomId = newRoom.id;
         renderRooms();
         showScreen('builder');
       });
@@ -4344,6 +4350,23 @@
     // range per room before anything is ever drawn, so nothing can load in
     // already sunk behind the room background.
     reassignZIndices();
+    // a flat is always exactly one room family (see buildAddRoomButton) —
+    // a save from before that was enforced everywhere could have ended up
+    // with rooms from two different styles connected together. Keep only
+    // the rooms matching the first one, and drop any items that belonged
+    // to the ones removed, so a flat like that quietly heals itself on
+    // load rather than needing a full fresh start.
+    if (state.rooms.length > 1){
+      var flatFamily = state.rooms[0].backgroundId;
+      var keptIds = {};
+      state.rooms = state.rooms.filter(function(r){
+        var keep = r.backgroundId === flatFamily;
+        if (keep) keptIds[r.id] = true;
+        return keep;
+      });
+      state.placed = state.placed.filter(function(p){ return keptIds[p.roomId]; });
+      if (!keptIds[state.focusedRoomId]) state.focusedRoomId = state.rooms[0].id;
+    }
     document.getElementById('titleStartBtn').textContent = 'Continue Decorating';
     document.getElementById('titleFreshBtn').style.display = 'block';
   }
