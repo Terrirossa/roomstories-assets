@@ -321,7 +321,7 @@
     { id:'blooming-flowers', name:'Blooming Flowers', category:'plants', defaultWidth:6, material:'Plant', color:'Pink', style1:'Organic', style2:'Cozy', src:ITEMS_BASE+'plants/items_blooming_flowers.svg' },
     { id:'bockstack-01', name:'Bookstack 01', category:'decor', defaultWidth:6, material:'Leather', color:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'decor/items_bockstack_01.svg' },
     { id:'bockstack-02', name:'Bookstack 02', category:'decor', defaultWidth:6, material:'Leather', color:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'decor/items_bockstack_02.svg' },
-    { id:'book-stack-standing', name:'Standing Book Stack', category:'decor', defaultWidth:6, material:'Leather', color:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'decor/items_book_stack_standing.svg' },
+    { id:'book-stack-standing', name:'Standing Book Stack', category:'decor', defaultWidth:6, material:'Leather', color:'Brown', style1:'Traditional', style2:'Cozy', src:ITEMS_BASE+'items_book_stack_standing.svg' },
     { id:'chandelier-ana', name:'Ana Chandelier', category:'lighting', defaultWidth:13, material:'Metal', color:'Brass', style1:'Vintage', style2:'Vintage', src:ITEMS_BASE+'lights/items_chandelier_ana.svg' },
     { id:'chandelier-irina', name:'Irina Chandelier', category:'lighting', defaultWidth:13, material:'Metal', color:'Chrome', style1:'Organic', style2:'Eclectic', src:ITEMS_BASE+'lights/items_chandelier_irina.svg' },
     { id:'chandelier-kiki', name:'Kiki Chandelier', category:'lighting', defaultWidth:13, material:'Metal', color:'White', style1:'Modern', style2:'Vintage', src:ITEMS_BASE+'lights/items_chandelier_kiki.svg' },
@@ -378,7 +378,7 @@
     // Tables (new)
     { id:'bedsidetable-aria-darkwodd', name:'Aria Bedside Table Dark Wood', category:'tables', defaultWidth:6, material:'Wood', color:'Dark Wood', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'bedsidetables/items_bedsidetable_aria_darkwodd.svg' },
     { id:'bedsidetable-aria-lightwood', name:'Aria Bedside Table Light Wood', category:'tables', defaultWidth:6, material:'Wood', color:'Light Wood', style1:'Modern', style2:'Organic', src:ITEMS_BASE+'bedsidetables/items_bedsidetable_aria_lightwood.svg' },
-    { id:'bedsidetable-kira-marble', name:'Kira Bedside Table Marble', category:'tables', defaultWidth:6, material:'Marble', color:'Travertine', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'bedsidetables/items_bedsidetable_kira_marble.svg' },
+    { id:'bedsidetable-kira-marble', name:'Kira Bedside Table Marble', category:'tables', defaultWidth:6, material:'Marble', color:'Travertine', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'couchtables/items_bedsidetable_kira_marble.svg' },
     { id:'bedsidetable-moppy-marble', name:'Moppy Bedside Table Marble', category:'tables', defaultWidth:6, material:'Marble', color:'Travertine', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'bedsidetables/items_bedsidetable_moppy_marble.svg' },
 
     // Storage (new)
@@ -401,7 +401,7 @@
     { id:'sideboard-nikola-mediumwood', name:'Nikola Sideboard Medium Wood', category:'storage', defaultWidth:22, material:'Wood', color:'Medium Wood', style1:'Industrial', style2:'Modern', src:ITEMS_BASE+'storage/items_sideboard_nikola_mediumwood.svg' },
     { id:'sideboard-toto-darkwood', name:'Toto Sideboard Dark Wood', category:'storage', defaultWidth:22, material:'Wood', color:'Dark Wood', style1:'Rustic', style2:'Traditional', src:ITEMS_BASE+'storage/items_sideboard_toto_darkwood.svg' },
     { id:'sideboard-toto-mediumwood', name:'Toto Sideboard Medium Wood', category:'storage', defaultWidth:22, material:'Wood', color:'Medium Wood', style1:'Rustic', style2:'Traditional', src:ITEMS_BASE+'storage/items_sideboard_toto_mediumwood.svg' },
-    { id:'wallshelf-omo', name:'Omo Wall Shelf', category:'storage', defaultWidth:13, material:'Wood', color:'Light Wood', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'storage/items_wallshelf_Omo.svg' },
+    { id:'wallshelf-omo', name:'Omo Wall Shelf', category:'storage', defaultWidth:13, material:'Wood', color:'Light Wood', style1:'Scandinavian', style2:'Minimal', src:ITEMS_BASE+'storage/items_wallshelf_omo.svg' },
     { id:'wallshelf-vila', name:'Vila Wall Shelf', category:'storage', defaultWidth:13, material:'Wood', color:'Light Wood', style1:'Scandinavian', style2:'Traditional', src:ITEMS_BASE+'storage/items_wallshelf_vila.svg' },
 
     // Lighting (new)
@@ -429,7 +429,7 @@
     { id:'cushion-lala-rosa', name:'Lala Cushion Rosa', category:'textiles', defaultWidth:6, material:'Fabric', color:'Rosa', style1:'Cozy', style2:'Eclectic', src:ITEMS_BASE+'decor/items_cushion_lala_rosa.svg' },
 
     // Decor (new)
-    { id:'marble-pillar-jutta', name:'Jutta Marble Pillar', category:'decor', defaultWidth:13, material:'Marble', color:'Travertine', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'decor/items_marble_pillar_jutta.svg' },
+    { id:'marble-pillar-jutta', name:'Jutta Marble Pillar', category:'decor', defaultWidth:13, material:'Marble', color:'Travertine', style1:'Modern', style2:'Minimal', src:ITEMS_BASE+'couchtables/items_marble_pillar_jutta.svg' },
 
     // Kitchen (new)
     { id:'fridge-cara', name:'Cara Fridge', category:'kitchen', defaultWidth:22, material:'Mixed', color:'Chrome', style1:'Modern', style2:'Traditional', src:ITEMS_BASE+'kitchens/items_fridge_cara.svg' },
