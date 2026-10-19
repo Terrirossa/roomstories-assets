@@ -238,6 +238,87 @@
             { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'loft/evening/loft_twowindows_nodoor.jpg' }
           ] }
       ] },
+    { id:'historic', name:'Historic',
+      architectures:[
+        { id:'twowindows-nodoors', label:'Two Windows', hasLeftDoor:false, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_twowindows_nodoors.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_twowindows_nodoors.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_twowindows_nodoors.jpg' }
+          ] },
+        { id:'twowindows-bothdoors', label:'Two Windows + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_twowindows_bothdoors.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_twowindows_bothdoors.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_twowindows_bothdoors.jpg' }
+          ] },
+        { id:'twowindows-leftdoor', label:'Two Windows + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_twowindows_leftdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_twowindows_leftdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_twowindows_leftdoor.jpg' }
+          ] },
+        { id:'twowindows-rightdoor', label:'Two Windows + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_twowindows_rightdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_twowindows_rightdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_twowindows_rightdoor.jpg' }
+          ] },
+        { id:'onewindow-nodoors', label:'One Window', hasLeftDoor:false, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_onewindow_nodoors.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_onewindow_nodoors.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_onewindow_nodoors.jpg' }
+          ] },
+        { id:'onewindow-bothdoors', label:'One Window + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_onewindow_bothdoors.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_onewindow_bothdoors.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_onewindow_bothdoors.jpg' }
+          ] },
+        { id:'onewindow-leftdoor', label:'One Window + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_onewindow_leftdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_onewindow_leftdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_onewindow_leftdoor.jpg' }
+          ] },
+        { id:'onewindow-rightdoor', label:'One Window + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_onewindow_rightdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_onewindow_rightdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_onewindow_rightdoor.jpg' }
+          ] },
+        { id:'roundwindow-bothdoors', label:'Round Window + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_roundwindow_bothdoors.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_roundwindow_bothdoors.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_roundwindow_bothdoors.jpg' }
+          ] },
+        { id:'roundwindow-leftdoor', label:'Round Window + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_roundwindow_leftdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_roundwindow_leftdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_roundwindow_leftdoor.jpg' }
+          ] },
+        { id:'roundwindow-rightdoor', label:'Round Window + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_roundwindow_rightdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_roundwindow_rightdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_roundwindow_rightdoor.jpg' }
+          ] },
+        { id:'baywindowleft-rightdoor', label:'Bay Window (Left) + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_baywindowleft_rightdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_baywindowleft_rightdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_baywindowleft_rightdoor.jpg' }
+          ] },
+        { id:'baywindowright-leftdoor', label:'Bay Window (Right) + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day',     icon:'sun',  src:ROOM_OPTIONS_BASE+'historic/daytime/historic_baywindowright_leftdoor.jpg' },
+            { id:'dawn', label:'Dawn',    icon:'dawn', src:ROOM_OPTIONS_BASE+'historic/dawn/historic_baywindowright_leftdoor.jpg' },
+            { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_baywindowright_leftdoor.jpg' }
+          ] }
+      ] },
     { id:'modern-living-room',              name:'Modern Living Room',                 src:ASSET_BASE+'backgrounds_modern_living_room.svg' },
     { id:'classic-living-room',             name:'Classic Living Room',                src:ASSET_BASE+'backgrounds_classic_living_room.svg' },
     { id:'midcentury-living-room',          name:'Mid-Century Living Room',            src:ASSET_BASE+'backgrounds_midcentury_living_room.svg' },
