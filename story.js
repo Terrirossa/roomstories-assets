@@ -18,6 +18,9 @@ var Story = (function(){
   var TOWN = {
     name: 'Pennywhistle Cove',
     map: 'story/town_map.jpg',
+    // ambient life on the map (positions are % of the map image; water points
+    // and boat lanes were checked against the painting so nothing sails on land)
+    fx: {"glints":[[72.8,65.0],[68.8,70.4],[32.8,12.8],[24.2,96.9],[32.2,94.2],[12.2,92.5],[14.2,2.2],[83.2,49.1],[45.2,94.2],[60.8,6.6],[53.8,3.1],[47.2,11.9],[22.8,14.6],[93.2,35.8],[14.2,13.7],[27.8,88.9],[58.2,90.7],[12.8,8.4],[37.8,1.3],[29.8,91.6],[35.8,93.4],[30.2,8.4],[89.8,10.2],[59.2,87.2],[21.2,2.2],[7.2,8.4],[44.2,10.2],[37.2,88.1],[67.2,96.9],[50.7,89.8],[23.2,5.8],[53.8,96.0],[87.2,11.9],[4.8,10.2],[50.7,83.6],[34.8,97.8],[34.8,0.4],[10.2,97.8],[33.8,86.3],[34.8,7.5],[27.3,12.8],[61.8,90.7],[53.8,10.2],[2.2,93.4],[49.2,94.2],[52.2,86.3],[51.2,4.9],[68.8,74.8],[67.2,18.1],[46.8,86.3],[8.8,90.7],[62.7,96.0],[52.2,98.7],[2.2,5.8],[36.8,11.1],[88.2,42.9],[81.2,57.1],[12.2,4.9],[7.2,87.2],[41.8,81.9],[4.2,0.4],[85.2,9.3],[16.8,98.7],[87.2,47.3],[41.8,85.4],[27.3,96.9],[28.7,2.2],[48.2,6.6],[45.2,82.7],[7.8,11.9]],"boats":[{"path":[[26,96.5],[38,94],[49,92.5]],"dur":110,"startAt":0.1},{"path":[[44,7.5],[52,7],[59,6.5]],"dur":85,"startAt":0.55},{"path":[[96.5,31.5],[92,37.5],[88,43],[84,49]],"dur":70,"startAt":0.3}],"leaves":{"area":[1,18,30,66],"count":14},"smoke":[]},
     prologue: [
       "Pennywhistle Cove is the kind of town where everybody knows whose bicycle is whose.",
       "You started arranging rooms as a hobby. Cushions. Plants. The occasional heated opinion about rugs.",
@@ -493,6 +496,193 @@ var Story = (function(){
 
   ];
 
+  /* ------------------------------------------------------------------ voices */
+  // How each neighbour writes and talks. `paper` picks the stationery and
+  // handwriting in the UI; `hi`/`bye` frame the reply they send back; `ask`
+  // is what they say when you try to hand something over a bit early; `idle`
+  // are little moments shown when you click their door on the map.
+  var VOICES = {
+    mia:   { paper:'mia',   sign:'Mia',   hi:'Hello!',   replyBye:'Thank you, really. — Mia x',
+             ask:"Sorry — I hate to ask — but I was really hoping for…",
+             idle:["Mia is in the doorway holding a tray of something that smells of cinnamon.",
+                   "Mia waves, then pretends she was fixing her hair.",
+                   "Mia is arranging flowers she definitely did not need to buy."] },
+    jules: { paper:'jules', sign:'Jules', hi:'OKAY.',    replyBye:'Yours in turpentine, J.',
+             ask:"WAIT. Before you go. I was kind of counting on…",
+             idle:["Jules is leaning out of a window with paint on their nose.",
+                   "Jules waves with a brush. Something drips.",
+                   "Jules is drawing a pigeon. The pigeon is posing."] },
+    sam:   { paper:'sam',   sign:'Sam',   hi:'Well,',    replyBye:'Warmly, Sam',
+             ask:"Not to be a bore, but I did mention…",
+             idle:["Sam is carrying nine bags of shopping and a smile.",
+                   "Sam raises a glass at you from the balcony. It's tea. Probably.",
+                   "Sam is on the phone, mouthing 'two minutes', clearly meaning twenty."] },
+    noor:  { paper:'noor',  sign:'Noor',  hi:'Hello.',   replyBye:'Regards, N.',
+             ask:"A small note. I asked for:",
+             idle:["Noor nods, once. That is high praise.",
+                   "Noor is measuring something that does not need measuring.",
+                   "Noor's window is open. Her plants are perfectly spaced."] },
+    theo:  { paper:'theo',  sign:'Theo',  hi:'Hey!',     replyBye:'Cheers, Theo (and Elena)',
+             ask:"Ah — quick one — I think we were hoping for…",
+             idle:["Theo is fixing a bike on the pavement and singing badly.",
+                   "Theo waves a spanner like a flag.",
+                   "Theo is pushing a very small, very serious pram."] },
+    rosa:  { paper:'rosa',  sign:'Rosa',  hi:'Darling,', replyBye:'Fondly, Rosa',
+             ask:"One moment, darling. One had rather hoped for…",
+             idle:["Rosa is on her balcony, wearing something magnificent.",
+                   "Rosa is pinning a hem on a mannequin and judging the street.",
+                   "Rosa raises one eyebrow at you. It is affection."] }
+  };
+  Object.keys(VOICES).forEach(function(k){ CHARACTERS[k].voice = VOICES[k]; });
+
+  /* ---------------------------------------------------------------- letters */
+  // The brief, written as a real letter. `body` paragraphs are read top to
+  // bottom; the structured list (must / love / avoid) lives on the note that
+  // is clipped to the letter and pinned up while you decorate.
+  var LETTERS = {
+    MIA_01: { hello:"Hello!",
+      body:["I hope it's alright that I'm writing. Priya at the vet practice says you're the person who ‘does rooms’, and that you once made her sister's bedroom so calm she fell asleep during the tour. I have a key now. My own key. I keep taking it out of my pocket to check.",
+            "There is exactly one room I can afford to make nice, so I'd like it to be the living room: somewhere comfy to sit, a little table for tea, a lamp. I think green, and cream, and light wood, if that makes sense? And flowers. Please, flowers. I walk past the flower shop every evening and I'm told that counts as ‘stopping a lot’.",
+            "No black furniture, if you can help it, and nothing shiny and chrome. I get nervous around shiny things."],
+      bye:"Thank you so much for even reading this,", ps:"There will be cookies when you visit. There are always cookies. It's a problem." },
+    MIA_02: { hello:"Hello again!",
+      body:["Good news first: I passed my probation. Slightly less good news: every evening I end up in the living room you made, like a cat in the only sunny spot, because the rest of the flat still feels like a waiting room.",
+            "Could you help with the other two rooms? I'd love the bedroom soft and pink and cream, with a proper bed and somewhere to put my glasses. The little room at the end could be a reading room (a comfy seat, a lamp, a pile of books I will definitely read) and green again, please, like a tiny garden.",
+            "Flowers in both rooms. I know. I KNOW. And nothing dark if possible; I get gloomy."],
+      bye:"With thanks and a slightly bigger smile,", ps:"Jules from the art course says hi. I told them about you and they talked for forty minutes. Sorry in advance." },
+    MIA_03: { hello:"Dear friend,",
+      body:["Big news, and I'm writing this with flour on my fingers: Alex and I are moving in together! A real flat, with a real dining table. (We have never owned a table that wasn't also a desk.)",
+            "Alex likes navy and clean shapes. I like green and anything that smells of baking. We'd love to find the middle. Could you bring a little of my old living room with us (the green, the cream, the light wood) and add some blue for Alex? We'll need a living room, a dining room and a bedroom.",
+            "Flowers on the dining table AND in the living room; I told Alex it was non-negotiable and Alex said ‘obviously’, which is why I'm moving in with Alex. And nothing too dark, please. We're cosy people, not moody ones."],
+      bye:"Gratefully (and sticky),", ps:"I've made you a lemon loaf. It's in the post. Okay, it isn't. But it is very much in my head." },
+
+    JULES_01: { hello:"HELLO!!",
+      body:["Mia gave me your name and a lemon cookie and said you were ‘good at rooms’. I have JUST arrived. I have one suitcase and ELEVEN boxes of paint. The paint is unpacked. The bed is… somewhere?",
+            "So: one room, and it has to do everything. The EASEL goes in first (non-negotiable), then somewhere to sleep, then somewhere to sit and stare at the ceiling when an idea won't come. I want blue, a proper cobalt, and some orange so it feels like making things is allowed. Lots of different colours. Nothing that matches. Matching is how they get you.",
+            "Please don't make it beige. BEIGE IS HOW THEY GET YOU. (I've said it twice. That's how serious it is.)"],
+      bye:"Yours in turpentine,", ps:"I drew you a tiny portrait on the back. It looks like a potato in a nice jumper. It's your best angle." },
+    JULES_02: { hello:"OKAY SO,",
+      body:["SOMEONE PAID ME. Actual money. For a drawing of a heron in a raincoat. I have read the email eleven times and I've decided to believe it.",
+            "I'd like to put a little of it into my room. Keep the easel (obviously) and keep the blue, but bring in a few new things (three? four?) and could we try something lilac or pink alongside it? The Carla couch comes in lilac and I have been staring at it for days. It should still feel like MY room, just a version that pays its rent.",
+            "Less beige. I can feel it creeping back. I dream about it."],
+      bye:"Gratefully chaotic,", ps:"The heron is going on a mug. I'm going to be a mug person." },
+    JULES_03: { hello:"GUESS WHAT,",
+      body:["I GRADUATED. And a small arts grant landed in my inbox and I screamed in a library. We don't need to talk about it.",
+            "I've found a live-work loft. A DOOR THAT CLOSES. A real art room, a living room and a bedroom. The art room needs ALL the colour: the easel, something on the walls, a rainbow that has had too much coffee. The bedroom should be soft and quiet, the first calm room I've ever owned. And please, PLEASE don't let the living room look like a dentist's waiting room."],
+      bye:"Yours, slightly overwhelmed,", ps:"I'm planning an Open Studio. Nobody will come. I'll make cake. (I can't bake. Mia will have to help.)" },
+
+    SAM_01: { hello:"Good evening,",
+      body:["I've just moved here for a better job and, in a moment my sister calls ‘optimism’, invited my entire new team to dinner on Friday. Eleven people in a flat that seats four. It's going to be wonderful.",
+            "So the kitchen comes first. Everything else can wait; the bedroom is currently a mattress with ambition. I'd like it dramatic: dark wood, burgundy, plenty of chrome and steel, a counter or an island big enough to put a party on, and a fridge that hums reassuringly. And gadgets. Spare no mixers. Three at the very least, a coffee machine that looks like it could land a plane.",
+            "No flowers, please. I'm not against them in principle, they simply wilt when I look at them. And nothing pale and rustic; I'd like the kitchen to look like somewhere something might get flambéed.",
+            "(The oven is on back-order. It has been on back-order for six weeks. We don't discuss it.)"],
+      bye:"Warmly, and in need of a whisk,", ps:"Friday, seven o'clock. Bring an appetite. That's not a request; it's an invitation." },
+    SAM_02: { hello:"My friend,",
+      body:["The kitchen is a triumph. Eleven people ate in it and the only casualty was a lemon. Dinner at mine has accidentally become a Thing, and people now ask if they can ‘stay a bit longer’.",
+            "So: a proper dining table with enough seats to pretend I planned this, and a room next door to collapse in afterwards. Leather would be wonderful. Keep the dark wood and the burgundy going, add some burnt orange for sunset, a little chrome or black for the seventies. A couch, a table, a lamp. People should want to stay till 2 a.m.",
+            "Still no flowers. Still nothing pale. You know my feelings. (Velvet is also on back-order. Don't ask.)"],
+      bye:"Gratefully, and with my sleeves rolled up,", ps:"Somebody asked whether the dishwasher was a ‘feature wall’. I've decided to be flattered." },
+    SAM_03: { hello:"Dear friend,",
+      body:["Two things have happened. I got promoted. And Robin (you'll have heard me mention Robin; I mention Robin often) and I have bought a place. Together. We own a dish rack. It is the best day of my life.",
+            "Robin adores my taste but would like to sleep somewhere that doesn't feel like a stage set, which is fair. So: the kitchen first, obviously, with gadgets worth bragging about. The living room in the dark wood, burgundy and leather. The bedroom lighter: cream and white, mostly, something calm.",
+            "I'd like it to feel like one home without every room being equally dramatic. A little drama is a seasoning, not a main course. (Write that down.) And no flowers. I found one in the post last week. I'm choosing to be calm."],
+      bye:"Yours, in a rare moment of restraint,", ps:"Robin says I'm not allowed a second mixer. We'll see." },
+
+    NOOR_01: { hello:"Hello.",
+      body:["Sam passed on your details. He described you as ‘someone who actually listens, which is rare, and possibly a witch’. I'll assume the first part.",
+            "I have moved house. That is not up for discussion. I would like one room finished: the bedroom. A bed, a bedside table. Chalk white, a little blue, pale wood. I spend ten hours a day looking at plans; I don't want my bedroom to look like one.",
+            "Fewer things, chosen well. Twelve at most; I counted. Somewhere to put things away. No busy patterns. They have opinions."],
+      bye:"Regards,", ps:"If a shelf is two centimetres off, I will know. I won't say anything. I will know." },
+    NOOR_02: { hello:"Hello again.",
+      body:["The bedroom works. I said so out loud, in the office, within hearing of two colleagues. One of them dropped a stapler.",
+            "I would like the living room and the kitchen next. The same restraint, but they don't need to look identical; a room should have its own temperament. Pale wood in the living room. Steel, chrome or white in the kitchen. Keep the blue. Keep the air. Fourteen pieces a room is the ceiling.",
+            "No patterns."],
+      bye:"Regards,", ps:"My sister asked who did the bedroom. I said ‘a professional’. She said ‘a what?’. I said ‘someone good’. She's coming round on Sunday." },
+    NOOR_03: { hello:"Hello.",
+      body:["I have bought a flat. A converted warehouse: brick walls, tall windows, a ceiling you could lose a kite in. I intend to stay.",
+            "I'd like the furniture to feel considered. A living room I actually want to sit in at the end of the day. A quiet bedroom. And a small room to think in: a chair, a shelf, a good lamp. No desk. Desks are how work follows you home.",
+            "One good piece of stone or marble, somewhere. One. Not a collection. White, blue, grey, pale wood; twelve pieces a room at most; no patterns. You know the rest."],
+      bye:"With some warmth, which I'm told is noticeable,", ps:"The windows are 3.4 metres tall. I measured. Twice. I am very happy." },
+
+    THEO_01: { hello:"Hi there!",
+      body:["Noor said you were good, and she doesn't say that about anyone, so I figured I'd write before she changes her mind.",
+            "Elena and I have found a little cabin by the pond. The baby's due in spring, our boxes have arrived, and the living room is currently a collection of ‘temporary solutions’. We'd love somewhere we can both sit and breathe for a minute.",
+            "Elena likes warm white and cream; I'd love a bit of mustard and some denim blue, and solid wood, nothing that falls over when you look at it. Practical, mostly. Nothing white to sit on, please, we're about to have a small person who throws things. And nothing breakable like vases. I once owned a vase. It's a sad story.",
+            "Oh, and we kept the old sideboard. It might be useful."],
+      bye:"Cheers!", ps:"If you ever need a bike fixed, I'm yours. No charge. It's the least I can do. I'm not great with words." },
+    THEO_02: { hello:"Hi again!",
+      body:["She's here! Seven weeks old, very loud, and has already learned to steal my heart and my socks. Elena sends a very tired thank-you for the living room. It's the only room in the flat we've sat down in since.",
+            "Our bedroom is last on the list and it's where we put the things we haven't decided about. Could you make it restful? Elena would love green and warm white, I'd keep the wood and keep it simple. A proper bed and a bedside table (not white though, mind; spills) and somewhere to put clothes that isn't ‘the chair’. We have a chair. It has become load-bearing.",
+            "Nothing fragile. We learned."],
+      bye:"Sleepily yours,", ps:"Rosa from the village hall has offered to sew the baby a little coat. I'm scared of her. Please advise." },
+    THEO_03: { hello:"Hey you,",
+      body:["Two bits of news. I'm now co-owner of the bicycle shop (the old owner finally retired; he cried, I cried, the shop cat cried). And we've found a flat with a proper dining room.",
+            "I'd love for everyone to sit around one table when the family visits: grandad, aunts, the lot. A living room for naps, a dining room for noise, a bedroom for six hours of sleep, ideally in a row. Bring what still works from the old place; we don't need to start from zero. The sideboard followed us. It does that.",
+            "Same as before: warm white, green, mustard, denim blue, solid wood. Nothing fragile. Nothing white to sit on. We still have a small tornado in the house."],
+      bye:"Thank you, again and always,", ps:"Bring your bike round. I'll tune it. I won't take no for an answer." },
+
+    ROSA_01: { hello:"My dear,",
+      body:["I have retired from thirty-one years in the costume department of the Pennywhistle Playhouse, and I am informed that this is the moment to ‘relax’. I have never been less relaxed in my life. My sitting room has been wrong since 1998.",
+            "I'm told you listen. I hope it's true, because I have opinions. The sideboard stays (it has seen more of me than most people have), but everything else must earn its place. I require two places to sit, a table, and a lamp with some personality. And colour, darling: wine red, ochre, a splash of yellow or orange, dark wood, and something with a pattern. A rug, a cushion, a painting. One should feel dressed.",
+            "What I will not have is a pale room. Not cream. Not ‘greige’. I haven't enjoyed a beige thing since the nineties."],
+      bye:"With great expectations,", ps:"Theo from the cabin says you're good. A sweet boy. He once tried to pay me in bicycle tyres." },
+    ROSA_02: { hello:"Darling,",
+      body:["I've begun teaching small sewing classes at the village hall, and now everyone stays for tea afterwards. ‘Everyone’ is a flexible word. It is currently six people and one very opinionated dachshund.",
+            "The dining room therefore needs attention: a proper table, seats for all of us, and the mood of a stage set just before the curtain goes up. Wine, ochre, dark wood, and a touch of gold or brass, because one should always have a little gold.",
+            "My daughter visits at weekends and deserves better than the room where I put things I haven't decided about. A proper bed, a bedside table, and teal (greens and blues with cream) so she will sleep like a queen and ring me every morning to say so. And no white, darling. It's a home, not a hospital."],
+      bye:"Fondly, and with a flourish,", ps:"Mia's flowers have the whole village talking. I'd like one for the table. A small, tasteful riot." },
+    ROSA_03: { hello:"Darling,",
+      body:["I have done something impulsive. I have bought a house by the sea. Small, bright, slightly crooked, with a kitchen window that looks directly at the waves. I'm keeping the flat in town; I'm not a monster.",
+            "It needs a lighter version of me. A living room with space for a book and the view; a kitchen with a counter, a fridge, and a table at which one can eat toast with dignity; a bedroom to be rocked to sleep in. Green, blue and cream, light wood, but don't make it anonymous. A small touch of ochre or gold. I do have a reputation.",
+            "No anchors on the cushions; I would rather perish. And not too much dark wood. It's a seaside cabin, not a library in a thriller."],
+      bye:"With sand in my shoes already,", ps:"Come for tea when it's done. The kettle is yours. I've warned the seagulls." }
+  };
+  QUESTS.forEach(function(q){ q.letter = LETTERS[q.id]; });
+
+  /* ---------------------------------------------------------------- rewards */
+  // Every job leaves a thank-you gift: pieces that stay locked in story mode
+  // until the neighbour gives them to you. Hand in your best work (all 5
+  // hearts) and they tuck an extra one into the envelope.
+  var REWARDS = {
+    MIA_01:   { items:['candle-joerg-off','flowers-sia-white'],                    bonus:['vase-victoria'] },
+    MIA_02:   { items:['blanket-basket','painting-flowers-pink'],                  bonus:['lamp-kay-blush'] },
+    MIA_03:   { items:['painting-turner-blue','lamp-kay-blue'],                    bonus:['rug-persian-blue'] },
+    JULES_01: { items:['paintbrushes-incup-beige','painting-maja'],                bonus:['magazines-stacked-orange'] },
+    JULES_02: { items:['lamp-kay-red','cowhide-carrie-cheetah'],                   bonus:['painting-horses-pink'] },
+    JULES_03: { items:['vase-lisa-orange','pillows-stacked-orange'],               bonus:['cowhide-carrie-rosa'] },
+    SAM_01:   { items:['recordplayer-darkwood','chrome-teecup'],                   bonus:['standmixer-smeggy-chrome'] },
+    SAM_02:   { items:['chandelier-ana','chessboard-marble'],                      bonus:['couch-uwe-dark-leather'] },
+    SAM_03:   { items:['kitchen-island-serena-steel','couch-uwe-light-leather'],   bonus:['bust-art-dave-stone'] },
+    NOOR_01:  { items:['standing-lamp-kai','painting-fog'],                        bonus:['wallshelf-vila'] },
+    NOOR_02:  { items:['bust-art-lisa-stone','couchtable-marble-elle-light'],      bonus:['chandelier-kiki'] },
+    NOOR_03:  { items:['fireplace-marlo-marble-white','bedsidetable-moppy-marble'],bonus:['chessboard-beige'] },
+    THEO_01:  { items:['rug-elena-yellow','globe'],                                bonus:['recordplayer-old-mediumwood'] },
+    THEO_02:  { items:['curtain-siri-green','books-leaning-beige'],                bonus:['lamp-hubby'] },
+    THEO_03:  { items:['fireplace-milo-stone-beige','couch-hennes-green-long'],    bonus:['fruit-bowl-oranges'] },
+    ROSA_01:  { items:['candle-kiki-off','rug-malana-orange-pattern'],             bonus:['lamp-sia-gold'] },
+    ROSA_02:  { items:['bust-art-alena-stone','couch-henry-red'],                  bonus:['chandelier-irina'] },
+    ROSA_03:  { items:['fireplace-marco-marble-beige','rug-persian-rosa'],         bonus:['vase-blue-china'] }
+  };
+  var GIFT_OWNER = {};   // item id -> { quest, bonus }
+  QUESTS.forEach(function(q){
+    var r = REWARDS[q.id]; q.reward = r;
+    if (!r) return;
+    r.items.forEach(function(id){ GIFT_OWNER[id] = { quest:q.id, bonus:false }; });
+    r.bonus.forEach(function(id){ GIFT_OWNER[id] = { quest:q.id, bonus:true }; });
+  });
+  // the set of gifts earned so far, from the story save's `quests` record
+  function giftsEarned(questRecords){
+    var out = {};
+    QUESTS.forEach(function(q){
+      var rec = questRecords && questRecords[q.id];
+      if (!rec || !rec.done || !q.reward) return;
+      q.reward.items.forEach(function(id){ out[id] = true; });
+      if ((rec.best || 0) >= 5) q.reward.bonus.forEach(function(id){ out[id] = true; });
+    });
+    return out;
+  }
+  function giftOwner(itemId){ return GIFT_OWNER[itemId] || null; }
+
   /* ---- indexing & unlock rules ---- */
   var QUEST_BY_ID = {};
   QUESTS.forEach(function(q){ QUEST_BY_ID[q.id] = q; });
@@ -675,6 +865,7 @@ var Story = (function(){
     TOWN: TOWN, RENOWN_LEVELS: RENOWN_LEVELS, renownLevel: renownLevel,
     CHARACTERS: CHARACTERS, PROPERTIES: PROPERTIES, QUESTS: QUESTS, ROLES: ROLES, KINDS: KINDS, MOODS: MOODS,
     questById: questById, questsOf: questsOf, isUnlocked: isUnlocked,
+    giftsEarned: giftsEarned, giftOwner: giftOwner, REWARDS: REWARDS, VOICES: VOICES,
     starsFor: starsFor, isKind: isKind,
     evaluate: evaluate, quality: quality, heartsFor: heartsFor, buildReply: buildReply
   };
