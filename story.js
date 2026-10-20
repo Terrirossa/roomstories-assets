@@ -21,6 +21,19 @@ var Story = (function(){
     // ambient life on the map (positions are % of the map image; water points
     // and boat lanes were checked against the painting so nothing sails on land)
     fx: {"glints":[[72.8,65.0],[68.8,70.4],[32.8,12.8],[24.2,96.9],[32.2,94.2],[12.2,92.5],[14.2,2.2],[83.2,49.1],[45.2,94.2],[60.8,6.6],[53.8,3.1],[47.2,11.9],[22.8,14.6],[93.2,35.8],[14.2,13.7],[27.8,88.9],[58.2,90.7],[12.8,8.4],[37.8,1.3],[29.8,91.6],[35.8,93.4],[30.2,8.4],[89.8,10.2],[59.2,87.2],[21.2,2.2],[7.2,8.4],[44.2,10.2],[37.2,88.1],[67.2,96.9],[50.7,89.8],[23.2,5.8],[53.8,96.0],[87.2,11.9],[4.8,10.2],[50.7,83.6],[34.8,97.8],[34.8,0.4],[10.2,97.8],[33.8,86.3],[34.8,7.5],[27.3,12.8],[61.8,90.7],[53.8,10.2],[2.2,93.4],[49.2,94.2],[52.2,86.3],[51.2,4.9],[68.8,74.8],[67.2,18.1],[46.8,86.3],[8.8,90.7],[62.7,96.0],[52.2,98.7],[2.2,5.8],[36.8,11.1],[88.2,42.9],[81.2,57.1],[12.2,4.9],[7.2,87.2],[41.8,81.9],[4.2,0.4],[85.2,9.3],[16.8,98.7],[87.2,47.3],[41.8,85.4],[27.3,96.9],[28.7,2.2],[48.2,6.6],[45.2,82.7],[7.8,11.9]],"boats":[{"path":[[26,96.5],[38,94],[49,92.5]],"dur":110,"startAt":0.1},{"path":[[44,7.5],[52,7],[59,6.5]],"dur":85,"startAt":0.55},{"path":[[96.5,31.5],[92,37.5],[88,43],[84,49]],"dur":70,"startAt":0.3}],"leaves":{"area":[1,18,30,66],"count":14},"smoke":[]},
+    // named neighbourhoods (polygons in % of the map image). The first one that
+    // contains a point wins, so the small ones come first.
+    districts: [
+      {id:"lake",name:"Lantern Lake",blurb:"Log cabins around a still pond. Smoke from at least one chimney, always.",poly:[[75,0],[100,0],[100,26],[90,28],[80,25],[75,14]],label:[88,4]},
+      {id:"orchard",name:"Orchard Rise",blurb:"Tidy lanes, neat gardens and a surprising number of cats.",poly:[[17,19],[38,16],[50,20],[52,29],[40,33],[24,32],[16,28]],label:[32,24]},
+      {id:"glass",name:"Glass Row",blurb:"The new towers. Lifts, balconies, and a view of the other towers.",poly:[[62,24],[75,20],[86,24],[88,40],[80,52],[70,53],[63,46],[61,34]],label:[75,31]},
+      {id:"canal",name:"Canal Row",blurb:"Narrow brick houses with their feet in the water.",poly:[[62,50],[70,50],[74,58],[76,72],[68,80],[60,76],[60,60]],label:[66,67]},
+      {id:"mills",name:"The Old Mills",blurb:"Warehouses turned into lofts: high ceilings, big windows, echoing stairwells.",poly:[[82,48],[100,44],[100,100],[70,100],[70,86],[74,72],[82,62]],label:[90,76]},
+      {id:"oldtown",name:"Old Town",blurb:"Red brick, a clock tower that runs a little fast, and the best pavement for gossip.",poly:[[40,27],[52,24],[60,28],[62,38],[62,50],[60,60],[60,76],[54,74],[42,72],[40,60],[42,46]],label:[51,48]},
+      {id:"church",name:"Church Hill",blurb:"White clapboard, a very tall steeple, and neighbours who bring casseroles.",poly:[[0,36],[14,33],[30,36],[41,40],[43,64],[38,82],[20,86],[0,84]],label:[18,66]},
+      {id:"harbour",name:"The Harbour",blurb:"Boats come and go. Mostly come.",poly:[[0,88],[20,90],[42,84],[60,84],[66,92],[70,100],[0,100]],label:[34,94]},
+      {id:"bay",name:"Kingfisher Bay",blurb:"Wide, bright, and full of sails on a Sunday.",poly:[[0,0],[56,0],[60,6],[66,16],[40,16],[20,20],[0,20]],label:[28,8]}
+    ],
     prologue: [
       "Pennywhistle Cove is the kind of town where everybody knows whose bicycle is whose.",
       "You started arranging rooms as a hobby. Cushions. Plants. The occasional heated opinion about rugs.",
@@ -68,48 +81,48 @@ var Story = (function(){
   // only unlocks the rooms it lists in `edit`. Doors are chosen so
   // neighbouring rooms connect: right door -> next room's left door.
   var PROPERTIES = {
-    MIA_HOME_A:    { owner:'mia',   name:"Mia's first flat",       family:'sunlit-living-room-twin-windows', map:{x:56.5,y:61.5},
+    MIA_HOME_A:    { owner:'mia',   name:"Mia's first flat",       family:'sunlit-living-room-twin-windows', district:'oldtown', map:{x:56.5,y:62},
                      rooms:[ {key:'living',  label:'Living room', arch:'both-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'both-bothdoors'},
                              {key:'spare',   label:'Little spare room', arch:'both-leftdoor'} ] },
-    MIA_HOME_B:    { owner:'mia',   name:"Mia & Alex's flat",      family:'sunlit-living-room-twin-windows', map:{x:37,y:46},
+    MIA_HOME_B:    { owner:'mia',   name:"Mia & Alex's flat",      family:'sunlit-living-room-twin-windows', district:'church', map:{x:20.5,y:50},
                      rooms:[ {key:'living',  label:'Living room', arch:'both-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'both-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'both-leftdoor'} ] },
-    JULES_HOME_A:  { owner:'jules', name:"Jules's tiny studio",    family:'historic', map:{x:63,y:64.5},
+    JULES_HOME_A:  { owner:'jules', name:"Jules's tiny studio",    family:'historic', district:'canal', map:{x:61.5,y:66},
                      rooms:[ {key:'studio',  label:'The studio',  arch:'onewindow-nodoors'} ] },
-    JULES_HOME_B:  { owner:'jules', name:"Jules's live-work loft", family:'loft', map:{x:76,y:76},
+    JULES_HOME_B:  { owner:'jules', name:"Jules's live-work loft", family:'loft', district:'mills', map:{x:80,y:83},
                      rooms:[ {key:'living',  label:'Living room', arch:'threewindows-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'threewindows-bothdoors'},
                              {key:'art',     label:'Art room',    arch:'threewindows-leftdoor'} ] },
-    SAM_HOME_A:    { owner:'sam',   name:"Sam's city apartment",   family:'sunlit-living-room-twin-windows', map:{x:74,y:42},
+    SAM_HOME_A:    { owner:'sam',   name:"Sam's city apartment",   family:'sunlit-living-room-twin-windows', district:'glass', map:{x:72,y:43},
                      rooms:[ {key:'kitchen', label:'Kitchen',     arch:'big-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'big-bothdoors'},
                              {key:'living',  label:'Living room', arch:'big-leftdoor'} ] },
-    SAM_HOME_B:    { owner:'sam',   name:"Sam & Robin's home",     family:'historic', map:{x:44,y:33},
+    SAM_HOME_B:    { owner:'sam',   name:"Sam & Robin's home",     family:'historic', district:'oldtown', map:{x:45,y:34},
                      rooms:[ {key:'kitchen', label:'Kitchen',     arch:'twowindows-rightdoor'},
                              {key:'living',  label:'Living room', arch:'roundwindow-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'baywindowright-leftdoor'} ] },
-    NOOR_HOME_A:   { owner:'noor',  name:"Noor's rental",          family:'sunlit-living-room-twin-windows', map:{x:66,y:52},
+    NOOR_HOME_A:   { owner:'noor',  name:"Noor's rental",          family:'sunlit-living-room-twin-windows', district:'glass', map:{x:65.5,y:36.5},
                      rooms:[ {key:'bedroom', label:'Bedroom',     arch:'right-rightdoor'},
                              {key:'living',  label:'Living room', arch:'right-bothdoors'},
                              {key:'kitchen', label:'Kitchen',     arch:'right-leftdoor'} ] },
-    NOOR_HOME_B:   { owner:'noor',  name:"Noor's industrial flat", family:'loft', map:{x:88,y:58},
+    NOOR_HOME_B:   { owner:'noor',  name:"Noor's industrial flat", family:'loft', district:'mills', map:{x:87,y:62},
                      rooms:[ {key:'living',  label:'Living room', arch:'twowindows-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'onewindow-bothdoors'},
                              {key:'study',   label:'Quiet room',  arch:'onewindow-leftdoor'} ] },
-    THEO_HOME_A:   { owner:'theo',  name:"Theo & Elena's cabin",   family:'cozy-cabin', map:{x:86,y:11},
+    THEO_HOME_A:   { owner:'theo',  name:"Theo & Elena's cabin",   family:'cozy-cabin', district:'lake', map:{x:86.6,y:16},
                      rooms:[ {key:'living',  label:'Living room', arch:'bigwindow-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'smallwindow-leftdoor'} ] },
-    THEO_HOME_B:   { owner:'theo',  name:"Theo's family flat",     family:'sunlit-living-room-twin-windows', map:{x:36,y:25},
+    THEO_HOME_B:   { owner:'theo',  name:"Theo's family flat",     family:'sunlit-living-room-twin-windows', district:'orchard', map:{x:25.5,y:26.5},
                      rooms:[ {key:'living',  label:'Living room', arch:'left-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'left-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'left-leftdoor'} ] },
-    ROSA_HOME_A:   { owner:'rosa',  name:"Rosa's old apartment",   family:'historic', map:{x:46,y:63},
+    ROSA_HOME_A:   { owner:'rosa',  name:"Rosa's old apartment",   family:'historic', district:'oldtown', map:{x:45.5,y:61},
                      rooms:[ {key:'sitting', label:'Sitting room',arch:'twowindows-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'roundwindow-bothdoors'},
                              {key:'guest',   label:'Guest bedroom',arch:'baywindowright-leftdoor'} ] },
-    ROSA_CABIN_A:  { owner:'rosa',  name:"Rosa's seaside cabin",   family:'cozy-cabin', map:{x:7,y:66},
+    ROSA_CABIN_A:  { owner:'rosa',  name:"Rosa's lakeside cabin",   family:'cozy-cabin', district:'lake', map:{x:79.6,y:13.2},
                      rooms:[ {key:'living',  label:'Living room', arch:'bigwindow-rightdoor'},
                              {key:'kitchen', label:'Kitchen & dining', arch:'woodenroom-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'smallwindow-leftdoor'} ] }
@@ -210,7 +223,7 @@ var Story = (function(){
 
   /* ======================== MIA ======================== */
   { id:'MIA_01', char:'mia', title:'A Key of My Own', property:'MIA_HOME_A', change:'new', edit:['living'],
-    requires:[], allowance:16,
+    requires:[], allowance:24,
     story:"Mia has started at the vet practice and finally has her own keys. Most of her savings went on the deposit, so there's exactly one room she can afford to feel good in.",
     message:"I've never had a room where I get to choose everything! Green and cream, light wood, somewhere comfy to sit. And flowers, please. I always stop at the flower-shop window on my way home. (Apparently that's 'a lot of stopping'.)",
     brief:[
@@ -230,7 +243,7 @@ var Story = (function(){
     reply:{ low:"It's a start. I'm just happy it's mine.", mid:"It feels like a place I could live in. Thank you!", high:"I came home, sat down, and just stayed there. This is the first place that's really felt like mine." }
   },
   { id:'MIA_02', char:'mia', title:'Now the Rest Feels Empty', property:'MIA_HOME_A', change:'more', edit:['bedroom','spare'],
-    requires:['MIA_01','JULES_01'], allowance:26,
+    requires:['MIA_01','JULES_01'], allowance:34,
     story:"Mia passed her probation (and got a small raise). Every evening she ends up in the living room you did, because the rest of the flat still feels temporary.",
     message:"Every evening I end up in the room you did. Could you help with the other two? A soft pink bedroom, I think, and green in the little room. You already know how I feel about flowers.",
     brief:[
@@ -244,7 +257,7 @@ var Story = (function(){
     reply:{ low:"The rooms feel less empty, and that's a lot already.", mid:"Now the whole flat feels like me. Thank you.", high:"I invited my mum round. I didn't apologise for anything. That's new." }
   },
   { id:'MIA_03', char:'mia', title:'Our First Place', property:'MIA_HOME_B', change:'move', edit:['living','dining','bedroom'],
-    requires:['MIA_02'], minRenown:15, allowance:46,
+    requires:['MIA_02'], minRenown:15, allowance:60,
     story:"Mia and Alex are moving in together. Alex likes navy and simple shapes. Mia wants her softer, greener self to come along.",
     message:"Alex wants navy, I still want green, and we both want it to feel like home. Could you bring a bit of my old living room with us? And leave room for flowers on the dining table. (Alex says hi. Alex is very organised.)",
     brief:[
@@ -261,7 +274,7 @@ var Story = (function(){
 
   /* ======================== JULES ======================== */
   { id:'JULES_01', char:'jules', title:'Everything Happens Here', property:'JULES_HOME_A', change:'new', edit:['studio'],
-    requires:['MIA_01'], allowance:16,
+    requires:['MIA_01'], allowance:24,
     story:"Mia sent Jules your way. Jules has arrived in Pennywhistle Cove to finish an illustration course, and has already unpacked every art supply before the bed.",
     message:"The easel goes in first. After that, somewhere to sleep would be sensible, I suppose. Blue and orange, please! I want to walk in and feel like making something. (Please don't make it beige. Beige is how they get you.)",
     brief:[
@@ -275,7 +288,7 @@ var Story = (function(){
     reply:{ low:"It's a roof and an easel. I can work with that.", mid:"I can walk in and want to make something. That's all I wanted.", high:"I put the easel down and painted until 3am. The room made me do it." }
   },
   { id:'JULES_02', char:'jules', title:'My First Paid Commission', property:'JULES_HOME_A', change:'refresh', edit:['studio'],
-    requires:['JULES_01','SAM_01'], allowance:16,
+    requires:['JULES_01','SAM_01'], allowance:24,
     story:"Someone has actually paid Jules for an illustration! The studio gets a refresh — the room you made stays as it is, with a few new things.",
     message:"Someone has actually PAID me. I'd like to spend a little on this place. Keep the easel and the blue, but could we try something lilac with it? It still needs to feel like my room.",
     brief:[
@@ -288,7 +301,7 @@ var Story = (function(){
     reply:{ low:"A tiny bit fancier. A tiny bit more me.", mid:"It's like my room grew up and kept its personality.", high:"I'm going to tell the client it's from my 'inspiration space'. It's from you." }
   },
   { id:'JULES_03', char:'jules', title:'A Door with My Name on It', property:'JULES_HOME_B', change:'move', edit:['living','bedroom','art'],
-    requires:['JULES_02'], minRenown:15, allowance:50,
+    requires:['JULES_02'], minRenown:15, allowance:65,
     story:"Jules graduated and a small creative grant arrived. A live-work loft with an actual room for art. Jules is slightly overwhelmed by the idea of a door that closes.",
     message:"An actual room for painting! Give that room ALL the colour. The bedroom can be softer. And please don't make the living room look like a reception area.",
     brief:[
@@ -304,7 +317,7 @@ var Story = (function(){
 
   /* ======================== SAM ======================== */
   { id:'SAM_01', char:'sam', title:'Dinner at Mine', property:'SAM_HOME_A', change:'new', edit:['kitchen'],
-    requires:['JULES_01'], allowance:26,
+    requires:['JULES_01'], allowance:34,
     story:"Sam has moved for a better-paying job and has already invited his entire new team to dinner. The kitchen comes first. The oven is, as of this week, 'on its way'.",
     message:"The bedroom can wait. I want a kitchen I'm excited to cook in. Dark wood, burgundy, plenty of metal. Spare no mixers! (The oven is on back-order. It's been on back-order for six weeks. We don't talk about it.)",
     brief:[
@@ -318,7 +331,7 @@ var Story = (function(){
     reply:{ low:"It's a kitchen. I'll make dinner anyway — on the floor if needed.", mid:"This is a kitchen I'd happily burn something in.", high:"This is exactly the kitchen I wanted to invite people into. Dinner at mine. Bring wine." }
   },
   { id:'SAM_02', char:'sam', title:'Come Through to the Living Room', property:'SAM_HOME_A', change:'more', edit:['dining','living'],
-    requires:['SAM_01','NOOR_01'], minRenown:5, allowance:44,
+    requires:['SAM_01','NOOR_01'], minRenown:5, allowance:58,
     story:"Dinner at Sam's has become a Thing. The kitchen is working overtime, and the guests now need somewhere lovely to eat and then to lie around dramatically.",
     message:"The kitchen's getting plenty of use. Now: somewhere lovely to eat, and somewhere to collapse afterwards. Keep that dark wood. Leather would be wonderful. (Velvet is also on back-order. Don't ask.)",
     brief:[
@@ -334,7 +347,7 @@ var Story = (function(){
     reply:{ low:"A place to sit. People will sit. People are flexible.", mid:"I can already hear the clinking of glasses.", high:"People stayed until 2am and nobody wanted to leave the couch. That's the review I wanted." }
   },
   { id:'SAM_03', char:'sam', title:'A Key for Both of Us', property:'SAM_HOME_B', change:'move', edit:['kitchen','living','bedroom'],
-    requires:['SAM_02'], minRenown:15, allowance:68,
+    requires:['SAM_02'], minRenown:15, allowance:89,
     story:"Sam got promoted and he and Robin, a teacher, have bought their first home together. Robin loves Sam's taste but would like to sleep somewhere that doesn't feel like a stage.",
     message:"I'd still put the kitchen first. Robin wants the bedroom lighter, which is fair. Can you make it feel like one home without making every room equally dramatic? (We now own a dish rack. It's the best day of my life.)",
     brief:[
@@ -353,7 +366,7 @@ var Story = (function(){
 
   /* ======================== NOOR ======================== */
   { id:'NOOR_01', char:'noor', title:'Somewhere to Switch Off', property:'NOOR_HOME_A', change:'new', edit:['bedroom'],
-    requires:['SAM_01'], allowance:26,
+    requires:['SAM_01'], allowance:34,
     story:"Noor has moved within Pennywhistle Cove after a breakup, and has decided that is entirely her own business. She wants one calm room finished before looking at the rest.",
     message:"The bedroom first. Chalk white, blue, pale wood. I look at plans all day; I don't want work following me to bed. Fewer things, chosen well.",
     brief:[
@@ -367,7 +380,7 @@ var Story = (function(){
     reply:{ low:"It's a bedroom. I'll make it work.", mid:"Calm. Mostly. I could sleep here.", high:"It feels calm. You paid attention. Most people don't." }
   },
   { id:'NOOR_02', char:'noor', title:'You Understood Me', property:'NOOR_HOME_A', change:'more', edit:['living','kitchen'],
-    requires:['NOOR_01','THEO_01'], allowance:42,
+    requires:['NOOR_01','THEO_01'], allowance:55,
     story:"Noor liked the bedroom enough to say so. Out loud. In the office, within hearing of two colleagues. She'd like the living room and kitchen to follow it.",
     message:"You listened. I'd like you to do the kitchen and living room too. The same restraint, but they don't have to look identical. Keep the blue.",
     brief:[
@@ -382,7 +395,7 @@ var Story = (function(){
     reply:{ low:"Functional. I can work with that.", mid:"It feels like one person lives here. That person is me.", high:"I invited my sister over. I didn't tidy first. That's how I know." }
   },
   { id:'NOOR_03', char:'noor', title:'A Place of My Own', property:'NOOR_HOME_B', change:'move', edit:['living','bedroom','study'],
-    requires:['NOOR_02'], minRenown:15, allowance:70,
+    requires:['NOOR_02'], minRenown:15, allowance:91,
     story:"Noor got promoted and bought a flat in a converted warehouse. She's thrilled by the old brick and the high windows, and absolutely clear about one thing: no desk. 'Desks are how work follows you home.'",
     message:"I intend to stay here. I'd like the furniture to feel considered. A quiet bedroom, somewhere I actually want to sit at the end of the day, and a small room to think in. No desk. A chair, a shelf, a good lamp.",
     brief:[
@@ -399,7 +412,7 @@ var Story = (function(){
 
   /* ======================== THEO ======================== */
   { id:'THEO_01', char:'theo', title:'Before the Baby Arrives', property:'THEO_HOME_A', change:'new', edit:['living'],
-    requires:['NOOR_01'], allowance:20,
+    requires:['NOOR_01'], allowance:28,
     starters:[ {room:'living', asset:'sideboard-akio-mediumwood', x:56, y:58, width:null} ],
     story:"Theo and Elena have found a little cabin by the pond with just enough room for a growing family. Their belongings have arrived. The living room is a collection of temporary solutions.",
     message:"We want somewhere we can both sit and breathe for a minute. Elena likes warm white; I'd love some mustard or blue. It doesn't need to be fancy. Oh, and we kept the old sideboard. It might be useful.",
@@ -415,7 +428,7 @@ var Story = (function(){
     reply:{ low:"It's a good start. We'll make it ours.", mid:"This feels like somewhere we can actually settle in.", high:"Elena cried a little and said it was 'hormones'. I think it was the sideboard." }
   },
   { id:'THEO_02', char:'theo', title:'A Room for Us, Too', property:'THEO_HOME_A', change:'more', edit:['bedroom'],
-    requires:['THEO_01','ROSA_01'], allowance:24,
+    requires:['THEO_01','ROSA_01'], allowance:32,
     story:"The baby has arrived and so has a lot of laundry. Theo and Elena have spent their money on essentials and left their own bedroom for last. They'd love one room that's restful and adult.",
     message:"The living room still makes us happy. Could you help with our bedroom now? Elena suggested green. I'd like to keep the wood and keep it simple. And somewhere to put clothes that isn't 'the chair'.",
     brief:[
@@ -429,7 +442,7 @@ var Story = (function(){
     reply:{ low:"It's somewhere to sleep. That's a lot, right now.", mid:"Restful. Adult. That's all we asked.", high:"We slept for six hours straight. The baby did too. Is this witchcraft?" }
   },
   { id:'THEO_03', char:'theo', title:'Enough Room for Everyone', property:'THEO_HOME_B', change:'move', edit:['living','dining','bedroom'],
-    requires:['THEO_02'], minRenown:15, allowance:56,
+    requires:['THEO_02'], minRenown:15, allowance:73,
     starters:[ {room:'living', asset:'sideboard-akio-mediumwood', x:60, y:58, width:null} ],
     story:"Theo is now a co-owner of the bicycle shop and the family has moved to a bigger flat with a proper dining room. They can afford new furniture, but they brought the sideboard. It might be useful.",
     message:"We've finally got a proper dining room! I'd love us all to sit down together when family visits. Bring what still works from the old place, we don't need to start from zero. (The sideboard is back. It followed us.)",
@@ -448,7 +461,7 @@ var Story = (function(){
 
   /* ======================== ROSA ======================== */
   { id:'ROSA_01', char:'rosa', title:'Finally, the Sitting Room', property:'ROSA_HOME_A', change:'new', edit:['sitting'],
-    requires:['THEO_01'], allowance:30,
+    requires:['THEO_01'], allowance:39,
     starters:[ {room:'sitting', asset:'sideboard-nikola-darkwood', x:58, y:56, width:null} ],
     story:"Rosa retired from the theatre costume department last month and hasn't enjoyed a single beige thing since. She knows which belongings she loves and which she's tolerated for years. She wants someone who'll work with her taste, not erase it.",
     message:"I've hated that arrangement for years. The dark wood stays — I'm very attached to the sideboard. And I want proper colour: wine, ochre, something with a pattern. Retirement is no reason to turn everything beige, darling.",
@@ -463,7 +476,7 @@ var Story = (function(){
     reply:{ low:"It's a start. I'll complain about it fondly.", mid:"Plenty of colour, and it still feels like my home. Good.", high:"I sat in it and wanted to hold a small dinner party immediately. That's a compliment, darling." }
   },
   { id:'ROSA_02', char:'rosa', title:'Stay for Tea', property:'ROSA_HOME_A', change:'more', edit:['dining','guest'],
-    requires:['ROSA_01','MIA_02'], allowance:46,
+    requires:['ROSA_01','MIA_02'], allowance:60,
     story:"Rosa has started teaching small sewing classes in the village hall. Friends stay for tea afterwards, and her daughter visits at weekends. The dining room needs attention, and the guest room is 'where I put things I haven't decided about'.",
     message:"Everyone ends up staying longer now. The dining room needs some attention, and my daughter deserves better than the room where I put things I haven't decided about. Teal in her room, I think. Wine and ochre for the table.",
     brief:[
@@ -477,21 +490,21 @@ var Story = (function(){
     ],
     reply:{ low:"A fine beginning. One expects improvements.", mid:"Lovely. Now everyone will stay even longer. Good.", high:"Four people stayed until midnight. I've found the room's 'one more cup' effect. Marvellous." }
   },
-  { id:'ROSA_03', char:'rosa', title:'The Little House by the Sea', property:'ROSA_CABIN_A', change:'second', edit:['living','kitchen','bedroom'],
-    requires:['ROSA_02'], minRenown:15, allowance:78,
-    story:"With long-held savings and an inheritance, Rosa has bought a little cabin on the shore. She keeps her city flat. The cabin is small and bright, and calls for a lighter, breezier version of her taste.",
-    message:"I want to know I'm near the sea when I open the windows. I don't need anchors on the cushions. Lighter wood, some green and blue — but don't make it anonymous, darling. A little ochre. I do have a reputation.",
+  { id:'ROSA_03', char:'rosa', title:'The Little House by the Lake', property:'ROSA_CABIN_A', change:'second', edit:['living','kitchen','bedroom'],
+    requires:['ROSA_02'], minRenown:15, allowance:102,
+    story:"With long-held savings and an inheritance, Rosa has bought a little cabin on the lake. She keeps her city flat. The cabin is small and bright, and calls for a lighter, breezier version of her taste.",
+    message:"I want to know I'm near the water when I open the windows. I don't need little ducks on the cushions. Lighter wood, some green and blue — but don't make it anonymous, darling. A little ochre. I do have a reputation.",
     brief:[
       R('must','living','A living room',{role:'living',room:'living'},["I could read here for weeks."]),
       R('must','kitchen','A kitchen, with a counter and a fridge',{role:'kitchen',room:'kitchen'},["Tea, toast. A kitchen of dignity."]),
-      R('must','bedroom','A bedroom with a bed and a bedside table',{role:'bedroom',room:'bedroom'},["The bedroom will let me sleep to the sound of waves."]),
-      R('like','palette','Green, blue, cream and light wood',{colors:['Green','Blue','Beige','White','Light Wood'],minShare:0.6},["It's the sea in a room. Not literal. Wonderful."]),
+      R('must','bedroom','A bedroom with a bed and a bedside table',{role:'bedroom',room:'bedroom'},["The bedroom will let me sleep to the sound of the water."]),
+      R('like','palette','Green, blue, cream and light wood',{colors:['Green','Blue','Beige','White','Light Wood'],minShare:0.6},["It's the lake in a room. Not literal. Wonderful."]),
       R('like','ochre','Small ochre accents: yellow, orange or gold',{colors:['Yellow','Orange','Gold','Brass'],min:1},["That bit of ochre is me, in tiny form."]),
       R('like','wood','Light wood in a few places',{colors:['Light Wood'],min:3},["Light, lovely wood."]),
       R('like','table','A table in the kitchen to eat at',{kinds:['dining'],min:1,room:'kitchen'},["A kitchen table. Bliss."]),
-      R('avoid','nodark','Not an all-dark-wood interior',{colors:['Dark Wood'],maxShare:0.2},[null,"Rather a lot of dark wood for a seaside cabin, darling."])
+      R('avoid','nodark','Not an all-dark-wood interior',{colors:['Dark Wood'],maxShare:0.2},[null,"Rather a lot of dark wood for a lakeside cabin, darling."])
     ],
-    reply:{ low:"It's a house by the sea. One forgives a great deal.", mid:"It's light and it's mine. Lovely.", high:"I opened the window, heard the gulls, and decided to stay till autumn. You've ruined my city flat for me." }
+    reply:{ low:"It's a house by the lake. One forgives a great deal.", mid:"It's light and it's mine. Lovely.", high:"I opened the window, heard the ducks, and decided to stay till autumn. You've ruined my city flat for me." }
   }
 
   ];
@@ -632,10 +645,10 @@ var Story = (function(){
             "My daughter visits at weekends and deserves better than the room where I put things I haven't decided about. A proper bed, a bedside table, and teal (greens and blues with cream) so she will sleep like a queen and ring me every morning to say so. And no white, darling. It's a home, not a hospital."],
       bye:"Fondly, and with a flourish,", ps:"Mia's flowers have the whole village talking. I'd like one for the table. A small, tasteful riot." },
     ROSA_03: { hello:"Darling,",
-      body:["I have done something impulsive. I have bought a house by the sea. Small, bright, slightly crooked, with a kitchen window that looks directly at the waves. I'm keeping the flat in town; I'm not a monster.",
+      body:["I have done something impulsive. I have bought a house by the lake. Small, bright, slightly crooked, with a kitchen window that looks directly at the water. I'm keeping the flat in town; I'm not a monster.",
             "It needs a lighter version of me. A living room with space for a book and the view; a kitchen with a counter, a fridge, and a table at which one can eat toast with dignity; a bedroom to be rocked to sleep in. Green, blue and cream, light wood, but don't make it anonymous. A small touch of ochre or gold. I do have a reputation.",
-            "No anchors on the cushions; I would rather perish. And not too much dark wood. It's a seaside cabin, not a library in a thriller."],
-      bye:"With sand in my shoes already,", ps:"Come for tea when it's done. The kettle is yours. I've warned the seagulls." }
+            "No little ducks on the cushions; I would rather perish. And not too much dark wood. It's a lakeside cabin, not a library in a thriller."],
+      bye:"With wet boots already,", ps:"Come for tea when it's done. The kettle is yours. I've warned the ducks." }
   };
   QUESTS.forEach(function(q){ q.letter = LETTERS[q.id]; });
 
@@ -799,13 +812,14 @@ var Story = (function(){
   // "furnished nicely": measurable things only — fullness, variety, balance,
   // and a palette that fits the character's mood. `bonusCount` is how many
   // achievements the commissioned rooms earned.
-  function quality(quest, pieces, getAsset, bonusCount){
+  // The four ingredients of "furnished nicely", per commissioned room, 0-100.
+  function qualityRooms(quest, pieces, getAsset){
     var mood = MOODS[quest.char] || 'cohesive';
-    var perRoom = quest.edit.map(function(key){
+    return quest.edit.map(function(key){
       var list = pieces.filter(function(p){ return p.roomKey === key; })
         .map(function(p){ return { p:p, a:getAsset(p.assetId) }; }).filter(function(e){ return e.a; });
       var n = list.length;
-      if (!n) return 0;
+      if (!n) return { key:key, n:0, full:0, variety:0, balance:0, harmony:0, score:0 };
       var full;
       if (mood === 'calm'){
         full = n < 6 ? n / 6 * 100 : (n <= 12 ? 100 : Math.max(50, 100 - (n - 12) * 8));
@@ -829,10 +843,89 @@ var Story = (function(){
         var top3 = (counts[0] || 0) + (counts[1] || 0) + (counts[2] || 0);
         harmony = Math.min(top3 / n / 0.7, 1) * 100;
       }
-      return (full + variety + 2 * balance + harmony) / 5;   // a well-spread room counts for more than a pile in the middle
+      return { key:key, n:n, full:full, variety:variety, balance:balance, harmony:harmony,
+               score:(full + variety + 2 * balance + harmony) / 5 };   // a well-spread room counts for more than a pile in the middle
     });
+  }
+  function quality(quest, pieces, getAsset, bonusCount){
+    var perRoom = qualityRooms(quest, pieces, getAsset).map(function(r){ return r.score; });
     var avg = perRoom.reduce(function(a,b){ return a + b; }, 0) / (perRoom.length || 1);
     return Math.max(0, Math.min(100, Math.round(avg + Math.min((bonusCount || 0) * 4, 12))));
+  }
+  // The same four ingredients averaged over the commission, each with a
+  // plain-words verdict for the result screen.
+  function qualityDetail(quest, pieces, getAsset){
+    var mood = MOODS[quest.char] || 'cohesive';
+    var rooms = qualityRooms(quest, pieces, getAsset);
+    function avg(k){ return Math.round(rooms.reduce(function(a, r){ return a + r[k]; }, 0) / (rooms.length || 1)); }
+    var n = rooms.reduce(function(a, r){ return a + r.n; }, 0) / (rooms.length || 1);
+    var full = avg('full'), variety = avg('variety'), balance = avg('balance'), harmony = avg('harmony');
+    var crowded = (mood === 'calm' && n > 12) || n > 20;
+    return [
+      { key:'full', label:'Fullness', score:full,
+        note: crowded ? (mood === 'calm' ? 'A touch crowded for someone who likes air' : 'Getting crowded') : (full >= 85 ? 'Comfortably filled' : (full >= 55 ? 'Room for a few more pieces' : 'Still quite bare')) },
+      { key:'variety', label:'Variety', score:variety,
+        note: variety >= 85 ? 'A good mix of furniture, light and decor' : (variety >= 55 ? 'A few more kinds of things would help' : 'Mostly the same kind of piece') },
+      { key:'balance', label:'Balance', score:balance,
+        note: balance >= 85 ? 'Spread nicely across the room' : (balance >= 55 ? 'Leaning a little to one side' : 'Huddled in one corner') },
+      { key:'harmony', label:mood === 'bold' ? 'Colour' : 'Harmony', score:harmony,
+        note: mood === 'bold' ? (harmony >= 85 ? 'Gloriously colourful' : (harmony >= 55 ? 'Could be bolder' : 'Rather shy with colour'))
+                              : (harmony >= 85 ? 'A calm, related palette' : (harmony >= 55 ? 'A few colours pulling apart' : 'The colours are arguing')) }
+    ];
+  }
+
+  // Which of YOUR pieces earned the thumbs-up or the raised eyebrow, and which
+  // colours/materials the brief was fond of or wary of.
+  function analyze(quest, pieces, getAsset, ev){
+    var entries = [];
+    pieces.forEach(function(p, i){ var a = getAsset(p.assetId); if (a) entries.push({ asset:a, piece:p, i:i }); });
+    var scope = entries.filter(function(e){ return quest.edit.indexOf(e.piece.roomKey) !== -1; });
+    var loved = {}, doubted = {}, wantC = {}, avoidC = {}, wantM = {}, avoidM = {};
+    function add(bucket, e, r){
+      var b = bucket[e.asset.id] || (bucket[e.asset.id] = { assetId:e.asset.id, n:0, seen:{}, reasons:[] });
+      if (!b.seen[e.i]){ b.seen[e.i] = 1; b.n++; }
+      if (b.reasons.indexOf(r.text) === -1) b.reasons.push(r.text);
+    }
+    ev.reqs.forEach(function(r, idx){
+      var t = quest.brief[idx].test;
+      (t.colors || []).forEach(function(c){ (r.tier === 'avoid' ? avoidC : wantC)[c] = true; });
+      (t.materials || []).forEach(function(c){ (r.tier === 'avoid' ? avoidM : wantM)[c] = true; });
+      var keys = t.room ? [t.room] : (t.rooms || quest.edit);
+      var inRoom = scope.filter(function(e){ return keys.indexOf(e.piece.roomKey) !== -1; });
+      var hits;
+      if (t.role){
+        var role = ROLES[t.role]; if (!role) return;
+        hits = inRoom.filter(function(e){
+          return role.needs.some(function(nd){ return nd.kinds.some(function(k){ return isKind(k, e.asset); }); });
+        });
+      } else if (t.kinds || t.colors || t.materials || t.ids){
+        hits = inRoom.filter(function(e){ return matchesTest(t, e.asset); });
+      } else return;
+      if (!hits.length) return;
+      if (r.tier === 'avoid'){ if (!r.met) hits.forEach(function(e){ add(doubted, e, r); }); }
+      else if (r.met){ hits.forEach(function(e){ add(loved, e, r); }); }
+    });
+    function list(bucket){
+      return Object.keys(bucket).map(function(k){ var b = bucket[k]; delete b.seen; b.reasons.sort(function(x, y){ return x.length - y.length; }); return b; })
+        .sort(function(a, b){ return (b.reasons.length - a.reasons.length) || (b.n - a.n); });
+    }
+    return { loved:list(loved), doubted:list(doubted),
+             wantColors:Object.keys(wantC), avoidColors:Object.keys(avoidC),
+             wantMaterials:Object.keys(wantM), avoidMaterials:Object.keys(avoidM) };
+  }
+
+  // which named neighbourhood a map point falls in (small ones are listed first)
+  function districtAt(x, y){
+    var ds = TOWN.districts || [];
+    for (var i = 0; i < ds.length; i++){
+      var poly = ds[i].poly, inside = false;
+      for (var a = 0, b = poly.length - 1; a < poly.length; b = a++){
+        var xi = poly[a][0], yi = poly[a][1], xj = poly[b][0], yj = poly[b][1];
+        if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
+      }
+      if (inside) return ds[i];
+    }
+    return null;
   }
 
   function heartsFor(briefScore, qualityScore, mustAll, anyPieces){
@@ -867,6 +960,6 @@ var Story = (function(){
     questById: questById, questsOf: questsOf, isUnlocked: isUnlocked,
     giftsEarned: giftsEarned, giftOwner: giftOwner, REWARDS: REWARDS, VOICES: VOICES,
     starsFor: starsFor, isKind: isKind,
-    evaluate: evaluate, quality: quality, heartsFor: heartsFor, buildReply: buildReply
+    evaluate: evaluate, quality: quality, qualityDetail: qualityDetail, analyze: analyze, districtAt: districtAt, heartsFor: heartsFor, buildReply: buildReply
   };
 })();
