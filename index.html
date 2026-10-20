@@ -1347,6 +1347,282 @@
     padding:0; margin:-1px; overflow:hidden;
     clip:rect(0,0,0,0); white-space:nowrap; border:0;
   }
+
+  /* =========================================================
+     STORY MODE
+  ==========================================================*/
+  .title-story-btn{ font-size:15px; padding:13px 30px; display:block; width:100%; margin-bottom:10px; }
+  .title-free-btn{ font-size:14px; padding:11px 28px; display:block; width:100%; }
+
+  /* ---------- the town map ---------- */
+  .screen-town{
+    position:relative;
+    height:100vh; height:100dvh;
+    overflow:hidden;
+    background:linear-gradient(180deg,#bcd9d6,#8fbab8);
+  }
+  .town-stage{
+    position:absolute; left:50%; top:50%;
+    width:max(100vw, calc(100dvh * 1.7762));
+    aspect-ratio:2000 / 1126;
+    transform:translate(-50%,-50%);
+  }
+  .town-map{
+    position:absolute; inset:0; width:100%; height:100%;
+    display:block; user-select:none; -webkit-user-drag:none;
+    animation:fadeIn .7s ease;
+  }
+  .town-veil{
+    position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 45%, rgba(255,255,255,0) 55%, rgba(30,45,55,.28) 100%),
+      linear-gradient(180deg, rgba(255,246,225,.10), rgba(255,246,225,0) 30%);
+  }
+  .town-pin{
+    position:absolute;
+    transform:translate(-50%,-100%);
+    border:0; background:none; padding:0; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center;
+    filter:drop-shadow(0 6px 9px rgba(15,30,40,.38));
+    transition:transform .16s ease;
+    animation:fadeUp .45s ease backwards;
+    z-index:2;
+  }
+  .town-pin:hover, .town-pin.selected{ transform:translate(-50%,-106%) scale(1.07); z-index:5; }
+  .town-pin-avatar{
+    position:relative;
+    width:46px; height:46px; border-radius:50%;
+    background:var(--pin,#8fb996); color:#fff;
+    font-family:'Fraunces',serif; font-weight:650; font-size:20px;
+    display:flex; align-items:center; justify-content:center;
+    border:3px solid rgba(255,255,255,.94);
+  }
+  .town-pin-tail{
+    width:0; height:0; margin-top:-2px;
+    border-left:7px solid transparent; border-right:7px solid transparent;
+    border-top:10px solid rgba(255,255,255,.94);
+  }
+  .town-pin-label{
+    position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    margin-top:3px; padding:2px 10px; border-radius:99px;
+    background:rgba(255,255,255,.84);
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    font-size:11.5px; font-weight:700; color:var(--ink); white-space:nowrap;
+  }
+  .town-pin.past .town-pin-avatar{ width:30px; height:30px; font-size:13px; border-width:2px; filter:saturate(.65); opacity:.92; }
+  .town-pin.past .town-pin-tail{ border-left-width:5px; border-right-width:5px; border-top-width:7px; }
+  .town-pin.past .town-pin-label{ font-size:10.5px; font-weight:600; opacity:.9; }
+  .town-pin-mail{
+    position:absolute; top:-9px; right:-11px;
+    width:23px; height:23px; border-radius:50%;
+    background:var(--clay); color:#fff; font-size:12px; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    border:2px solid #fff;
+    animation:pinPulse 1.9s ease-in-out infinite;
+  }
+  @keyframes pinPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.2); } }
+
+  .town-topbar{
+    position:absolute; left:0; right:0; top:0; z-index:10;
+    padding:16px 20px;
+    display:flex; align-items:center; gap:12px;
+    pointer-events:none;
+  }
+  .town-topbar > *{ pointer-events:auto; }
+  .town-name{
+    font-family:'Fraunces',serif; font-style:italic; font-weight:560;
+    font-size:22px; color:#fff; text-shadow:0 2px 12px rgba(10,30,40,.55);
+    margin:0 auto 0 6px;
+  }
+  .town-glass{
+    background:rgba(255,255,255,.62);
+    backdrop-filter:blur(14px) saturate(1.5); -webkit-backdrop-filter:blur(14px) saturate(1.5);
+    border:1px solid rgba(255,255,255,.7);
+    border-radius:999px;
+    box-shadow:0 8px 22px rgba(15,35,45,.22);
+  }
+  .renown-chip{
+    display:flex; align-items:center; gap:10px; padding:7px 16px 7px 12px;
+    font-size:12.5px; color:var(--ink);
+  }
+  .renown-chip b{ font-family:'Fraunces',serif; font-size:14px; font-weight:560; }
+  .renown-bar{ width:70px; height:6px; border-radius:99px; background:rgba(54,43,34,.14); overflow:hidden; }
+  .renown-bar > i{ display:block; height:100%; background:linear-gradient(90deg,var(--gold),var(--clay)); border-radius:99px; }
+  .mailbox-btn{
+    position:relative; border:0; cursor:pointer; padding:9px 16px 9px 14px;
+    font-size:13px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:7px;
+  }
+  .mailbox-btn .mail-count{
+    min-width:20px; height:20px; border-radius:99px; padding:0 6px;
+    background:var(--clay); color:#fff; font-size:11.5px; line-height:20px; text-align:center;
+  }
+  .mailbox-btn.empty .mail-count{ background:rgba(54,43,34,.25); }
+  .letters-panel{
+    position:absolute; right:20px; top:66px; z-index:11; width:310px; max-height:60vh; overflow:auto;
+    padding:10px; border-radius:22px; display:none;
+  }
+  .letters-panel.open{ display:block; animation:fadeUp .22s ease; }
+  .letters-empty{ padding:14px; font-size:13px; color:var(--ink-70); text-align:center; line-height:1.5; }
+  .letter-row{
+    width:100%; border:0; background:rgba(255,255,255,.55); border-radius:16px; padding:9px 12px;
+    display:flex; align-items:center; gap:11px; cursor:pointer; text-align:left; margin-bottom:6px;
+    font-family:inherit; color:var(--ink); transition:background .15s ease;
+  }
+  .letter-row:hover{ background:rgba(255,255,255,.9); }
+  .letter-row .lr-av{ width:34px; height:34px; border-radius:50%; flex-shrink:0; background:var(--pin); color:#fff;
+    font-family:'Fraunces',serif; font-weight:650; display:flex; align-items:center; justify-content:center; }
+  .letter-row .lr-txt{ display:flex; flex-direction:column; min-width:0; }
+  .letter-row .lr-who{ font-size:11.5px; color:var(--ink-55); }
+  .letter-row .lr-title{ font-family:'Fraunces',serif; font-size:14px; font-weight:560; }
+
+  .town-card{
+    position:absolute; left:20px; bottom:20px; z-index:11; width:350px; max-width:calc(100vw - 40px);
+    padding:18px 20px 16px; border-radius:26px; display:none;
+  }
+  .town-card.open{ display:block; animation:fadeUp .25s ease; }
+  .tc-head{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .tc-av{ width:46px; height:46px; border-radius:50%; flex-shrink:0; background:var(--pin); color:#fff;
+    font-family:'Fraunces',serif; font-weight:650; font-size:20px; display:flex; align-items:center; justify-content:center; border:3px solid #fff; }
+  .tc-name{ font-family:'Fraunces',serif; font-size:19px; font-weight:560; line-height:1.15; }
+  .tc-sub{ font-size:12px; color:var(--ink-55); }
+  .tc-close{ margin-left:auto; border:0; background:rgba(54,43,34,.08); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; color:var(--ink-70); }
+  .tc-blurb{ font-size:13px; line-height:1.5; color:var(--ink-70); margin:0 0 12px; }
+  .tc-letter{ background:rgba(255,255,255,.7); border-radius:16px; padding:11px 13px; margin-bottom:10px; font-size:13px; line-height:1.45; }
+  .tc-letter b{ font-family:'Fraunces',serif; font-weight:560; font-size:15px; display:block; margin-bottom:2px; }
+  .tc-note{ font-size:12.5px; color:var(--ink-55); line-height:1.5; margin:0 0 10px; font-style:italic; }
+  .tc-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tc-done-row{ display:flex; align-items:center; gap:8px; font-size:13px; padding:5px 0; border-top:1px solid rgba(54,43,34,.08); }
+  .tc-done-row .tcd-title{ flex:1; font-family:'Fraunces',serif; font-weight:500; }
+  .hearts{ color:#e0766b; letter-spacing:1px; font-size:13px; white-space:nowrap; }
+  .hearts .empty{ opacity:.28; }
+  .tc-mini{ font-size:11.5px; padding:5px 11px; }
+
+  /* ---------- overlays (letter, result, dialogs) ---------- */
+  .story-overlay{
+    position:fixed; inset:0; z-index:6200; display:none; align-items:center; justify-content:center;
+    padding:24px; background:rgba(22,38,44,.52);
+    backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+  }
+  .story-overlay.active{ display:flex; }
+  .story-card{
+    position:relative; width:100%; max-width:640px; max-height:92vh; overflow-y:auto;
+    background:linear-gradient(170deg, rgba(255,255,255,.93), rgba(240,248,246,.90));
+    border:1px solid rgba(255,255,255,.8);
+    border-radius:30px; padding:26px 28px 22px;
+    box-shadow:0 30px 70px rgba(10,25,32,.45);
+    animation:popIn .3s cubic-bezier(.2,.9,.3,1.12);
+  }
+  .sc-eyebrow{ font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-55); }
+  .sc-title{ font-family:'Fraunces',serif; font-weight:560; font-size:27px; margin:4px 0 4px; line-height:1.15; }
+  .sc-story{ font-size:13.5px; line-height:1.55; color:var(--ink-70); margin:6px 0 14px; }
+  .sc-bubble{
+    position:relative; background:#fff; border-radius:20px; padding:14px 18px; margin:0 0 16px;
+    font-family:'Fraunces',serif; font-style:italic; font-size:15.5px; line-height:1.5; color:var(--ink);
+    box-shadow:0 6px 18px rgba(30,50,60,.10);
+  }
+  .sc-head{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .sc-av{ width:58px; height:58px; border-radius:50%; flex-shrink:0; background:var(--pin); color:#fff; border:3px solid #fff;
+    font-family:'Fraunces',serif; font-weight:650; font-size:25px; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(30,50,60,.2); }
+  .sc-meta{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
+  .sc-pill{ background:rgba(119,137,107,.15); color:var(--sage-dark); border-radius:99px; padding:5px 12px; font-size:12px; font-weight:700; }
+  .sc-group{ margin:0 0 12px; }
+  .sc-group h4{ margin:0 0 6px; font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-55); }
+  .sc-list{ list-style:none; margin:0; padding:0; }
+  .sc-list li{ display:flex; gap:9px; align-items:flex-start; font-size:13.5px; line-height:1.4; padding:3px 0; }
+  .sc-list li::before{ content:''; flex-shrink:0; width:9px; height:9px; margin-top:5px; border-radius:50%; background:var(--clay); }
+  .sc-list.likes li::before{ background:var(--sage); }
+  .sc-list.avoids li::before{ background:#9a9a9a; border-radius:2px; transform:rotate(45deg); }
+  .sc-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap; }
+
+  .result-hearts{ display:flex; justify-content:center; gap:8px; margin:6px 0 4px; }
+  .result-hearts span{ font-size:42px; color:#e0766b; line-height:1; opacity:.22; transform:scale(.6); }
+  .result-hearts span.on{ opacity:1; animation:popIn .5s cubic-bezier(.2,.9,.3,1.3) forwards; }
+  .result-reply{ background:#fff; border-radius:20px; padding:15px 18px; box-shadow:0 6px 18px rgba(30,50,60,.10); margin:12px 0 14px; }
+  .result-reply p{ margin:0 0 7px; font-family:'Fraunces',serif; font-style:italic; font-size:15.5px; line-height:1.5; }
+  .result-reply p:last-child{ margin-bottom:0; }
+  .result-reply .rr-miss{ color:var(--ink-55); font-size:14.5px; }
+  .result-scores{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .result-score-tile{ background:rgba(255,255,255,.7); border-radius:16px; padding:10px 14px; }
+  .result-score-tile b{ display:block; font-family:'Fraunces',serif; font-size:22px; font-weight:560; }
+  .result-score-tile span{ font-size:11.5px; color:var(--ink-55); font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
+  .result-news{ background:rgba(217,163,68,.16); border-radius:16px; padding:10px 14px; font-size:13px; line-height:1.5; margin-bottom:10px; }
+  .result-news b{ font-weight:700; }
+  .result-checks{ columns:2; column-gap:18px; margin:0 0 6px; padding:0; list-style:none; font-size:12.5px; }
+  .result-checks li{ break-inside:avoid; padding:2px 0; display:flex; gap:7px; }
+  .result-checks li i{ font-style:normal; width:14px; flex-shrink:0; color:var(--sage-dark); font-weight:700; }
+  .result-checks li.no i{ color:#b98b6c; }
+  .result-checks li.no{ color:var(--ink-55); }
+
+  /* ---------- the in-room brief panel ---------- */
+  .story-hud{
+    position:fixed; left:18px; top:76px; z-index:2900; width:292px; max-width:calc(100vw - 36px);
+    display:none; padding:12px 14px 12px; border-radius:22px;
+    background:rgba(255,255,255,.56);
+    backdrop-filter:blur(18px) saturate(1.6); -webkit-backdrop-filter:blur(18px) saturate(1.6);
+    border:1px solid rgba(255,255,255,.7);
+    box-shadow:0 14px 36px rgba(20,35,40,.26), inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  body.story-mode .story-hud{ display:block; }
+  .sh-top{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .sh-back{ border:0; background:rgba(255,255,255,.6); border-radius:99px; padding:5px 11px; font-size:12px; font-weight:700; cursor:pointer; color:var(--ink-70); font-family:inherit; }
+  .sh-back:hover{ background:#fff; }
+  .sh-av{ width:26px; height:26px; border-radius:50%; background:var(--pin); color:#fff; font-family:'Fraunces',serif; font-weight:650; font-size:13px; display:flex; align-items:center; justify-content:center; border:2px solid #fff; flex-shrink:0; margin-left:auto; }
+  .sh-title{ font-family:'Fraunces',serif; font-size:16.5px; font-weight:560; line-height:1.2; margin:0 0 8px; }
+  .sh-stars{ display:flex; align-items:baseline; gap:8px; margin-bottom:6px; }
+  .sh-stars b{ font-family:'Fraunces',serif; font-size:19px; font-weight:560; color:#a87a1d; }
+  .sh-stars span{ font-size:12px; color:var(--ink-55); }
+  .sh-meter{ height:7px; border-radius:99px; background:rgba(54,43,34,.13); overflow:hidden; margin-bottom:9px; }
+  .sh-meter > i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#e6c05f,#d9a344); transition:width .3s ease; }
+  .sh-meter.low > i{ background:linear-gradient(90deg,#e29a73,#c9714a); }
+  .sh-toggle{ width:100%; border:0; background:rgba(255,255,255,.55); border-radius:12px; padding:6px 10px; font-size:12px; font-weight:700; color:var(--ink-70); display:flex; justify-content:space-between; cursor:pointer; font-family:inherit; }
+  .sh-list{ list-style:none; padding:0; margin:8px 0 0; max-height:36vh; overflow-y:auto; }
+  .sh-hud-collapsed .sh-list{ display:none; }
+  .sh-list li{ display:flex; gap:8px; align-items:flex-start; font-size:12.5px; line-height:1.35; padding:3.5px 0; color:var(--ink); }
+  .sh-list li .box{ width:15px; height:15px; border-radius:50%; flex-shrink:0; margin-top:1px; border:2px solid var(--clay); display:flex; align-items:center; justify-content:center; font-size:9px; color:#fff; font-weight:800; line-height:1; }
+  .sh-list li.like .box{ border-color:var(--sage); border-radius:5px; }
+  .sh-list li.avoid .box{ border-color:#aaa; border-radius:3px; }
+  .sh-list li.met .box{ background:var(--sage); border-color:var(--sage); }
+  .sh-list li.met.must .box{ background:var(--clay); border-color:var(--clay); }
+  .sh-list li.avoid.met .box{ background:#b9b9b9; border-color:#b9b9b9; }
+  .sh-list li.avoid:not(.met) .box{ border-color:#d4604f; background:#d4604f; }
+  .sh-list li.avoid:not(.met){ color:#a8402f; }
+  .sh-list li .prog{ margin-left:auto; padding-left:6px; font-size:11px; color:var(--ink-55); white-space:nowrap; }
+  .sh-list .sh-sep{ font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-55); padding:7px 0 2px; font-weight:700; }
+  .sh-list .sh-sep:first-child{ padding-top:0; }
+  .sh-visit{ font-size:13px; color:var(--ink-70); line-height:1.5; margin:0; }
+
+  .story-toast{
+    position:fixed; left:50%; bottom:32px; z-index:6600; transform:translate(-50%,30px); opacity:0; pointer-events:none;
+    background:rgba(40,32,26,.92); color:#fff; padding:11px 20px; border-radius:99px; font-size:13.5px; max-width:90vw; text-align:center;
+    transition:transform .3s ease, opacity .3s ease;
+  }
+  .story-toast.active{ transform:translate(-50%,0); opacity:1; }
+
+  /* ---------- builder tweaks while in story mode ---------- */
+  body.story-mode #changeRoomBtn, body.story-mode #clearBtn, body.story-mode #archPicker{ display:none !important; }
+  body.story-mode .add-room-btn{ display:none !important; }
+  body.story-visit #finishBtn, body.story-visit .tray-panel, body.story-visit .tray-toggle{ display:none !important; }
+  body.story-mode .sticker{ position:relative; }
+  .story-star-chip{
+    position:absolute; top:3px; right:3px; z-index:2;
+    background:rgba(255,248,226,.92); color:#8a6212; border-radius:99px;
+    font-size:10.5px; font-weight:800; padding:1px 7px; line-height:1.5;
+    box-shadow:0 1px 3px rgba(60,40,10,.2);
+  }
+  .sticker.story-pricey{ opacity:.45; }
+  .sticker.story-locked{ opacity:.38; filter:grayscale(.6); }
+  .sticker.story-locked .story-star-chip{ background:rgba(230,230,230,.95); color:#666; }
+
+  .room-stage.is-locked .piece{ pointer-events:none; }
+  .story-room-tag{
+    position:absolute; left:50%; top:62px; transform:translateX(-50%); z-index:30;
+    padding:5px 14px; border-radius:99px; font-size:12px; font-weight:700; color:var(--ink);
+    background:rgba(255,255,255,.62); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.7); pointer-events:none; white-space:nowrap;
+  }
+  .story-room-tag em{ font-style:normal; font-weight:600; color:var(--ink-55); }
+  .room-stage.is-locked .story-room-tag{ background:rgba(240,240,240,.55); }
+
 </style>
 </head>
 <body>
@@ -1360,7 +1636,8 @@
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
-    <button class="btn-primary" id="titleStartBtn" style="font-size:15px; padding:13px 30px;">Pick a room</button>
+    <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
+    <button class="btn-ghost title-free-btn" id="titleStartBtn" type="button">Free play</button>
     <button class="title-fresh-link" id="titleFreshBtn" style="display:none;">Or start a brand new room</button>
   </div>
 </section>
@@ -1429,6 +1706,36 @@
     <div class="tray-grid" id="trayGrid"></div>
   </div>
 </section>
+
+
+<!-- ============================================================
+     STORY MODE: TOWN MAP
+============================================================ -->
+<section class="screen screen-town" id="screen-town">
+  <div class="town-stage" id="townStage">
+    <img class="town-map" id="townMap" src="story/town_map.jpg" alt="Map of Pennywhistle Cove" draggable="false">
+    <div class="town-veil"></div>
+    <div id="townPins"></div>
+  </div>
+  <div class="town-topbar">
+    <button class="btn-ghost btn-on-glass" id="townBackBtn" type="button">&larr; Title</button>
+    <h2 class="town-name" id="townName">Pennywhistle Cove</h2>
+    <div class="town-glass renown-chip" id="renownChip"></div>
+    <button class="town-glass mailbox-btn" id="mailboxBtn" type="button">Letters <span class="mail-count" id="mailCount">0</span></button>
+  </div>
+  <div class="town-glass letters-panel" id="lettersPanel"></div>
+  <div class="town-glass town-card" id="townCard"></div>
+</section>
+
+<!-- story: letter / brief -->
+<div class="story-overlay" id="storyIntro"><div class="story-card" id="storyIntroCard"></div></div>
+<!-- story: result -->
+<div class="story-overlay" id="storyResult"><div class="story-card" id="storyResultCard"></div></div>
+<!-- story: generic dialog -->
+<div class="story-overlay" id="storyDialog"><div class="story-card" id="storyDialogCard" style="max-width:480px;"></div></div>
+<div class="story-toast" id="storyToast"></div>
+
+<div class="story-hud" id="storyHud"></div>
 
 <!-- floating selection toolbar -->
 <div class="item-toolbar" id="itemToolbar">
@@ -1580,6 +1887,7 @@
 </div>
 
 <script src="data.js"></script>
+<script src="story.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1803,6 +2111,8 @@
     };
   }
   function saveGame(){
+    // while story mode owns the editor, free play's save must stay untouched
+    if (story.inStory){ if (story.active) storyPersist(); return; }
     try{ localStorage.setItem(SAVE_KEY, JSON.stringify(serializeState())); }
     catch(err){ /* storage full/unavailable — nothing more we can do here */ }
   }
@@ -1844,7 +2154,8 @@
   var screens = {
     title: document.getElementById('screen-title'),
     picker: document.getElementById('screen-picker'),
-    builder: document.getElementById('screen-builder')
+    builder: document.getElementById('screen-builder'),
+    town: document.getElementById('screen-town')
   };
   var roomsViewport = document.getElementById('roomsViewport');
   var roomNavLeft = document.getElementById('roomNavLeft');
@@ -1915,15 +2226,17 @@
 
   var hasExistingSave = false;
   document.getElementById('titleStartBtn').addEventListener('click', function(){
+    storyLeaveForFreePlay();
     showScreen(hasExistingSave ? 'builder' : 'picker');
     playCurrentTrack();
   });
   document.getElementById('titleFreshBtn').addEventListener('click', function(){
+    storyLeaveForFreePlay();
     hasExistingSave = false;
     clearSavedGame();
     resetToFreshGame();
     renderRooms();
-    document.getElementById('titleStartBtn').textContent = 'Pick a room';
+    document.getElementById('titleStartBtn').textContent = 'Free play';
     document.getElementById('titleFreshBtn').style.display = 'none';
     showScreen('picker');
     playCurrentTrack();
@@ -2285,7 +2598,7 @@
   /* ---------------- multi-room flat: building & scrolling between rooms ---------------- */
   function buildRoomStageEl(room){
     var el = document.createElement('div');
-    el.className = 'stage room-stage' + (state.motionOff ? ' motion-off' : '');
+    el.className = 'stage room-stage' + (state.motionOff ? ' motion-off' : '') + (room.locked ? ' is-locked' : '');
     el.dataset.roomId = room.id;
     el.innerHTML =
       '<div class="stage-bg-layer active"></div>' +
@@ -2295,7 +2608,9 @@
       '<div class="breathing-light"></div>' +
       '<div class="night-overlay"></div>' +
       '<div class="lamp-light-pools"></div>' +
-      '<p class="stage-hint">Drag a piece onto the room to start decorating</p>';
+      '<p class="stage-hint">Drag a piece onto the room to start decorating</p>' +
+      (story.active && room.label ? '<div class="story-room-tag">' + room.label +
+        (story.active.mode === 'visit' ? '' : (room.locked ? ' <em>\u00b7 finished earlier</em>' : ' <em>\u00b7 your turn</em>')) + '</div>' : '');
     return el;
   }
 
@@ -2467,10 +2782,10 @@
     var lastRoom = state.rooms[state.rooms.length - 1];
     var firstArch = architectureFor(firstRoom);
     var lastArch = architectureFor(lastRoom);
-    if (firstArch && firstArch.hasLeftDoor){
+    if (firstArch && firstArch.hasLeftDoor && !story.active){
       roomStageEl(firstRoom.id).appendChild(buildAddRoomButton('left', firstRoom));
     }
-    if (lastArch && lastArch.hasRightDoor){
+    if (lastArch && lastArch.hasRightDoor && !story.active){
       roomStageEl(lastRoom.id).appendChild(buildAddRoomButton('right', lastRoom));
     }
     fullRerenderPieces();
@@ -2579,6 +2894,7 @@
       '<div class="sticker-thumb"><img src="'+item.src+'" alt="">'+attributePillsHtml(item)+'</div>' +
       '<div class="sticker-label">'+item.name+'</div>';
     card.addEventListener('pointerdown', function(e){ startTrayDrag(e, item, card); });
+    storyDecorateCard(card, item);
     trayGrid.appendChild(card);
   }
 
@@ -2603,6 +2919,7 @@
         renderTray();
       });
     });
+    storyDecorateCard(card, primary);
     wrap.appendChild(card);
 
     if (expanded){
@@ -2616,6 +2933,7 @@
           '<div class="sticker-thumb"><img src="'+v.src+'" alt="">'+attributePillsHtml(v)+'</div>' +
           '<div class="sticker-label">'+v.color+'</div>';
         vcard.addEventListener('pointerdown', function(e){ startTrayDrag(e, v, vcard); });
+        storyDecorateCard(vcard, v);
         row.appendChild(vcard);
       });
       wrap.appendChild(row);
@@ -2752,7 +3070,9 @@
     trayDrag = null;
   }
 
-  function addPiece(item, xPct, yPct, roomId){
+  function addPiece(item, xPct, yPct, roomId, opts){
+    opts = opts || {};
+    if (!opts.starter && !storyGuardPlace(item, roomId)) return;
     var height = null;
     var roomEl = roomStageEl(roomId);
     if (item.ratio != null && roomEl){
@@ -2762,10 +3082,11 @@
       height = heightPx / stageRect.height * 100;
     }
     var piece = { uid:'p'+(state.uidCounter++), roomId:roomId, assetId:item.id, x:xPct, y:yPct, width:item.defaultWidth, height:height, rotation:0, z:0, lampOn:true, flipped:false, swayLevel:2, lightIntensity:2 };
+    if (story.active){ piece.q = story.active.questId; if (opts.starter) piece.starter = true; }
     state.placed.push(piece);
     reassignZIndices();
     renderPiece(piece, true);
-    selectPiece(piece.uid);
+    if (!opts.silent) selectPiece(piece.uid);
     updateAllHints();
     updateLampLighting(roomId);
     checkAchievements(roomId);
@@ -4207,6 +4528,7 @@
   }
 
   finishBtn.addEventListener('click', function(){
+    if (story.active && story.active.mode === 'quest'){ storySubmit(); return; }
     var result = computeScore();
     if (!result){
       finishBtn.classList.add('nudge');
@@ -4339,6 +4661,554 @@
     }
   }
 
+
+  /* =====================================================================
+     STORY MODE — engine glue
+     Content & rules live in story.js (global `Story`). Everything here is
+     UI + the workspace plumbing that lets the existing room builder run a
+     commission: it swaps in the property's rooms, locks the ones that are
+     not part of the brief, meters the star budget, and rates the result.
+     Free play is never touched: while story mode owns the editor, autosave
+     goes to the story save instead (see saveGame).
+  ===================================================================== */
+  var STORY_KEY = 'roomstories_story_v1';
+  var storyAvailable = (typeof Story !== 'undefined');
+  var story = { inStory:false, active:null, data:null, hudCollapsed:false, lastSig:'', selectedPin:null };
+
+  function storyDefaultData(){ return { version:1, quests:{}, homes:{}, drafts:{}, discovered:[], seenPrologue:false }; }
+  function storyLoadData(){
+    try{
+      var raw = localStorage.getItem(STORY_KEY);
+      if (raw){
+        var d = JSON.parse(raw);
+        if (d && d.version === 1){
+          d.quests = d.quests || {}; d.homes = d.homes || {}; d.drafts = d.drafts || {}; d.discovered = d.discovered || [];
+          return d;
+        }
+      }
+    }catch(err){}
+    return storyDefaultData();
+  }
+  function storySaveData(){ try{ localStorage.setItem(STORY_KEY, JSON.stringify(story.data)); }catch(err){} }
+
+  function storyRoomId(pid, key){ return pid + ':' + key; }
+  function storyRoomKey(roomId){ var i = roomId.indexOf(':'); return i === -1 ? roomId : roomId.slice(i + 1); }
+  function storyDoneMap(){ var m = {}; for (var id in story.data.quests) if (story.data.quests[id].done) m[id] = true; return m; }
+  function storyRenown(){ var t = 0; for (var id in story.data.quests) t += story.data.quests[id].best || 0; return t; }
+  function storyLevel(){ return Story.renownLevel(storyRenown()); }
+  function storyCap(){ return Story.RENOWN_LEVELS[storyLevel()].maxStars; }
+  function storyCurrentQuest(){ return story.active && story.active.questId ? Story.questById(story.active.questId) : null; }
+  function storyHeartsHtml(n){
+    var s = '';
+    for (var i = 1; i <= 5; i++) s += i <= n ? '♥' : '<span class="empty">♥</span>';
+    return '<span class="hearts">' + s + '</span>';
+  }
+  function storyAvatar(cid, cls){
+    var c = Story.CHARACTERS[cid];
+    return '<div class="' + cls + '" style="--pin:' + c.color + '">' + c.name.charAt(0) + '</div>';
+  }
+  function storyEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---------- which letters are waiting ---------- */
+  function storyOpenQuests(){
+    var d = storyDoneMap(), ren = storyRenown();
+    return Story.QUESTS.filter(function(q){ return !d[q.id] && Story.isUnlocked(q, d, ren); });
+  }
+  function storyOpenIds(){ var m = {}; storyOpenQuests().forEach(function(q){ m[q.id] = true; }); return m; }
+
+  /* ---------- star budget ---------- */
+  function storyIsEditableRoom(roomId){ var r = getRoom(roomId); return !!r && !r.locked; }
+  function storySpent(){
+    var q = storyCurrentQuest(); if (!q) return 0;
+    var s = 0;
+    state.placed.forEach(function(p){
+      if (p.q === q.id && !p.starter && storyIsEditableRoom(p.roomId)){
+        var a = getAsset(p.assetId); if (a) s += Story.starsFor(a);
+      }
+    });
+    return s;
+  }
+  function storyRemaining(){ var q = storyCurrentQuest(); return q ? q.allowance - storySpent() : 0; }
+
+  var storyToastTimer = null;
+  function storyToast(msg){
+    var el = document.getElementById('storyToast');
+    el.textContent = msg; el.classList.add('active');
+    clearTimeout(storyToastTimer);
+    storyToastTimer = setTimeout(function(){ el.classList.remove('active'); }, 2800);
+  }
+  // called from addPiece before anything is placed
+  function storyGuardPlace(item, roomId){
+    if (!story.active) return true;
+    if (story.active.mode === 'visit'){ storyToast("You're only visiting — the rooms stay just as they are."); return false; }
+    var room = getRoom(roomId);
+    if (!room || room.locked){ storyToast("That room is already finished — it isn't part of this brief."); return false; }
+    var s = Story.starsFor(item);
+    if (s > storyCap()){ storyToast("A special piece (★" + s + ")! It unlocks as you become better known in town."); return false; }
+    if (s > storyRemaining()){ storyToast("That one is ★" + s + " and you have ★" + Math.max(0, storyRemaining()) + " left. Maybe something smaller?"); return false; }
+    return true;
+  }
+
+  /* ---------- tray cards ---------- */
+  function storyApplyCardState(card, s){
+    card.classList.toggle('story-locked', s > storyCap());
+    card.classList.toggle('story-pricey', s <= storyCap() && s > storyRemaining());
+    var chip = card.querySelector('.story-star-chip');
+    if (chip) chip.textContent = '★' + s + (s > storyCap() ? ' · later' : '');
+  }
+  function storyDecorateCard(card, item){
+    if (!story.active || story.active.mode !== 'quest') return;
+    var thumb = card.querySelector('.sticker-thumb'); if (!thumb) return;
+    var chip = document.createElement('span'); chip.className = 'story-star-chip';
+    thumb.appendChild(chip);
+    card.dataset.itemId = item.id;
+    storyApplyCardState(card, Story.starsFor(item));
+  }
+  function storyRefreshTrayStates(){
+    var cards = document.querySelectorAll('.sticker[data-item-id]');
+    for (var i = 0; i < cards.length; i++){
+      var it = getAsset(cards[i].dataset.itemId);
+      if (it) storyApplyCardState(cards[i], Story.starsFor(it));
+    }
+  }
+
+  /* ---------- saving ---------- */
+  function storyCaptureWorkspace(){
+    return {
+      rooms: JSON.parse(JSON.stringify(state.rooms)),
+      placed: JSON.parse(JSON.stringify(state.placed)),
+      uidCounter: state.uidCounter,
+      focusedRoomId: state.focusedRoomId,
+      activeTime: state.activeTime,
+      isNight: state.isNight
+    };
+  }
+  function storyPersist(){
+    var a = story.active;
+    if (!a || a.mode !== 'quest') return;
+    var q = storyCurrentQuest();
+    var ws = storyCaptureWorkspace();
+    var rec = story.data.quests[q.id];
+    if (rec && rec.done){
+      // re-decorating a finished commission: improvements go straight into the home
+      story.data.homes[a.propertyId] = { rooms: ws.rooms, placed: ws.placed, uidCounter: ws.uidCounter };
+    } else {
+      story.data.drafts[q.id] = ws;
+    }
+    storySaveData();
+  }
+
+  /* ---------- building a workspace from a property ---------- */
+  function storyBuildWorkspace(propertyId, quest){
+    var prop = Story.PROPERTIES[propertyId];
+    var home = story.data.homes[propertyId];
+    var have = {};
+    if (home) home.rooms.forEach(function(r){ have[r.id] = true; });
+    var rooms = [];
+    prop.rooms.forEach(function(def){
+      var id = storyRoomId(propertyId, def.key);
+      var editable = !!quest && quest.edit.indexOf(def.key) !== -1;
+      if (!have[id] && !editable) return;
+      rooms.push({ id:id, backgroundId:prop.family, architectureId:def.arch, key:def.key, label:def.label, locked:!editable });
+    });
+    var placed = home ? JSON.parse(JSON.stringify(home.placed)).filter(function(p){
+      return rooms.some(function(r){ return r.id === p.roomId; });
+    }) : [];
+    return { rooms:rooms, placed:placed, uidCounter: home ? home.uidCounter : 1, focusedRoomId:null, activeTime:'day', isNight:false };
+  }
+  function storyApplyWorkspace(ws){
+    state.rooms = ws.rooms;
+    state.placed = ws.placed || [];
+    state.uidCounter = ws.uidCounter || (state.placed.length + 1);
+    state.roomIdCounter = 9999;
+    state.activeTime = ws.activeTime || 'day';
+    state.isNight = !!ws.isNight;
+    state.selectedUid = null;
+    state.discoveredAchievements = story.data.discovered;
+    state.focusedRoomId = (ws.focusedRoomId && getRoom(ws.focusedRoomId)) ? ws.focusedRoomId : ws.rooms[0].id;
+    reassignZIndices();
+  }
+  function storyAddStarters(q){
+    (q.starters || []).forEach(function(s){
+      var rid = storyRoomId(q.property, s.room);
+      var exists = state.placed.some(function(p){ return p.starter && p.q === q.id && p.assetId === s.asset && p.roomId === rid; });
+      if (exists) return;
+      var item = getAsset(s.asset);
+      if (!item || !getRoom(rid)) return;
+      addPiece(item, s.x, s.y, rid, { starter:true, silent:true });
+    });
+  }
+
+  /* ---------- entering and leaving rooms ---------- */
+  function storyStartQuest(qid){
+    var q = Story.questById(qid);
+    var ws = story.data.drafts[qid] || storyBuildWorkspace(q.property, q);
+    ws.rooms.forEach(function(r){ r.locked = q.edit.indexOf(r.key) === -1; });
+    story.active = { mode:'quest', questId:qid, propertyId:q.property };
+    document.body.classList.add('story-mode');
+    document.body.classList.remove('story-visit');
+    storyApplyWorkspace(ws);
+    var firstEdit = state.rooms.filter(function(r){ return !r.locked; })[0];
+    if (firstEdit) state.focusedRoomId = firstEdit.id;
+    finishBtn.textContent = 'Hand it over';
+    renderRooms();
+    storyAddStarters(q);
+    deselect();
+    state.expandedGroup = null;
+    renderTray();
+    story.lastSig = '';
+    storyTick(true);
+    storyHideOverlays();
+    showScreen('builder');
+    playCurrentTrack();
+    if (firstEdit) setTimeout(function(){ focusRoom(firstEdit.id); }, 60);
+  }
+  function storyStartVisit(propertyId){
+    var ws = storyBuildWorkspace(propertyId, null);
+    if (!ws.rooms.length) return;
+    story.active = { mode:'visit', questId:null, propertyId:propertyId };
+    document.body.classList.add('story-mode', 'story-visit');
+    storyApplyWorkspace(ws);
+    renderRooms();
+    deselect();
+    story.lastSig = '';
+    storyRenderHud(null, null);
+    storyHideOverlays();
+    showScreen('builder');
+    playCurrentTrack();
+  }
+  function storyExitToTown(){
+    if (story.active) storyPersist();
+    story.active = null;
+    document.body.classList.remove('story-mode', 'story-visit');
+    finishBtn.textContent = 'Finish room';
+    deselect();
+    storyHideOverlays();
+    resultsOverlay.classList.remove('active');
+    storyRenderTown();
+    showScreen('town');
+  }
+  function storyHideOverlays(){
+    ['storyIntro','storyResult','storyDialog'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
+  }
+  // restore whatever free play had; used whenever the player returns to it
+  function storyLeaveForFreePlay(){
+    if (!story.inStory) return;
+    if (story.active) storyPersist();
+    story.active = null;
+    story.inStory = false;
+    document.body.classList.remove('story-mode', 'story-visit');
+    finishBtn.textContent = 'Finish room';
+    storyHideOverlays();
+    var save = loadSavedGame();
+    state.discoveredAchievements = [];
+    if (save){ applySavedGame(save); reassignZIndices(); hasExistingSave = true; }
+    else { resetToFreshGame(); hasExistingSave = false; }
+    state.selectedUid = null;
+    state.expandedGroup = null;
+    renderRooms();
+    renderTray();
+    var startBtn = document.getElementById('titleStartBtn');
+    startBtn.textContent = hasExistingSave ? 'Free play · continue' : 'Free play';
+    document.getElementById('titleFreshBtn').style.display = hasExistingSave ? 'block' : 'none';
+  }
+
+  /* ---------- the in-room brief panel ---------- */
+  function storyRenderHud(q, ev){
+    var hud = document.getElementById('storyHud');
+    if (!story.active){ return; }
+    if (story.active.mode === 'visit'){
+      var prop = Story.PROPERTIES[story.active.propertyId];
+      var owner = Story.CHARACTERS[prop.owner];
+      hud.innerHTML =
+        '<div class="sh-top"><button class="sh-back" id="shBack" type="button">&larr; Back to town</button>' + storyAvatar(prop.owner, 'sh-av') + '</div>' +
+        '<h3 class="sh-title">' + storyEsc(prop.name) + '</h3>' +
+        '<p class="sh-visit">You\'re visiting. These are the rooms you finished for ' + storyEsc(owner.name) + ' — look around, but nothing moves.</p>';
+      document.getElementById('shBack').addEventListener('click', storyExitToTown);
+      return;
+    }
+    var c = Story.CHARACTERS[q.char];
+    var spent = storySpent(), left = q.allowance - spent;
+    var pct = Math.max(0, Math.min(100, spent / q.allowance * 100));
+    function group(tier, label){
+      var rows = ev.reqs.filter(function(r){ return r.tier === tier; });
+      if (!rows.length) return '';
+      return '<li class="sh-sep">' + label + '</li>' + rows.map(function(r){
+        var mark = tier === 'avoid' ? (r.met ? '' : '!') : (r.met ? '✓' : '');
+        var prog = (tier !== 'avoid' && !r.met && r.progress && r.progress !== '✓' && r.progress.length < 14) ? '<span class="prog">' + storyEsc(r.progress) + '</span>' : '';
+        return '<li class="' + tier + (r.met ? ' met' : '') + '"><span class="box">' + mark + '</span><span>' + storyEsc(r.text) + '</span>' + prog + '</li>';
+      }).join('');
+    }
+    var mustDone = ev.reqs.filter(function(r){ return r.tier === 'must' && r.met; }).length;
+    var mustAll = ev.reqs.filter(function(r){ return r.tier === 'must'; }).length;
+    hud.classList.toggle('sh-hud-collapsed', story.hudCollapsed);
+    hud.innerHTML =
+      '<div class="sh-top"><button class="sh-back" id="shBack" type="button">&larr; Town</button>' + storyAvatar(q.char, 'sh-av') + '</div>' +
+      '<h3 class="sh-title">' + storyEsc(c.name) + ' · ' + storyEsc(q.title) + '</h3>' +
+      '<div class="sh-stars"><b>★ ' + left + '</b><span>of ' + q.allowance + ' left · pieces up to ★' + storyCap() + '</span></div>' +
+      '<div class="sh-meter' + (left <= 3 ? ' low' : '') + '"><i style="width:' + pct + '%"></i></div>' +
+      '<button class="sh-toggle" id="shToggle" type="button"><span>The brief</span><span>' + mustDone + '/' + mustAll + ' needs · ' + (story.hudCollapsed ? 'show' : 'hide') + '</span></button>' +
+      '<ul class="sh-list">' + group('must', storyEsc(c.name) + ' needs') + group('like', 'Would love') + group('avoid', 'Please avoid') + '</ul>';
+    document.getElementById('shBack').addEventListener('click', storyExitToTown);
+    document.getElementById('shToggle').addEventListener('click', function(){ story.hudCollapsed = !story.hudCollapsed; story.lastSig = ''; storyTick(true); });
+  }
+
+  function storyGatherPieces(){
+    return state.placed.map(function(p){
+      return { assetId:p.assetId, roomKey:storyRoomKey(p.roomId), q:p.q || null, starter:!!p.starter, x:p.x };
+    });
+  }
+  function storyTick(force){
+    if (!story.active || story.active.mode !== 'quest') return;
+    var q = storyCurrentQuest(); if (!q) return;
+    var ev = Story.evaluate(q, storyGatherPieces(), getAsset);
+    var sig = JSON.stringify([ev.reqs.map(function(r){ return (r.met ? 1 : 0) + r.progress; }), storySpent(), story.hudCollapsed, storyCap()]);
+    if (!force && sig === story.lastSig) return;
+    story.lastSig = sig;
+    storyRenderHud(q, ev);
+    storyRefreshTrayStates();
+  }
+  setInterval(storyTick, 600);
+
+  /* ---------- the letter (brief) ---------- */
+  function storyShowIntro(qid){
+    var q = Story.questById(qid), c = Story.CHARACTERS[q.char], prop = Story.PROPERTIES[q.property];
+    var done = !!(story.data.quests[qid] && story.data.quests[qid].done);
+    var draft = !!story.data.drafts[qid];
+    function items(tier){ return q.brief.filter(function(r){ return r.tier === tier; }).map(function(r){ return '<li>' + storyEsc(r.text) + '</li>'; }).join(''); }
+    var rooms = q.edit.map(function(k){ return prop.rooms.filter(function(r){ return r.key === k; })[0].label; }).join(' + ');
+    var changeText = { 'new':'A new place', more:'More of the same home', refresh:'A fresh coat on the same room', move:'They\'re moving house', second:'A second home' }[q.change];
+    document.getElementById('storyIntroCard').innerHTML =
+      '<div class="sc-head">' + storyAvatar(q.char, 'sc-av') +
+        '<div><div class="sc-eyebrow">A letter from ' + storyEsc(c.name) + '</div><h2 class="sc-title">' + storyEsc(q.title) + '</h2></div></div>' +
+      '<p class="sc-story">' + storyEsc(q.story) + '</p>' +
+      '<div class="sc-bubble">“' + storyEsc(q.message) + '”</div>' +
+      '<div class="sc-meta"><span class="sc-pill">' + storyEsc(prop.name) + '</span><span class="sc-pill">' + storyEsc(rooms) + '</span><span class="sc-pill">★ ' + q.allowance + ' to spend</span><span class="sc-pill">' + storyEsc(changeText) + '</span></div>' +
+      '<div class="sc-group"><h4>What ' + storyEsc(c.name) + ' needs</h4><ul class="sc-list">' + items('must') + '</ul></div>' +
+      '<div class="sc-group"><h4>Would love</h4><ul class="sc-list likes">' + items('like') + '</ul></div>' +
+      '<div class="sc-group"><h4>Please avoid</h4><ul class="sc-list avoids">' + items('avoid') + '</ul></div>' +
+      '<div class="sc-actions"><button class="btn-ghost" id="introLater" type="button">Not right now</button>' +
+      '<button class="btn-primary" id="introGo" type="button">' + (draft ? 'Continue decorating' : (done ? 'Redecorate' : 'Start decorating')) + '</button></div>';
+    document.getElementById('storyIntro').classList.add('active');
+    document.getElementById('introLater').addEventListener('click', function(){ document.getElementById('storyIntro').classList.remove('active'); });
+    document.getElementById('introGo').addEventListener('click', function(){ storyStartQuest(qid); });
+  }
+
+  /* ---------- handing in ---------- */
+  function storyDialog(html, buttons){
+    var card = document.getElementById('storyDialogCard');
+    card.innerHTML = html + '<div class="sc-actions">' + buttons.map(function(b, i){
+      return '<button class="' + b.cls + '" data-i="' + i + '" type="button">' + b.label + '</button>';
+    }).join('') + '</div>';
+    document.getElementById('storyDialog').classList.add('active');
+    card.querySelectorAll('button[data-i]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.getElementById('storyDialog').classList.remove('active');
+        var b = buttons[+btn.dataset.i]; if (b.fn) b.fn();
+      });
+    });
+  }
+  function storySubmit(force){
+    var a = story.active;
+    if (!a || a.mode !== 'quest') return;
+    var q = storyCurrentQuest(), c = Story.CHARACTERS[q.char];
+    var pieces = storyGatherPieces();
+    var editPieces = pieces.filter(function(p){ return q.edit.indexOf(p.roomKey) !== -1; });
+    if (!editPieces.length){
+      finishBtn.classList.add('nudge'); setTimeout(function(){ finishBtn.classList.remove('nudge'); }, 450);
+      storyToast('Add a few pieces first — ' + c.name + ' is looking forward to seeing it!');
+      return;
+    }
+    var ev = Story.evaluate(q, pieces, getAsset);
+    if (!ev.mustAll && !force){
+      var missing = ev.reqs.filter(function(r){ return r.tier === 'must' && !r.met; });
+      storyDialog('<div class="sc-eyebrow">Before you hand it over</div><h2 class="sc-title" style="font-size:22px;">' + storyEsc(c.name) + ' is still hoping for…</h2>' +
+        '<ul class="sc-list" style="margin-top:8px;">' + missing.map(function(r){ return '<li>' + storyEsc(r.text) + '</li>'; }).join('') + '</ul>' +
+        '<p class="sc-story" style="margin-bottom:0;">You can hand it over anyway — nobody will be cross. They might just mention it.</p>',
+        [ { label:'Keep decorating', cls:'btn-ghost' }, { label:'Hand it over anyway', cls:'btn-primary', fn:function(){ storySubmit(true); } } ]);
+      return;
+    }
+    // achievements the commissioned rooms earn also count towards "nicely furnished"
+    var found = {};
+    q.edit.forEach(function(k){
+      liveAchievementsForRoom(storyRoomId(q.property, k)).forEach(function(x){ found[x.id] = x; });
+    });
+    var achList = Object.keys(found).map(function(k){ return found[k]; });
+    var qual = Story.quality(q, pieces, getAsset, achList.length);
+    var hearts = Story.heartsFor(ev.brief, qual, ev.mustAll, true);
+    var reply = Story.buildReply(q, ev, hearts);
+
+    var beforeOpen = storyOpenIds(), beforeLevel = storyLevel();
+    var rec = story.data.quests[q.id] || {};
+    var prevBest = rec.best || 0;
+    rec.done = true; rec.hearts = hearts; rec.best = Math.max(prevBest, hearts);
+    story.data.quests[q.id] = rec;
+    var gain = rec.best - prevBest;
+    var ws = storyCaptureWorkspace();
+    story.data.homes[q.property] = { rooms: ws.rooms, placed: ws.placed, uidCounter: ws.uidCounter };
+    delete story.data.drafts[q.id];
+    storySaveData();
+    var afterOpen = storyOpenIds();
+    var newLetters = Story.QUESTS.filter(function(x){ return afterOpen[x.id] && !beforeOpen[x.id]; });
+    var leveled = storyLevel() > beforeLevel ? Story.RENOWN_LEVELS[storyLevel()] : null;
+    storyShowResult(q, ev, qual, hearts, reply, achList, gain, newLetters, leveled);
+  }
+
+  function storyShowResult(q, ev, qual, hearts, reply, achList, gain, newLetters, leveled){
+    var c = Story.CHARACTERS[q.char];
+    var heartsHtml = '<div class="result-hearts">' + [1,2,3,4,5].map(function(i){
+      return '<span class="' + (i <= hearts ? 'on' : '') + '" style="animation-delay:' + (i * 0.14) + 's">♥</span>';
+    }).join('') + '</div>';
+    var replyHtml = '<p>“' + storyEsc(reply.opener) + '”</p>' +
+      reply.praised.map(function(t){ return '<p>“' + storyEsc(t) + '”</p>'; }).join('') +
+      (reply.miss ? '<p class="rr-miss">“' + storyEsc(reply.miss) + '”</p>' : '');
+    var news = '';
+    if (gain > 0) news += '<div>Renown <b>+' + gain + '</b></div>';
+    if (leveled) news += '<div>You\'re now a <b>' + storyEsc(leveled.title) + '</b> — pieces up to ★' + leveled.maxStars + ' are unlocked.</div>';
+    if (newLetters.length) news += '<div>' + (newLetters.length === 1 ? 'A new letter has arrived' : newLetters.length + ' new letters have arrived') + ': <b>' +
+      newLetters.map(function(x){ return storyEsc(Story.CHARACTERS[x.char].name + ' — ' + x.title); }).join(', ') + '</b></div>';
+    if (achList.length) news += '<div>Room moments spotted: <b>' + achList.map(function(x){ return storyEsc(x.name); }).join(', ') + '</b></div>';
+    var checks = ev.reqs.map(function(r){
+      var ok = r.tier === 'avoid' ? r.met : r.met;
+      return '<li class="' + (ok ? '' : 'no') + '"><i>' + (ok ? '✓' : '•') + '</i><span>' + storyEsc(r.text) + '</span></li>';
+    }).join('');
+    document.getElementById('storyResultCard').innerHTML =
+      '<div class="sc-head">' + storyAvatar(q.char, 'sc-av') + '<div><div class="sc-eyebrow">' + storyEsc(c.name) + ' has seen it</div><h2 class="sc-title">' + storyEsc(q.title) + '</h2></div></div>' +
+      heartsHtml +
+      '<div class="result-reply">' + replyHtml + '</div>' +
+      '<div class="result-scores"><div class="result-score-tile"><b>' + ev.brief + '</b><span>Matched the brief</span></div><div class="result-score-tile"><b>' + qual + '</b><span>Nicely furnished</span></div></div>' +
+      (news ? '<div class="result-news">' + news + '</div>' : '') +
+      '<ul class="result-checks">' + checks + '</ul>' +
+      '<div class="sc-actions"><button class="btn-ghost" id="resKeep" type="button">Keep decorating</button><button class="btn-primary" id="resTown" type="button">Back to town</button></div>';
+    document.getElementById('storyResult').classList.add('active');
+    document.getElementById('resKeep').addEventListener('click', function(){ document.getElementById('storyResult').classList.remove('active'); });
+    document.getElementById('resTown').addEventListener('click', storyExitToTown);
+  }
+
+  /* ---------- the town ---------- */
+  function storyTownEntries(){
+    var done = storyDoneMap(), ren = storyRenown(), entries = {};
+    Object.keys(Story.CHARACTERS).forEach(function(cid){
+      var chain = Story.questsOf(cid), cur = null, last = null;
+      chain.forEach(function(q){ if (!cur && !done[q.id]) cur = q; });
+      chain.forEach(function(q){ if (done[q.id]) last = q; });
+      var where, letter = null, busy = false;
+      if (cur && Story.isUnlocked(cur, done, ren)){ where = cur.property; letter = cur; }
+      else if (last){ where = last.property; busy = !!cur; }
+      else return; // hasn't been met yet
+      entries[where] = { pid:where, resident:cid, letter:letter, busy:busy, past:false };
+    });
+    Object.keys(story.data.homes).forEach(function(pid){
+      if (!entries[pid]) entries[pid] = { pid:pid, resident:Story.PROPERTIES[pid].owner, letter:null, busy:false, past:true };
+    });
+    return entries;
+  }
+  function storyRenderTown(){
+    var entries = storyTownEntries();
+    var pins = document.getElementById('townPins');
+    pins.innerHTML = '';
+    var idx = 0;
+    Object.keys(entries).forEach(function(pid){
+      var e = entries[pid], prop = Story.PROPERTIES[pid], c = Story.CHARACTERS[e.resident];
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'town-pin' + (e.past ? ' past' : '') + (story.selectedPin === pid ? ' selected' : '');
+      b.style.left = prop.map.x + '%'; b.style.top = prop.map.y + '%';
+      b.style.animationDelay = (idx++ * 0.08) + 's';
+      b.innerHTML = '<div class="town-pin-avatar" style="--pin:' + c.color + '">' + c.name.charAt(0) + (e.letter ? '<span class="town-pin-mail">✉</span>' : '') + '</div>' +
+        '<div class="town-pin-tail"></div><div class="town-pin-label">' + storyEsc(e.past ? prop.name : c.name) + '</div>';
+      b.addEventListener('click', function(ev){ ev.stopPropagation(); storyOpenCard(pid); });
+      pins.appendChild(b);
+    });
+    // renown chip
+    var ren = storyRenown(), lvl = storyLevel(), L = Story.RENOWN_LEVELS;
+    var nextAt = L[lvl + 1] ? L[lvl + 1].at : null;
+    var pct = nextAt ? Math.min(100, (ren - L[lvl].at) / (nextAt - L[lvl].at) * 100) : 100;
+    document.getElementById('renownChip').innerHTML = '<span class="hearts">♥</span><div><b>' + storyEsc(L[lvl].title) + '</b><div style="font-size:11px;color:var(--ink-55)">' +
+      ren + ' renown' + (nextAt ? ' · ' + (nextAt - ren) + ' to go' : '') + '</div></div><div class="renown-bar"><i style="width:' + pct + '%"></i></div>';
+    // letters
+    var open = storyOpenQuests();
+    var count = document.getElementById('mailCount');
+    count.textContent = open.length;
+    document.getElementById('mailboxBtn').classList.toggle('empty', !open.length);
+    var panel = document.getElementById('lettersPanel');
+    panel.innerHTML = open.length ? open.map(function(q){
+      var c = Story.CHARACTERS[q.char];
+      return '<button class="letter-row" data-q="' + q.id + '" type="button"><span class="lr-av" style="--pin:' + c.color + '">' + c.name.charAt(0) + '</span>' +
+        '<span class="lr-txt"><span class="lr-who">' + storyEsc(c.name) + ' · ' + storyEsc(Story.PROPERTIES[q.property].name) + '</span><span class="lr-title">' + storyEsc(q.title) + '</span></span></button>';
+    }).join('') : '<div class="letters-empty">No letters right now.<br>Finish a few commissions — word travels in Pennywhistle Cove.</div>';
+    panel.querySelectorAll('.letter-row').forEach(function(btn){
+      btn.addEventListener('click', function(){ panel.classList.remove('open'); storyShowIntro(btn.dataset.q); });
+    });
+    if (!story.selectedPin || !entries[story.selectedPin]) storyCloseCard(true);
+  }
+  function storyCloseCard(silent){
+    story.selectedPin = null;
+    document.getElementById('townCard').classList.remove('open');
+    if (!silent) storyRenderTown();
+  }
+  function storyOpenCard(pid){
+    story.selectedPin = pid;
+    var entries = storyTownEntries(), e = entries[pid]; if (!e) return;
+    var prop = Story.PROPERTIES[pid], c = Story.CHARACTERS[e.resident];
+    var done = storyDoneMap();
+    var doneHere = Story.QUESTS.filter(function(q){ return q.property === pid && done[q.id]; });
+    var html =
+      '<div class="tc-head">' + storyAvatar(e.resident, 'tc-av') +
+      '<div><div class="tc-name">' + storyEsc(c.name) + ', ' + c.age + '</div><div class="tc-sub">' + storyEsc(c.job) + ' · ' + storyEsc(prop.name) + '</div></div>' +
+      '<button class="tc-close" id="tcClose" type="button" aria-label="Close">&times;</button></div>';
+    if (e.past) html += '<p class="tc-note">' + storyEsc(c.name) + ' lives somewhere new now, but the rooms you made here are still just as you left them.</p>';
+    else html += '<p class="tc-blurb">' + storyEsc(c.blurb) + '</p>';
+    if (e.letter){
+      var hasDraft = !!story.data.drafts[e.letter.id];
+      html += '<div class="tc-letter"><b>✉ ' + storyEsc(e.letter.title) + '</b>A letter is waiting for you.</div>' +
+        '<div class="tc-actions"><button class="btn-primary tc-mini" id="tcRead" type="button">' + (hasDraft ? 'Continue the commission' : 'Read the letter') + '</button></div>';
+    } else if (e.busy){
+      html += '<p class="tc-note">' + storyEsc(c.name) + ' is busy getting on with life. Help a few more neighbours and they\'ll write again.</p>';
+    }
+    if (doneHere.length){
+      html += '<div style="margin-top:10px;">' + doneHere.map(function(q){
+        return '<div class="tc-done-row"><span class="tcd-title">' + storyEsc(q.title) + '</span>' + storyHeartsHtml(story.data.quests[q.id].best) +
+          '<button class="btn-ghost tc-mini" data-redo="' + q.id + '" type="button">Redecorate</button></div>';
+      }).join('') + '<div class="tc-actions" style="margin-top:8px;"><button class="btn-ghost tc-mini" id="tcVisit" type="button">Visit the rooms</button></div></div>';
+    }
+    var card = document.getElementById('townCard');
+    card.innerHTML = html;
+    card.classList.add('open');
+    document.getElementById('tcClose').addEventListener('click', function(){ storyCloseCard(); });
+    var read = document.getElementById('tcRead'); if (read) read.addEventListener('click', function(){ storyShowIntro(e.letter.id); });
+    var visit = document.getElementById('tcVisit'); if (visit) visit.addEventListener('click', function(){ storyStartVisit(pid); });
+    card.querySelectorAll('[data-redo]').forEach(function(b){ b.addEventListener('click', function(){ storyShowIntro(b.dataset.redo); }); });
+    storyRenderTown();
+  }
+
+  document.getElementById('townStage').addEventListener('click', function(){ storyCloseCard(); document.getElementById('lettersPanel').classList.remove('open'); });
+  document.getElementById('mailboxBtn').addEventListener('click', function(e){ e.stopPropagation(); document.getElementById('lettersPanel').classList.toggle('open'); });
+  document.getElementById('townBackBtn').addEventListener('click', function(){ showScreen('title'); });
+  document.getElementById('townMap').addEventListener('error', function(){
+    document.getElementById('screen-town').style.background = 'linear-gradient(160deg,#cfe6df,#a9cfc6 45%,#e6dcc2)';
+    this.style.display = 'none';
+  });
+
+  function storyEnter(){
+    if (!storyAvailable) return;
+    if (!story.data) story.data = storyLoadData();
+    if (!story.inStory){
+      story.inStory = true;
+    }
+    state.discoveredAchievements = story.data.discovered;
+    storyRenderTown();
+    showScreen('town');
+    playCurrentTrack();
+    if (!story.data.seenPrologue){
+      story.data.seenPrologue = true; storySaveData();
+      var lines = Story.TOWN.prologue.map(function(t){ return '<p class="sc-story" style="font-size:15px;margin:0 0 10px;">' + storyEsc(t) + '</p>'; }).join('');
+      storyDialog('<div class="sc-eyebrow">Welcome to</div><h2 class="sc-title">' + storyEsc(Story.TOWN.name) + '</h2>' + lines +
+        '<p class="sc-story" style="margin-bottom:0;">Your first letter is waiting in the mailbox.</p>',
+        [ { label:'Open the mailbox', cls:'btn-primary', fn:function(){ document.getElementById('lettersPanel').classList.add('open'); } } ]);
+    }
+  }
+
   /* ---------------- init ---------------- */
   var existingSave = loadSavedGame();
   if (existingSave){
@@ -4367,8 +5237,16 @@
       state.placed = state.placed.filter(function(p){ return keptIds[p.roomId]; });
       if (!keptIds[state.focusedRoomId]) state.focusedRoomId = state.rooms[0].id;
     }
-    document.getElementById('titleStartBtn').textContent = 'Continue Decorating';
+    document.getElementById('titleStartBtn').textContent = 'Free play \u00b7 continue';
     document.getElementById('titleFreshBtn').style.display = 'block';
+  }
+  if (storyAvailable){
+    story.data = storyLoadData();
+    var sBtn = document.getElementById('titleStoryBtn');
+    sBtn.style.display = 'block';
+    var anyProgress = Object.keys(story.data.quests).length || Object.keys(story.data.drafts).length;
+    sBtn.textContent = anyProgress ? 'Story mode \u00b7 continue' : 'Story mode';
+    sBtn.addEventListener('click', storyEnter);
   }
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   renderRoomGrid();
