@@ -137,6 +137,25 @@
     color:var(--ink);
     margin:0 0 10px;
   }
+  .title-version{
+    display:inline-block;
+    margin:0 0 14px;
+    padding:3px 12px;
+    border-radius:999px;
+    background:rgba(190,150,70,.16);
+    color:var(--ink-70);
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.06em;
+  }
+  .title-files{
+    margin-top:22px;
+    font-size:10.5px;
+    line-height:1.5;
+    color:var(--ink-55);
+    opacity:.8;
+  }
+  .title-files.stale{ color:#a4561f; opacity:1; font-weight:600; }
   .title-tag{
     font-size:14.5px;
     color:var(--ink-55);
@@ -2438,11 +2457,13 @@
   <div class="title-scrim"></div>
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
+    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.6.0 &middot; Lantern Lane</div>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
     <button class="title-fresh-link title-newstory-link" id="titleNewStoryBtn" type="button" style="display:none;">Or begin a brand new story</button>
     <button class="btn-ghost title-free-btn" id="titleStartBtn" type="button">Free play</button>
     <button class="title-fresh-link" id="titleFreshBtn" style="display:none;">Or start a brand new room</button>
+    <div class="title-files" id="titleFiles"></div>
   </div>
 </section>
 
@@ -2715,8 +2736,8 @@
   </div>
 </div>
 
-<script src="data.js"></script>
-<script src="story.js"></script>
+<script src="data.js?v=0.6.0"></script>
+<script src="story.js?v=0.6.0"></script>
 <script>
 (function(){
   "use strict";
@@ -7053,6 +7074,21 @@
     sBtn.addEventListener('click', storyEnter);
   }
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
+  // version check: shows which build of each file is live, so a stale upload or cache is obvious
+  (function(){
+    var want = '0.6.0', box = document.getElementById('titleFiles');
+    var d = (typeof DATA_FILE_VERSION !== 'undefined') ? DATA_FILE_VERSION : null;
+    var st = (typeof STORY_FILE_VERSION !== 'undefined') ? STORY_FILE_VERSION : null;
+    var stale = [];
+    if (d !== want) stale.push('data.js' + (d ? ' (is ' + d + ')' : ' (old)'));
+    if (st !== want) stale.push('story.js' + (st ? ' (is ' + st + ')' : ' (old)'));
+    if (stale.length){
+      box.className = 'title-files stale';
+      box.textContent = 'Not up to date: ' + stale.join(', ') + '. Upload it, then refresh.';
+    } else {
+      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 21 Oct, 15:56';
+    }
+  })();
   renderRoomGrid();
   renderRooms();
   renderTabs();
