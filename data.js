@@ -319,14 +319,96 @@
             { id:'dusk', label:'Evening', icon:'dusk', src:ROOM_OPTIONS_BASE+'historic/evening/historic_baywindowright_leftdoor.jpg' }
           ] }
       ] },
-    { id:'modern-living-room',              name:'Modern Living Room',                 src:ASSET_BASE+'backgrounds_modern_living_room.svg' },
-    { id:'classic-living-room',             name:'Classic Living Room',                src:ASSET_BASE+'backgrounds_classic_living_room.svg' },
-    { id:'midcentury-living-room',          name:'Mid-Century Living Room',            src:ASSET_BASE+'backgrounds_midcentury_living_room.svg' },
-    { id:'industrial-loft',                 name:'Industrial Loft',                    src:ASSET_BASE+'backgrounds_industrial_loft.svg' },
-    { id:'brutalist-living-room',           name:'Brutalist Living Room',              src:ASSET_BASE+'backgrounds_brutalist_living_room.svg' },
-    { id:'downtown-living-room',            name:'Downtown Living Room',               src:ASSET_BASE+'backgrounds_downtown_living_room.svg' },
-    { id:'modern-cabin',                    name:'Modern Cabin',                       src:ASSET_BASE+'backgrounds_modern_cabin.svg' },
-    { id:'modern-hideout',                  name:'Modern Hideout',                     src:ASSET_BASE+'backgrounds_modern_hideout.svg' }
+    { id:'modern', name:'Modern',
+      architectures:[
+        { id:'bigwindow-bothdoors', label:'Big Window + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_bigwindow_bothdoors.jpg' }
+          ] },
+        { id:'bigwindow-leftdoor', label:'Big Window + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_bigwindow_leftdoor.jpg' }
+          ] },
+        { id:'bigwindow-rightdoor', label:'Big Window + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_bigwindow_rightdoor.jpg' }
+          ] },
+        { id:'onewindow-leftdoor', label:'One Window + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_onewindow_leftdoor.jpg' }
+          ] },
+        { id:'onewindow-rightdoor', label:'One Window + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_onewindow_rightdoor.jpg' }
+          ] },
+        { id:'twowindows-bothdoors', label:'Two Windows + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_twowindows_bothdoors.jpg' }
+          ] },
+        { id:'twowindows-leftdoor', label:'Two Windows + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_twowindows_leftdoor.jpg' }
+          ] },
+        { id:'twowindows-nodoors', label:'Two Windows', hasLeftDoor:false, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_twowindows_nodoors.jpg' }
+          ] },
+        { id:'twowindows-rightdoor', label:'Two Windows + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_twowindows_rightdoor.jpg' }
+          ] },
+        { id:'widenarrowwindow-bothdoors', label:'Wide + Narrow Window + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_widenarrowwindow_bothdoors.jpg' }
+          ] },
+        { id:'widenarrowwindow-leftdoor', label:'Wide + Narrow Window + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_widenarrowwindow_leftdoor.jpg' }
+          ] },
+        { id:'widenarrowwindow-rightdoor', label:'Wide + Narrow Window + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'modern/daytime/modern_widenarrowwindow_rightdoor.jpg' }
+          ] }
+      ] },
+    { id:'brutalist', name:'Brutalist',
+      architectures:[
+        { id:'bigwindow-bothdoors', label:'Big Window + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'brutalist/daytime/brutalist_bigwindow_bothdoors.jpg' }
+          ] },
+        { id:'bigwindow-leftdoor', label:'Big Window + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'brutalist/daytime/brutalist_bigwindow_leftdoor.jpg' }
+          ] },
+        { id:'bigwindow-rightdoor', label:'Big Window + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'brutalist/daytime/brutalist_bigwindow_rightdoor.jpg' }
+          ] },
+        { id:'leftwindow-rightdoor', label:'Left Window + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'brutalist/daytime/brutalist_leftwindow_rightdoor.jpg' }
+          ] },
+        { id:'rightwindow-leftdoor', label:'Right Window + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'brutalist/daytime/brutalist_rightwindow_leftdoor.jpg' }
+          ] },
+        { id:'twowindows-bothdoors', label:'Two Windows + 2 Doors', hasLeftDoor:true, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'brutalist/daytime/brutalist_twowindows_bothdoors.jpg' }
+          ] },
+        { id:'twowindows-leftdoor', label:'Two Windows + Left Door', hasLeftDoor:true, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'brutalist/daytime/brutalist_twowindows_leftdoor.jpg' }
+          ] },
+        { id:'twowindows-nodoors', label:'Two Windows', hasLeftDoor:false, hasRightDoor:false,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'brutalist/daytime/brutalist_twowindows_nodoors.jpg' }
+          ] },
+        { id:'twowindows-rightdoor', label:'Two Windows + Right Door', hasLeftDoor:false, hasRightDoor:true,
+          times:[
+            { id:'day',  label:'Day', icon:'sun', src:ROOM_OPTIONS_BASE+'brutalist/daytime/brutalist_twowindows_rightdoor.jpg' }
+          ] }
+      ] }
   ];
 
   // Items are loaded live from the same repo the game file is deployed in

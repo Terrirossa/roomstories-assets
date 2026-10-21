@@ -2952,6 +2952,8 @@
       if (!raw) return null;
       var data = JSON.parse(raw);
       if (!data || data.version !== 1 || !Array.isArray(data.rooms) || !data.rooms.length) return null;
+      // a save that uses a flat style which no longer exists would leave a blank room: start fresh instead
+      for (var ri = 0; ri < data.rooms.length; ri++) if (!getBackground(data.rooms[ri].backgroundId)) return null;
       return data;
     }catch(err){ return null; }
   }
@@ -3367,8 +3369,9 @@
       arch.times.forEach(function(t){
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'time-btn' + (state.activeTime===t.id ? ' active' : '');
-        btn.title = t.label;
+        // a style that only has one time of day yet always shows it as the current one
+        btn.className = 'time-btn' + (state.activeTime===t.id || arch.times.length === 1 ? ' active' : '');
+        btn.title = arch.times.length === 1 ? t.label + ' (other times of day coming soon)' : t.label;
         btn.setAttribute('aria-label', t.label);
         btn.innerHTML = TIME_ICONS[t.icon];
         btn.addEventListener('click', function(){
