@@ -27,34 +27,36 @@ var Story = (function(){
     calendar: { year:2025, month:5, day:2 },
     // ambient life on the map (positions are in % of the map image; the sparkle
     // points were checked against the painting so nothing glitters on land)
-    fx: {"glints":[[0.0,0.0],[21.1,0.0],[25.0,0.0],[28.9,0.0],[32.9,0.0],[36.8,0.0],[41.7,0.0],[46.0,0.0],[50.2,0.0],[39.0,3.0],[43.7,3.2],[26.9,3.3],[35.0,3.3],[19.3,3.3],[30.8,3.4],[23.2,3.6],[48.2,4.1],[15.2,4.1],[91.7,5.1],[52.1,5.3],[11.5,5.3],[87.5,5.4],[97.5,5.5],[59.0,6.0],[83.8,6.3],[37.2,6.4],[79.5,6.3],[33.2,6.6],[41.5,6.6],[21.1,6.7],[45.3,6.7],[29.0,6.8],[25.2,6.8],[64.0,7.0],[55.3,7.3],[16.8,7.6],[94.4,7.9],[67.6,8.0],[76.0,7.9],[99.9,8.4],[49.8,8.4],[89.6,8.6],[13.0,8.7],[8.8,9.4],[81.7,9.5],[85.6,9.6],[61.0,9.6],[39.2,9.6],[0.3,9.3],[72.4,9.6],[43.4,10.0],[31.4,9.9],[26.8,10.2],[22.7,10.1],[35.2,10.3],[52.9,10.5],[97.0,10.9],[64.8,10.8],[19.0,11.0],[47.0,11.0],[78.0,11.2],[92.5,11.2],[68.9,11.6],[15.2,12.0],[57.8,11.8],[88.4,12.3],[11.5,12.4],[83.2,13.0],[74.5,12.9],[41.2,13.0]],
+    fx: {"glints":[[26.7,96.2,0.59],[88.8,13.3,0.34],[19.5,10.4,0.29],[33.2,1.5,0.3],[59.0,84.9,0.31],[18.8,5.3,0.27],[47.3,87.0,0.57],[50.0,6.2,0.31],[26.3,7.1,0.3],[70.2,98.5,0.33],[44.2,9.5,0.52],[56.3,88.2,0.75],[12.3,6.2,0.34],[73.8,18.3,0.57],[77.0,98.2,0.31],[41.5,98.5,0.75],[31.7,95.0,0.29],[84.7,6.5,0.56],[73.5,20.7,0.35],[69.0,20.7,0.33],[95.7,20.1,0.3],[47.5,4.4,0.57],[65.5,91.1,0.34],[26.0,10.4,0.27],[25.7,4.4,0.49],[38.5,90.2,0.28],[26.5,97.6,0.54],[52.7,89.6,0.54],[46.0,80.2,0.35],[15.7,15.1,0.29],[56.2,82.2,0.3],[81.3,9.5,0.27],[51.5,85.5,0.38],[93.3,26.6,0.33],[92.8,27.2,0.34],[70.8,68.6,0.59],[42.5,85.8,0.3],[90.7,37.0,0.53],[80.0,25.4,0.75],[28.0,3.3,0.29],[83.2,9.5,0.59],[65.7,15.7,0.54],[91.8,27.2,0.3],[17.0,7.4,0.53],[95.0,30.8,0.54],[45.0,87.3,0.35],[86.5,44.1,0.27],[89.3,32.2,0.34],[87.0,42.3,0.31],[59.0,8.3,0.75],[86.0,27.2,0.51],[27.3,92.9,0.32],[43.7,84.9,0.3],[26.7,39.6,0.36],[62.8,12.7,0.28],[39.8,94.7,0.56],[78.2,58.0,0.75],[56.0,86.4,0.29],[69.7,67.5,0.31],[39.8,92.9,0.32],[54.0,91.1,0.35],[18.5,11.2,0.31],[35.3,8.6,0.36],[89.5,21.3,0.36],[69.0,13.6,0.35],[83.0,14.8,0.34],[32.7,89.3,0.27],[22.0,6.5,0.37],[11.3,14.5,0.75],[24.2,94.7,0.28],[68.5,10.7,0.29],[57.0,12.1,0.32],[73.2,10.9,0.36],[21.8,3.6,0.27],[97.3,10.1,0.29],[93.2,16.6,0.34],[52.8,92.3,0.59],[27.3,11.2,0.57],[9.2,13.0,0.26],[80.3,18.9,0.28],[42.8,92.3,0.28],[13.8,78.7,0.34],[28.8,97.3,0.36],[51.7,98.5,0.31],[36.0,91.7,0.36],[69.5,16.9,0.38],[81.7,11.5,0.35],[37.2,3.6,0.52],[78.5,20.1,0.34],[99.0,27.2,0.26],[74.3,16.3,0.38],[43.8,7.1,0.29],[99.5,19.8,0.52],[43.2,88.2,0.28],[15.8,8.0,0.37],[55.3,89.6,0.34],[85.7,29.3,0.37],[28.0,5.0,0.75],[78.8,17.2,0.31],[34.7,83.7,0.59],[20.7,4.4,0.33],[55.0,13.9,0.27],[79.0,18.3,0.36],[42.7,79.3,0.3],[29.7,10.7,0.75],[73.5,15.1,0.36],[82.8,46.7,0.28],[34.0,7.4,0.58],[29.2,91.7,0.36],[75.8,21.0,0.37],[59.2,93.5,0.37],[48.8,10.4,0.28],[90.0,10.4,0.6],[25.7,13.6,0.56],[76.2,13.6,0.37],[83.2,11.5,0.37],[76.5,9.2,0.75],[92.8,30.2,0.56],[24.5,87.6,0.59],[45.2,81.4,0.33],[39.2,11.2,0.3],[90.3,23.7,0.58],[88.5,10.7,0.48],[37.3,95.9,0.29],[88.0,23.7,0.56],[78.8,13.3,0.31],[64.5,8.3,0.29],[18.3,16.3,0.31],[64.7,16.0,0.53],[95.2,28.7,0.33],[78.5,23.4,0.36],[57.3,6.5,0.59],[67.7,9.8,0.34],[50.5,89.1,0.58],[46.7,8.3,0.36],[82.2,12.1,0.26],[45.3,94.4,0.26],[51.7,4.7,0.75],[88.3,25.7,0.54],[62.0,93.2,0.53],[51.7,10.7,0.52],[22.0,1.5,0.75],[25.7,93.2,0.56],[77.3,55.9,0.34],[17.2,14.8,0.3],[67.5,99.1,0.37],[72.5,22.5,0.52],[23.3,96.2,0.38],[35.2,0.6,0.26],[63.5,96.4,0.35],[98.7,16.9,0.58],[11.8,9.5,0.34],[26.7,17.2,0.75],[73.2,23.7,0.75],[94.8,7.1,0.75],[34.7,82.0,0.54],[53.8,83.7,0.26],[10.5,7.7,0.33],[19.8,3.3,0.28],[73.3,17.5,0.34],[88.7,9.8,0.29],[72.3,25.7,0.53],[48.2,11.8,0.36],[89.2,16.3,0.32],[93.5,34.6,0.37],[25.5,16.3,0.52],[56.0,8.9,0.29],[47.0,92.0,0.59],[51.3,82.0,0.31],[90.2,33.7,0.37],[38.7,88.2,0.34],[83.7,12.7,0.49],[88.3,17.8,0.28],[90.5,22.2,0.33],[34.0,90.2,0.31],[37.5,86.7,0.33],[20.8,12.4,0.54],[68.2,75.1,0.29],[89.5,39.6,0.55],[97.2,8.0,0.32],[79.2,16.6,0.52],[34.7,99.1,0.34],[35.5,7.1,0.27],[81.2,14.8,0.75],[71.0,67.2,0.55],[73.3,14.2,0.26],[80.5,54.1,0.57],[91.2,12.1,0.3],[72.5,14.2,0.53],[96.7,16.9,0.55],[97.5,29.3,0.33],[57.3,10.1,0.28],[40.8,85.8,0.31],[75.0,11.2,0.54],[72.3,16.0,0.48],[61.2,8.0,0.58],[51.8,83.4,0.3],[35.2,97.0,0.5],[95.8,9.5,0.29],[87.7,15.4,0.38],[66.3,10.7,0.28],[98.2,18.3,0.56],[66.2,12.7,0.34],[69.7,94.7,0.26],[73.8,13.0,0.59],[55.3,5.0,0.33],[30.8,92.0,0.27],[58.0,91.1,0.5],[91.5,33.7,0.48],[88.5,28.4,0.36],[90.8,24.9,0.57],[86.3,5.9,0.31],[97.5,22.5,0.3],[92.0,29.0,0.33],[36.3,97.6,0.29],[85.3,47.9,0.34],[46.8,83.7,0.31],[90.7,6.2,0.59],[34.7,12.4,0.75],[53.2,82.5,0.35],[67.3,72.8,0.32],[77.7,15.4,0.34],[46.5,13.9,0.75],[94.0,20.4,0.37],[30.2,14.2,0.32],[11.3,4.7,0.28],[64.2,95.0,0.35],[15.0,93.8,0.27],[18.3,7.1,0.31],[32.3,87.0,0.37],[82.5,12.7,0.34],[55.7,83.4,0.48],[54.2,87.9,0.3],[44.0,93.5,0.53],[79.5,55.6,0.33],[38.5,7.4,0.53],[81.5,17.2,0.75],[84.5,44.7,0.33],[84.7,28.4,0.28],[41.3,90.2,0.35],[47.3,6.5,0.27],[55.5,92.0,0.32],[28.2,8.0,0.55],[76.3,97.0,0.32],[52.8,85.5,0.57],[49.2,7.4,0.52],[19.8,8.9,0.54],[84.8,24.6,0.75],[55.2,84.6,0.75],[54.3,95.6,0.27],[83.7,20.4,0.34],[37.0,10.1,0.56],[28.7,99.1,0.56],[60.7,10.7,0.33],[80.2,9.2,0.36],[35.2,89.1,0.54],[74.8,63.6,0.29],[88.5,8.6,0.75],[40.5,8.0,0.26],[47.2,98.5,0.56],[34.8,85.8,0.56],[69.3,11.5,0.52],[80.7,13.0,0.29],[64.8,89.9,0.28],[82.0,52.1,0.31],[80.2,56.8,0.3],[91.3,14.5,0.26],[74.5,12.7,0.34],[82.5,28.7,0.26],[29.8,89.6,0.75],[98.5,13.6,0.57],[30.3,97.3,0.27],[72.2,18.3,0.5],[15.2,11.5,0.55],[66.5,77.2,0.75],[77.2,8.0,0.31],[24.2,16.6,0.52],[93.3,9.8,0.59],[41.3,9.2,0.56],[89.0,41.7,0.3],[52.7,9.5,0.37],[55.3,11.8,0.54],[86.5,15.1,0.35],[97.5,28.4,0.34],[55.8,56.5,0.3],[14.2,9.2,0.35],[37.5,12.1,0.28],[64.2,17.5,0.54],[68.0,96.4,0.6],[37.8,91.4,0.27],[17.5,5.6,0.28],[59.2,90.5,0.57],[23.0,0.6,0.27],[74.7,8.9,0.37],[91.2,22.8,0.54],[22.0,8.3,0.75],[95.0,9.2,0.34],[83.7,16.9,0.28],[79.0,26.9,0.29],[67.5,18.9,0.35],[30.3,98.8,0.26],[23.3,5.0,0.35],[38.3,13.9,0.57],[42.3,91.1,0.28],[72.5,19.8,0.51],[41.2,82.8,0.56],[44.5,3.0,0.75],[21.7,13.9,0.33],[89.7,12.4,0.31],[83.5,23.7,0.33],[78.5,14.5,0.35],[18.8,98.8,0.29],[30.3,8.0,0.54],[95.8,15.1,0.29],[95.5,10.9,0.34],[70.7,18.9,0.54],[61.3,92.0,0.29],[16.0,98.2,0.29],[90.0,16.6,0.55],[67.0,15.1,0.53],[84.0,10.7,0.35],[53.3,13.0,0.3],[58.2,95.6,0.29],[95.3,25.7,0.58],[41.0,95.6,0.56],[22.7,11.2,0.54],[93.7,5.0,0.34],[55.2,7.4,0.33],[86.2,24.9,0.28],[65.0,71.6,0.34],[97.3,11.8,0.36],[88.3,19.5,0.36],[36.2,95.3,0.49],[71.3,11.5,0.36],[95.7,13.6,0.37],[48.3,95.6,0.36],[61.7,95.9,0.38],[31.8,1.5,0.5],[79.8,20.4,0.34],[72.3,63.0,0.34],[93.7,13.6,0.31],[29.7,86.4,0.59],[80.3,13.9,0.3],[13.8,13.0,0.35],[66.7,97.9,0.6],[41.0,13.6,0.55],[48.0,1.2,0.31],[50.0,99.1,0.3],[90.2,21.6,0.58],[63.3,11.8,0.32],[42.3,96.4,0.29],[31.3,12.1,0.32],[92.2,16.3,0.33],[25.3,96.7,0.27],[92.0,19.2,0.75],[93.3,19.2,0.3],[65.3,96.7,0.31],[53.7,11.2,0.38],[31.8,3.3,0.35],[91.0,28.1,0.34],[87.0,32.0,0.5],[58.2,87.3,0.75],[59.7,14.5,0.38],[85.2,43.2,0.31],[26.3,2.7,0.3],[48.5,88.5,0.75],[52.2,6.8,0.35],[89.3,18.9,0.38],[78.0,12.4,0.29],[42.8,81.4,0.38],[79.7,7.1,0.36],[51.0,87.6,0.75],[41.3,92.6,0.31],[64.7,10.9,0.27],[84.8,13.3,0.37],[91.3,25.7,0.28],[87.3,21.9,0.75],[31.2,93.5,0.32],[50.3,8.3,0.29],[94.5,27.5,0.53],[26.8,14.2,0.3],[95.0,26.6,0.35],[95.8,16.3,0.56],[66.7,16.0,0.33],[62.0,14.8,0.52],[92.0,17.5,0.32],[53.5,98.2,0.5],[39.3,84.6,0.36],[29.7,1.8,0.38],[84.2,8.9,0.32],[70.0,66.3,0.5],[14.8,5.0,0.33],[56.5,98.5,0.37],[38.8,2.7,0.59],[83.3,26.0,0.32],[98.8,22.8,0.26],[72.7,10.4,0.37],[58.5,10.9,0.5],[49.8,80.2,0.55],[80.5,51.5,0.32]],
       "boats":[
       // x/y = where the boat floats (in % of the map), w = its width (1 = 1% of the picture),
-      // rx/ry = how far it drifts, dur = seconds for one slow loop, flip = face the other way
-      {img:"story/boats/boat2.png", x:30.4, y:4.6,  w:1.8, rx:.7, ry:.28, dur:52, delay:0,  flip:false},
-      {img:"story/boats/boat1.png", x:38.0, y:4.4,  w:2.1, rx:.6, ry:.25, dur:61, delay:-14, flip:true},
-      {img:"story/boats/boat6.png", x:41.0, y:5.4,  w:2.0, rx:1.1,ry:.35, dur:74, delay:-30, flip:false},
-      {img:"story/boats/boat5.png", x:10.3, y:13.3, w:1.5, rx:.5, ry:.22, dur:47, delay:-9,  flip:false},
-      {img:"story/boats/boat4.png", x:23.7, y:1.9,  w:1.5, rx:.6, ry:.2,  dur:56, delay:-22, flip:true},
-      {img:"story/boats/boat3.png", x:78.8, y:55.2, w:1.9, rx:.35,ry:.3,  dur:44, delay:-5,  flip:false}
+      // rx/ry = how far it drifts, dur = seconds for one slow loop, flip = face the other way.
+      // two in Kingfisher Bay (top left), two in Glimmer Bay (top right), two in the Harbour (bottom)
+      {img:"story/boats/boat2.png", x:17.5, y:8.6,  w:1.8, rx:.7, ry:.28, dur:52, delay:0,   flip:false},
+      {img:"story/boats/boat4.png", x:32.5, y:10.2, w:1.6, rx:.6, ry:.22, dur:58, delay:-22, flip:true},
+      {img:"story/boats/boat3.png", x:78.0, y:15.0, w:1.9, rx:.6, ry:.28, dur:49, delay:-9,  flip:false},
+      {img:"story/boats/boat5.png", x:90.0, y:20.5, w:1.6, rx:.5, ry:.25, dur:55, delay:-30, flip:true},
+      {img:"story/boats/boat1.png", x:35.0, y:88.5, w:2.3, rx:.7, ry:.3,  dur:63, delay:-14, flip:false},
+      {img:"story/boats/boat6.png", x:52.5, y:93.5, w:2.2, rx:1.1,ry:.35, dur:74, delay:-40, flip:true}
     ],
       "leaves":{"area":[1,30,33,72],"count":14},"smoke":[]},
     // named neighbourhoods (polygons in % of the map image). The first one that
     // contains a point wins, so the small ones come first.
     districts: [
-      {id:"lake",name:"Lantern Lake",blurb:"Log cabins on the point. Smoke from at least one chimney, always.",poly:[[47,0],[100,0],[100,8],[86,8.5],[72,10],[60,9.5],[50,6]],label:[75,2.2]},
-      {id:"eastbank",name:"Far Shore",blurb:"Quiet brick houses across the water. Reached by a very patient ferry.",poly:[[91,30],[100,28],[100,56],[94,52],[91,44]],label:[96,36]},
-      {id:"orchard",name:"Orchard Rise",blurb:"Tidy lanes, neat gardens and a surprising number of cats.",poly:[[14,17],[24,15],[40,14],[52,15],[53,22],[52,29],[44,30],[34,31],[24,31],[16,28]],label:[33,22.5]},
-      {id:"glass",name:"Glass Row",blurb:"The new towers. Lifts, balconies, and a view of the other towers.",poly:[[63,24],[72,20],[84,21],[91,26],[91,40],[84,50],[75,52],[67,47],[63,38]],label:[77,31]},
-      {id:"canal",name:"Canal Row",blurb:"Narrow brick houses with their feet in the water.",poly:[[52,47],[60,43],[66,49],[72,55],[73,68],[70,79],[62,81],[54,77],[52,64]],label:[61,72]},
-      {id:"oldtown",name:"Old Town",blurb:"Red brick, a clock tower that runs a little fast, and the best pavement for gossip.",poly:[[37,26],[47,24],[58,25],[63,28],[63,42],[58,44],[52,47],[52,70],[44,72],[38,64],[36,48],[37,34]],label:[45,44]},
-      {id:"church",name:"Church Hill",blurb:"White clapboard, a very tall steeple, and neighbours who bring casseroles.",poly:[[0,33],[12,28],[26,31],[34,34],[37,40],[36,60],[40,70],[32,79],[16,83],[0,81]],label:[17,60]},
-      {id:"mills",name:"The Old Mills",blurb:"Warehouses turned into lofts: high ceilings, big windows, echoing stairwells.",poly:[[73,54],[91,50],[100,57],[100,100],[74,100],[72,86],[75,72]],label:[90,78]},
-      {id:"harbour",name:"The Harbour",blurb:"Boats come and go. Mostly come.",poly:[[0,86],[20,88],[40,84],[56,83],[72,86],[74,100],[0,100]],label:[36,94]},
-      {id:"bay",name:"Kingfisher Bay",blurb:"Wide, bright, and full of sails on a Sunday.",poly:[[0,0],[47,0],[50,6],[60,9.5],[60,14],[40,14],[20,16],[0,17]],label:[28,8]}
+      {id:"lake",name:"Lantern Lake",blurb:"Log cabins the old ferrymen built for their summer holidays.",reason:"Anyone who wants quiet and a chimney ends up here.",homes:"Log cabins",poly:[[47,0],[100,0],[100,8],[86,8.5],[72,10],[60,9.5],[50,6]],label:[75,2.2]},
+      {id:"eastbank",name:"Far Shore",blurb:"Brick townhouses across the water.",reason:"Painters settled here for the cheap rents and the patient ferry. The gallery followed.",homes:"Brick townhouses",poly:[[91,30],[100,28],[100,56],[94,52],[91,44]],label:[96,36]},
+      {id:"orchard",name:"Orchard Rise",blurb:"Tidy lanes and one stubborn apple tree per garden.",reason:"The old orchard was sold off lane by lane. Families moved in, and so did the cats.",homes:"Sunlit family flats",poly:[[14,17],[24,15],[40,14],[52,15],[53,22],[52,29],[44,30],[34,31],[24,31],[16,28]],label:[33,22.5]},
+      {id:"glass",name:"Glass Row",blurb:"The new towers, on the old timber yard.",reason:"Built for the firms that arrived with the ferry timetable: lifts, balconies, first proper jobs.",homes:"Sunlit flats and penthouse lofts",poly:[[63,24],[72,20],[84,21],[91,26],[91,40],[84,50],[75,52],[67,47],[63,38]],label:[77,31]},
+      {id:"canal",name:"Canal Row",blurb:"Narrow brick houses with their feet in the water.",reason:"Boatbuilders lived here. Now it's the cheerful, affordable street for a first key.",homes:"Historic brick flats",poly:[[52,47],[60,43],[66,49],[72,55],[73,68],[70,79],[62,81],[54,77],[52,64]],label:[61,72]},
+      {id:"oldtown",name:"Old Town",blurb:"The original market square, with a clock tower that runs fast.",reason:"Everything started here: the antiques, the Courier's office and the best pavement for gossip.",homes:"Historic flats above shops",poly:[[37,26],[47,24],[58,25],[63,28],[63,42],[58,44],[52,47],[52,70],[44,72],[38,64],[36,48],[37,34]],label:[45,44]},
+      {id:"church",name:"Church Hill",blurb:"White clapboard, a very tall steeple.",reason:"The oldest families live up here. Weddings, casseroles and the winter candles all happen on this hill.",homes:"Sunlit clapboard flats",poly:[[0,33],[12,28],[26,31],[34,34],[37,40],[36,60],[40,70],[32,79],[16,83],[0,81]],label:[17,60]},
+      {id:"mills",name:"The Old Mills",blurb:"The textile mills closed in the nineties.",reason:"The warehouses were turned into lofts and attic studios, and the artists came for the echoing stairwells.",homes:"Lofts and attic studios",poly:[[73,54],[91,50],[100,57],[100,100],[74,100],[72,86],[75,72]],label:[90,78]},
+      {id:"harbour",name:"The Harbour",blurb:"Ferry, fishing boats and the regatta.",reason:"The reason the Cove exists at all. Boats mostly come; some even go.",homes:"Boathouses and jetties",poly:[[0,86],[20,88],[40,84],[56,83],[72,86],[74,100],[0,100]],label:[36,94]},
+      {id:"bay",name:"Kingfisher Bay",blurb:"Named for the kingfisher on the far point.",reason:"Sunday sailors, early swimmers and the first light of the day.",homes:"Open water",poly:[[0,0],[47,0],[50,6],[50,11],[40,14],[20,16],[0,17]],label:[28,8]},
+      {id:"glimmer",name:"Glimmer Bay",blurb:"The wide water east of the towers.",reason:"At dusk the windows light up and the whole bay glitters, hence the name.",homes:"Open water",poly:[[50,6],[60,9.5],[72,10],[86,8.5],[100,8],[100,28],[91,30],[91,26],[84,21],[72,20],[63,24],[60,18],[50,11]],label:[82,14]}
     ],
     prologue: [
-      "Pennywhistle Cove is the kind of town where everybody knows whose bicycle is whose.",
+      "Pennywhistle Cove is the kind of town where everybody knows whose umbrella is whose.",
       "You started arranging rooms as a hobby. Cushions. Plants. The occasional heated opinion about rugs.",
       "Then a friend asked for help with her very first flat — and word got around. Quietly. In a cozy way."
     ]
@@ -85,7 +87,7 @@ var Story = (function(){
              blurb:"Confident, generous, plans a dinner for twelve in a flat that seats four." },
     noor:  { id:'noor',  name:'Noor',  age:40, job:'Architect',               color:'#4a5f7a',
              blurb:"Dry, precise, secretly funny. Can tell when a shelf is two centimetres off." },
-    theo:  { id:'theo',  name:'Theo',  age:29, job:'Bicycle mechanic',        color:'#d9a441',
+    theo:  { id:'theo',  name:'Theo',  age:29, job:'Baker',        color:'#d9a441',
              blurb:"Keeps everything 'because it might be useful'. About to become a dad." },
     rosa:  { id:'rosa',  name:'Rosa',  age:68, job:'Retired costume maker',   color:'#7a3b5e',
              blurb:"Theatrical, outspoken, wonderful. Has opinions about workmanship and about you." }
@@ -100,10 +102,10 @@ var Story = (function(){
   // only unlocks the rooms it lists in `edit`. Doors are chosen so
   // neighbouring rooms connect: right door -> next room's left door.
   var PROPERTIES = {
-    MIA_HOME_A:    { owner:'mia',   name:"Mia's first flat",       family:'sunlit-living-room-twin-windows', district:'canal', map:{x:59.5,y:63},
-                     rooms:[ {key:'living',  label:'Living room', arch:'both-rightdoor'},
-                             {key:'bedroom', label:'Bedroom',     arch:'both-bothdoors'},
-                             {key:'spare',   label:'Little spare room', arch:'both-leftdoor'} ] },
+    MIA_HOME_A:    { owner:'mia',   name:"Mia's first flat",       family:'historic', district:'canal', map:{x:59.5,y:63},
+                     rooms:[ {key:'living',  label:'Living room', arch:'twowindows-rightdoor'},
+                             {key:'bedroom', label:'Bedroom',     arch:'twowindows-bothdoors'},
+                             {key:'spare',   label:'Little spare room', arch:'onewindow-leftdoor'} ] },
     MIA_HOME_B:    { owner:'mia',   name:"Mia & Alex's flat",      family:'sunlit-living-room-twin-windows', district:'church', map:{x:21,y:58},
                      rooms:[ {key:'living',  label:'Living room', arch:'both-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'both-bothdoors'},
@@ -320,7 +322,7 @@ var Story = (function(){
     reply:{ low:"A tiny bit fancier. A tiny bit more me.", mid:"It's like my room grew up and kept its personality.", high:"I'm going to tell the client it's from my 'inspiration space'. It's from you." }
   },
   { id:'JULES_03', char:'jules', title:'A Door with My Name on It', property:'JULES_HOME_B', change:'upstairs', edit:['living','bedroom','art'],
-    requires:['JULES_02'], minRenown:15, day:214, allowance:94,
+    requires:['JULES_02','ROSA_02'], minRenown:15, day:214, allowance:94,
     story:"Jules graduated and a small creative grant arrived. The mill's landlord has offered Jules the whole top floor: a live-work loft with an actual room for art. Jules is slightly overwhelmed by the idea of a door that closes.",
     message:"An actual room for painting! Give that room ALL the colour. The bedroom can be softer. And please don't make the living room look like a reception area.",
     brief:[
@@ -447,7 +449,7 @@ var Story = (function(){
     reply:{ low:"It's a good start. We'll make it ours.", mid:"This feels like somewhere we can actually settle in.", high:"Elena cried a little and said it was 'hormones'. I think it was the sideboard." }
   },
   { id:'THEO_02', char:'theo', title:'A Room for Us, Too', property:'THEO_HOME_A', change:'more', edit:['bedroom'],
-    requires:['THEO_01','ROSA_01'], day:345, allowance:36,
+    requires:['THEO_01','NOOR_03'], day:302, allowance:36,
     story:"The baby has arrived and so has a lot of laundry. Theo and Elena have spent their money on essentials and left their own bedroom for last. They'd love one room that's restful and adult.",
     message:"The living room still makes us happy. Could you help with our bedroom now? Elena suggested green. I'd like to keep the wood and keep it simple. And somewhere to put clothes that isn't 'the chair'.",
     brief:[
@@ -461,9 +463,9 @@ var Story = (function(){
     reply:{ low:"It's somewhere to sleep. That's a lot, right now.", mid:"Restful. Adult. That's all we asked.", high:"We slept for six hours straight. The baby did too. Is this witchcraft?" }
   },
   { id:'THEO_03', char:'theo', title:'Enough Room for Everyone', property:'THEO_HOME_B', change:'move', edit:['living','dining','bedroom'],
-    requires:['THEO_02'], minRenown:15, day:380, allowance:86,
+    requires:['THEO_02'], minRenown:15, day:360, allowance:86,
     starters:[ {room:'living', asset:'sideboard-akio-mediumwood', x:60, y:58, width:null} ],
-    story:"Theo is now a co-owner of the bicycle shop and the family has moved to a bigger flat with a proper dining room. They can afford new furniture, but they brought the sideboard. It might be useful.",
+    story:"Theo is now a co-owner of the bakery and the family has moved to a bigger flat with a proper dining room. They can afford new furniture, but they brought the sideboard. It might be useful.",
     message:"We've finally got a proper dining room! I'd love us all to sit down together when family visits. Bring what still works from the old place, we don't need to start from zero. (The sideboard is back. It followed us.)",
     brief:[
       R('must','living','A living room',{role:'living',room:'living'},["The living room is comfy and ready for naps."]),
@@ -510,7 +512,7 @@ var Story = (function(){
     reply:{ low:"A fine beginning. One expects improvements.", mid:"Lovely. Now everyone will stay even longer. Good.", high:"Four people stayed until midnight. I've found the room's 'one more cup' effect. Marvellous." }
   },
   { id:'ROSA_03', char:'rosa', title:'The Little House by the Lake', property:'ROSA_CABIN_A', change:'second', edit:['living','kitchen','bedroom'],
-    requires:['ROSA_02'], minRenown:15, day:366, allowance:110,
+    requires:['ROSA_02'], minRenown:15, day:330, allowance:110,
     story:"With long-held savings and an inheritance, Rosa has bought a little cabin on the lake. She keeps her city flat. The cabin is small and bright, and calls for a lighter, breezier version of her taste.",
     message:"I want to know I'm near the water when I open the windows. I don't need little ducks on the cushions. Lighter wood, some green and blue — but don't make it anonymous, darling. A little ochre. I do have a reputation.",
     brief:[
@@ -556,7 +558,7 @@ var Story = (function(){
                    "Noor's window is open. Her plants are perfectly spaced."] },
     theo:  { paper:'theo',  sign:'Theo',  hi:'Hey!',     replyBye:'Cheers, Theo (and Elena)',
              ask:"Ah — quick one — I think we were hoping for…",
-             idle:["Theo is fixing a bike on the pavement and singing badly.",
+             idle:["Theo is carrying a tray of rolls and singing badly.",
                    "Theo waves a spanner like a flag.",
                    "Theo is pushing a very small, very serious pram."] },
     rosa:  { paper:'rosa',  sign:'Rosa',  hi:'Darling,', replyBye:'Fondly, Rosa',
@@ -572,42 +574,42 @@ var Story = (function(){
   // bottom; the structured list (must / love / avoid) lives on the note that
   // is clipped to the letter and pinned up while you decorate.
   var LETTERS = {
-    MIA_01: { hello:"Hello!",
-      body:["Priya at the vet practice says you're the person who ‘does rooms’. I have a key now. My own key! I keep checking my pocket.",
-            "I can only afford to make one room nice, so: the living room. Somewhere comfy, a little table, a lamp. Green, cream and light wood, please. And flowers! (A florist is about to open on my street and I'm already emotionally invested.)",
+    MIA_01: { hello:"Hello {you}!",
+      body:["I have a key now. My own key! I keep checking my pocket. You were always the one who knew what I'd like before I did, so I'm asking the best person I know.",
+            "I can only afford to make one room nice: the living room. Somewhere comfy, a little table, a lamp. Green, cream and light wood. And flowers! (A florist is about to open on my street and I'm already emotionally invested.) My toes are always cold, so something soft for the floor?",
             "No black furniture or shiny chrome, please. Shiny things make me nervous."],
       bye:"Thank you so much,", ps:"There will be cookies." },
     MIA_02: { hello:"Hello again!",
-      body:["I passed my probation! I buy dahlias at Fennel & Fern every Friday (the shop cat waits for me), and every evening I still end up in the living room you made, like a cat in the only sunny spot.",
+      body:["I passed my probation! I buy dahlias at Fennel & Fern every Friday (the shop cat waits for me), and every evening I still end up in the living room you made, like a cat in the only sunny spot. My room at Mum's had a black table on a dark rug, and it felt like a cave.",
             "Could you do the other two rooms? A soft pink bedroom, and the little room as a reading corner, green like a tiny garden. Flowers in both, please, and nothing too dark."],
       bye:"Thank you again,", ps:"A friend called Alex carried my bookcase up the stairs. I'm saying nothing." },
-    MIA_03: { hello:"Dear friend,",
-      body:["Alex and I are moving in together! A real flat with a real dining table. We've never owned a table that wasn't also a desk.",
+    MIA_03: { hello:"Dear {you},",
+      body:["Alex and I are moving in together! A real flat with a real dining table. (Alex's grandmother's wooden one survived three house moves and a rave. We want one like it.)",
             "Alex likes navy and clean shapes; I like green and anything that smells of baking. Could you find the middle? A living room, a dining room and a bedroom. Flowers on the table (Fennel & Fern, obviously), a few blue pieces for Alex, and nothing too dark. We're cosy people, not moody ones."],
       bye:"Gratefully (and sticky),", ps:"There's a lemon loaf waiting. In my head, but still." },
 
     JULES_01: { hello:"HELLO!!",
       body:["Mia gave me your name and a cookie. I have one suitcase and ELEVEN boxes of paint. The paint is unpacked. The bed is… somewhere?",
-            "One room that does everything. The EASEL first, then somewhere to sleep, then somewhere to sit and stare at the ceiling. Cobalt blue, some orange, lots of colours that don't match. Matching is how they get you.",
+            "One room that does everything. The EASEL first, then somewhere to sleep, then somewhere to sit and stare at the ceiling. Cobalt blue and burnt orange, the only couple I believe in, plus lots of colours that don't match. Matching is how they get you.",
             "Please don't make it beige. BEIGE IS HOW THEY GET YOU."],
       bye:"Yours in turpentine,", ps:"I drew you on the back. You look like a potato in a nice jumper." },
     JULES_02: { hello:"OKAY SO,",
       body:["SOMEONE PAID ME. For a drawing of a heron in a raincoat. I've read the email eleven times. (I spent half of it at the flea market, on a clock.)",
-            "Keep the easel and the blue, but bring in three or four new things, and could we try lilac or pink? The Carla couch comes in lilac and I've been staring at it for days. And less beige. I can feel it creeping back."],
+            "Keep the easel and the blue, bring in three or four new things, and could we try lilac or pink? Also: I've named my fern Gerald and he needs a friend. The Carla couch comes in lilac and I've been staring at it for days. And less beige. I can feel it creeping back."],
       bye:"Gratefully chaotic,", ps:"The heron is going on a mug." },
     JULES_03: { hello:"GUESS WHAT,",
       body:["I GRADUATED. The mill's landlord offered me the whole top floor: a live-work loft with a DOOR THAT CLOSES. AND the Paper Moth Gallery has asked for six of my prints!!",
             "The art room needs ALL the colour: easel, things on the walls, a rainbow that had too much coffee. The bedroom should be soft and quiet. And please don't let the living room look like a dentist's waiting room."],
       bye:"Yours, slightly overwhelmed,", ps:"I'm planning an Open Studio. I will make cake. (I can't bake.)" },
 
-    SAM_01: { hello:"Good evening,",
+    SAM_01: { hello:"Good evening, {you},",
       body:["I've just moved for a better job and invited my whole team to dinner on Friday. Eleven people, a flat that seats four. It'll be wonderful.",
-            "The kitchen comes first: dark wood, burgundy, plenty of chrome and steel, an island big enough to put a party on, and a fridge that hums reassuringly. And gadgets: three mixers at least. No flowers (they wilt when I look at them) and nothing pale and rustic.",
+            "The kitchen comes first: dark wood, burgundy, plenty of chrome and steel, an island big enough to put a party on, and a fridge that hums reassuringly. (I once saw brass beside chrome and had to sit down.) And gadgets: three mixers at least. No flowers (they wilt when I look at them) and nothing pale and rustic.",
             "(The oven is on back-order. We don't discuss it.)"],
       bye:"Warmly, and in need of a whisk,", ps:"Friday, seven o'clock. That's an invitation, not a request." },
     SAM_02: { hello:"My friend,",
       body:["The kitchen is a triumph. Eleven people ate in it and the only casualty was a lemon. A florist opened across the road; I have walked past it twice, on purpose.",
-            "A dining table with enough seats to pretend I planned this, and a room next door to collapse in. Leather, please. Keep the dark wood and burgundy, add burnt orange and a little chrome or black. Still no flowers. Still nothing pale."],
+            "A dining table with enough seats to pretend I planned this, and a room next door to collapse in. Leather, please. Keep the dark wood and burgundy, add burnt orange and a little chrome or black. Wood should behave: one tone, not a lumberyard. Still no flowers. Still nothing pale."],
       bye:"Gratefully,", ps:"A guest called Robin did all the washing up. I have invited them back." },
     SAM_03: { hello:"Dear friend,",
       body:["I got promoted. And Robin and I have bought a place, together. We own a dish rack. Best day of my life.",
@@ -616,41 +618,41 @@ var Story = (function(){
 
     NOOR_01: { hello:"Hello.",
       body:["Sam passed on your details. He said you actually listen. I'll assume that's true.",
-            "I've moved. That's not up for discussion. I'd like one room finished: the bedroom. A bed, a bedside table, chalk white, a little blue, pale wood. Twelve things at most; I counted. Somewhere to put things away. No busy patterns."],
+            "I've moved. That's not up for discussion. I'd like one room finished: the bedroom. A bed, a bedside table, chalk white, a little blue, pale wood. Twelve things at most; I counted. Somewhere to put things away. No busy patterns, and matching grain matters to me."],
       bye:"Regards,", ps:"If a shelf is two centimetres off, I'll know." },
     NOOR_02: { hello:"Hello again.",
       body:["The bedroom works. I said so out loud, in the office. One colleague dropped a stapler.",
-            "Now the living room and the kitchen: the same restraint, but each with its own temperament. Pale wood in the living room; steel, chrome or white in the kitchen. Keep the blue. Fourteen pieces a room at most. No patterns."],
+            "Now the living room and the kitchen: the same restraint, but each with its own temperament. Pale wood in the living room; steel, chrome or white in the kitchen. Keep the blue. Fourteen pieces a room at most. No patterns. (Chrome next to brass is a family argument.)"],
       bye:"Regards,", ps:"My sister asked who did the bedroom. I said ‘someone good’." },
     NOOR_03: { hello:"Hello.",
       body:["I have bought the top floor of my building: tall windows, a ceiling you could lose a kite in. I intend to stay.",
-            "A living room I want to sit in at the end of the day, a quiet bedroom, and a small room to think in: a chair, a shelf, a good lamp. No desk. One good piece of stone or marble. White, blue, grey, pale wood; twelve pieces a room at most; no patterns."],
+            "A living room I want to sit in at the end of the day, a quiet bedroom, and a small room to think in: a chair, a shelf, one good lamp. One. No desk. One good piece of stone or marble. White, blue, grey, pale wood; twelve pieces a room at most; no patterns."],
       bye:"With some warmth, which I'm told is noticeable,", ps:"The windows are 3.4 metres tall. I measured twice." },
 
     THEO_01: { hello:"Hi there!",
-      body:["Noor said you were good, and she doesn't say that about anyone. Elena and I have found a little cabin on the lake. The baby's due in spring and the living room is full of ‘temporary solutions’.",
+      body:["Noor said you were good, and she doesn't say that about anyone. Elena and I have found a little cabin on the lake. The baby's due in spring and the living room is full of ‘temporary solutions’. Elena calls denim and mustard ‘our colours’, like the shop sign.",
             "We'd love somewhere to sit and breathe: warm white, a bit of mustard, denim blue, solid wood. Nothing white to sit on (small person incoming) and nothing breakable. I once owned a vase. It's a sad story. We kept the old sideboard. It might be useful."],
-      bye:"Cheers!", ps:"If you ever need a bike fixed, I'm yours. I'm not great with words." },
+      bye:"Cheers!", ps:"If you ever need bread, I'm yours. I'm not great with words." },
     THEO_02: { hello:"Hi again!",
-      body:["She's here! Wren, seven weeks old, very loud, already stealing my heart and my socks. Elena sends a tired thank-you for the living room.",
-            "Our bedroom is last on the list. Restful, please: green and warm white, sturdy wood, a bed that isn't white, and somewhere for clothes that isn't ‘the chair’. It has become load-bearing. Nothing fragile."],
+      body:["She's here! Wren, six weeks old, very loud, already stealing my heart and my socks. Elena sends a tired thank-you for the living room.",
+            "Wren has started rolling across rooms like a small sausage. Our bedroom is last on the list. Restful, please: green and warm white, sturdy wood, a bed that isn't white, and somewhere for clothes that isn't ‘the chair’. It has become load-bearing. Nothing fragile."],
       bye:"Sleepily yours,", ps:"Rosa has offered to sew Wren a coat. I'm scared of her." },
     THEO_03: { hello:"Hey you,",
-      body:["Two bits of news. I'm now co-owner of the bicycle shop (the old owner cried, I cried, the shop cat cried). And we've found a flat with a proper dining room!",
-            "I'd love everyone round one table: grandad, aunts, the lot. Living room for naps, dining room for noise, bedroom for six hours of sleep. Bring what still works from the old place. The sideboard followed us. It does that. Same as before: warm white, green, mustard, denim, solid wood, nothing fragile."],
-      bye:"Thank you, again and always,", ps:"Bring your bike round. I'll tune it." },
+      body:["Two bits of news. I'm now co-owner of the bakery (the old owner cried, I cried, the shop cat cried). And we've found a flat with a proper dining room!",
+            "I'd love everyone round one table: grandad, aunts, the lot. (Grandad only trusts wood he can knock on.) Living room for naps, dining room for noise, bedroom for six hours of sleep. Bring what still works from the old place. The sideboard followed us. It does that. Same as before: warm white, green, mustard, denim, solid wood, nothing fragile."],
+      bye:"Thank you, again and always,", ps:"Come by at six one morning. The first loaf is yours." },
 
     ROSA_01: { hello:"My dear,",
       body:["I have retired from thirty-one years in the costume department of the Playhouse and been told to ‘relax’. I have never been less relaxed. My sitting room has been wrong since 1998. (A lamp at Marigold & Moss has real personality. I've asked it to wait.)",
-            "The sideboard stays. Everything else must earn its place: two places to sit, a table, and a lamp with personality. And colour, darling: wine red, ochre, dark wood and something patterned. What I will not have is a pale room. Not cream. Not ‘greige’."],
-      bye:"With great expectations,", ps:"Theo says you're good. He once tried to pay me in bicycle tyres." },
+            "The sideboard stays. Everything else must earn its place: two places to sit, a table, and a lamp with personality. I light a room like a stage: never from just one place. And colour, darling: wine red, ochre, dark wood and something patterned. What I will not have is a pale room. Not cream. Not ‘greige’."],
+      bye:"With great expectations,", ps:"Theo says you're good. He once tried to pay me in sourdough." },
     ROSA_02: { hello:"Darling,",
       body:["I've begun teaching sewing at the village hall, and everyone stays for tea afterwards. ‘Everyone’ is currently six people and one opinionated dachshund.",
-            "The dining room needs a proper table, seats for all, and the mood of a stage set before the curtain goes up: wine, ochre, dark wood, a touch of gold. My daughter visits at weekends and deserves a proper guest room: a bed, a bedside table, and teal (greens and blues with cream). And no white. It's a home, not a hospital."],
+            "Pattern is a soloist, not a choir. The dining room needs a proper table, seats for all, and the mood of a stage set before the curtain goes up: wine, ochre, dark wood, a touch of gold. My daughter visits at weekends and deserves a proper guest room: a bed, a bedside table, and teal (greens and blues with cream). And no white. It's a home, not a hospital."],
       bye:"Fondly, and with a flourish,", ps:"Mia's dahlias have the whole village talking." },
     ROSA_03: { hello:"Darling,",
       body:["I have done something impulsive. I have bought a little house on the lake. Small, bright, slightly crooked, with a kitchen window that looks straight at the water. I'm keeping the flat in town; I'm not a monster.",
-            "It needs a lighter version of me: a living room for a book and the view, a kitchen with a table for toast with dignity, and a bedroom to be rocked to sleep in. Green, blue and cream, light wood, a small touch of ochre. No ducks on the cushions. And not too much dark wood. It's a cabin, not a library in a thriller."],
+            "It needs a lighter version of me: a living room for a book and the view, a kitchen with a table for toast with dignity (that window is the whole show), and a bedroom to be rocked to sleep in. Green, blue and cream, light wood, a small touch of ochre. No ducks on the cushions. And not too much dark wood. It's a cabin, not a library in a thriller."],
       bye:"With wet boots already,", ps:"Come for tea when it's done. I've warned the ducks." }
   };
   QUESTS.forEach(function(q){ q.letter = LETTERS[q.id]; });
@@ -699,6 +701,65 @@ var Story = (function(){
   }
   function giftOwner(itemId){ return GIFT_OWNER[itemId] || null; }
 
+
+  /* ------------------------------------------------------------------ quirks
+     Things a neighbour never puts on their list: tastes and no-gos you have to
+     pick up from their letter (or learn the first time you hand in a room).
+     A quirk, once learned, stays on that neighbour's note for every later job,
+     so the first job is the only time you can get it wrong "by surprise".
+     Every quirk is hinted at in the letter, and the verdict always names it. */
+  var DARK_FURN = ['Black','Dark Wood'];
+  var FURN_KINDS = ['couch','armchair','chair','stool','bed','bedside','sidetable','coffeetable','dining','storage','sideboard','bookshelf'];
+  var WOODS = ['Light Wood','Medium Wood','Dark Wood','Warm Wood'];
+  function Qk(id, who, text, test, lines){ return { id:id, who:who, tier:'quirk', text:text, test:test, praise:lines[0], miss:lines[1] }; }
+  var QUIRKS = {
+    mia_rug:    Qk('mia_rug','mia','A soft rug underfoot (her toes are always cold)',{kinds:['rug'],min:1,each:true},
+                   ["You gave me something soft underfoot. My toes have never been so happy.","The floor was a bit bare for my cold toes. A rug would have been lovely."]),
+    mia_cave:   Qk('mia_cave','mia','No dark furniture on a dark rug (it makes a room feel like a cave)',{combo:{a:{kinds:FURN_KINDS,colors:DARK_FURN},b:{kinds:['rug'],colors:['Black','Brown','Dark Wood']}},each:true},
+                   ["Light on the floor and no cave in sight. Thank you.","Dark furniture on a dark rug: it felt a little like a cave in there."]),
+    mia_table:  Qk('mia_table','mia','A wooden dining table (like Alex\'s grandmother\'s)',{kinds:['dining'],materials:['Wood'],min:1},
+                   ["A real wooden table. Alex ran a hand over it and went quiet.","Alex was hoping for a proper wooden table, like his grandmother's."]),
+    jules_pair: Qk('jules_pair','jules','Cobalt blue and burnt orange together',{pair:[{colors:['Blue']},{colors:['Orange']}]},
+                   ["Blue AND orange. You've seen my soul.","Cobalt and orange belong together. One of them was missing."]),
+    jules_plant:Qk('jules_plant','jules','A plant for company (the fern is called Gerald)',{kinds:['plant'],min:1},
+                   ["Gerald has a friend now. He's thrilled.","Nothing green to talk to. Gerald would have liked a friend."]),
+    jules_mix:  Qk('jules_mix','jules','A living room with at least three colours (no waiting-room beige)',{minDistinct:3,room:'living'},
+                   ["Three colours in the living room and not one dentist in sight.","The living room is a bit too tidy-minded. Two colours is a waiting room."]),
+    sam_metals: Qk('sam_metals','sam','Metals that match: no brass or gold next to chrome and steel',{metals:true,each:true},
+                   ["Everything gleams in the same key. Bliss.","Brass beside chrome. I had to sit down."]),
+    sam_woods:  Qk('sam_woods','sam','One tone of wood per room',{maxDistinct:1,colors:WOODS,each:true},
+                   ["One wood, one mood. That's discipline.","Three woods in a room. It's a lumberyard, darling."]),
+    sam_robin:  Qk('sam_robin','sam','A restful bedroom: nothing black or dark wood (Robin sleeps lightly)',{colors:DARK_FURN,max:0,room:'bedroom'},
+                   ["Robin slept for nine hours. Nine!","The bedroom has something dark in it. Robin sleeps lightly."]),
+    noor_wood:  Qk('noor_wood','noor','Only one tone of wood in a room (the grain should match)',{maxDistinct:1,colors:WOODS,each:true},
+                   ["The grain matches. I noticed within a second.","Two wood tones in one room. I'm not angry, only precise."]),
+    noor_metal: Qk('noor_metal','noor','No mixing of warm and cool metals',{metals:true,each:true},
+                   ["Cool metals only. Nobody argued.","Chrome beside brass is a family argument."]),
+    noor_lamp:  Qk('noor_lamp','noor','Exactly one lamp in the quiet room',{kinds:['lamp'],min:1,max:1,room:'study'},
+                   ["One lamp. One good thought at a time.","The quiet room needs one lamp. Not none, not three."]),
+    theo_colours:Qk('theo_colours','theo','Mustard and denim together (their colours)',{pair:[{colors:['Yellow','Orange']},{colors:['Blue']}]},
+                   ["Denim and mustard, like the shop sign. Elena cried a bit.","Elena calls denim and mustard 'our colours'. One was missing."]),
+    theo_roll:  Qk('theo_roll','theo','A soft rug in the bedroom (Wren has started rolling)',{kinds:['rug'],min:1,room:'bedroom'},
+                   ["A soft rug for the sausage. She approved.","Wren has started rolling around. A rug in the bedroom would have helped."]),
+    theo_knock: Qk('theo_knock','theo','A wooden dining table (grandad only trusts wood he can knock on)',{kinds:['dining'],materials:['Wood'],min:1},
+                   ["Grandad knocked on it twice. That's his highest praise.","Grandad only trusts wood he can knock on."]),
+    rosa_lights:Qk('rosa_lights','rosa','At least two light sources (she lights a room like a stage)',{kinds:['lamp'],min:2},
+                   ["Two lights at different heights. Now it has a stage.","One light source, darling. A room should be lit from more than one place."]),
+    rosa_solo:  Qk('rosa_solo','rosa','Only one pattern per room (a soloist, not a choir)',{kinds:['patterned'],max:1,each:true},
+                   ["One pattern, beautifully placed. A soloist.","Two patterns in one room is a choir with no conductor."]),
+    rosa_window:Qk('rosa_window','rosa','Nothing in front of the cabin window (no curtains in the kitchen)',{kinds:['curtain'],max:0,room:'kitchen'},
+                   ["The window gets to be the show. Bravo.","I wanted the window left bare. It's the whole show."])
+  };
+  var QUEST_QUIRKS = {
+    MIA_01:['mia_rug'], MIA_02:['mia_rug','mia_cave'], MIA_03:['mia_rug','mia_cave','mia_table'],
+    JULES_01:['jules_pair'], JULES_02:['jules_pair','jules_plant'], JULES_03:['jules_pair','jules_plant','jules_mix'],
+    SAM_01:['sam_metals'], SAM_02:['sam_metals','sam_woods'], SAM_03:['sam_metals','sam_woods','sam_robin'],
+    NOOR_01:['noor_wood'], NOOR_02:['noor_wood','noor_metal'], NOOR_03:['noor_wood','noor_metal','noor_lamp'],
+    THEO_01:['theo_colours'], THEO_02:['theo_colours','theo_roll'], THEO_03:['theo_colours','theo_roll','theo_knock'],
+    ROSA_01:['rosa_lights'], ROSA_02:['rosa_lights','rosa_solo'], ROSA_03:['rosa_lights','rosa_solo','rosa_window']
+  };
+  QUESTS.forEach(function(q){ q.quirks = (QUEST_QUIRKS[q.id] || []).map(function(id){ return QUIRKS[id]; }); });
+
   /* ---- indexing & unlock rules ---- */
   var QUEST_BY_ID = {};
   QUESTS.forEach(function(q){ QUEST_BY_ID[q.id] = q; });
@@ -731,10 +792,20 @@ var Story = (function(){
     var m = dateOf(day).m;
     return (m === 11 || m <= 1) ? 'winter' : (m <= 4 ? 'spring' : (m <= 7 ? 'summer' : 'autumn'));
   }
+  // the calendar only counts in months: "Late July"
+  function monthOf(day){
+    var d = dateOf(day), part = d.d <= 10 ? 'Early' : (d.d <= 20 ? 'Mid' : 'Late');
+    return { m:d.m, y:d.y, name:d.monthName, part:part, label:part + ' ' + d.monthName, short:d.monthName.slice(0, 3), year:d.y, key:d.y * 12 + d.m };
+  }
   // the day of the story that was reached by the jobs finished so far
-  function todayOf(doneMap){
+  function todayOf(doneMap, renownPts){
     var t = 0;
     QUESTS.forEach(function(q){ if (doneMap && doneMap[q.id] && q.day > t) t = q.day; });
+    // the town never moves past a job that is open and still waiting for you
+    var rp = renownPts == null ? 999999 : renownPts;
+    QUESTS.forEach(function(q){
+      if (!(doneMap && doneMap[q.id]) && q.day < t && isUnlocked(q, doneMap || {}, rp)) t = q.day;
+    });
     return t;
   }
 
@@ -745,24 +816,44 @@ var Story = (function(){
   var SPOTS = [
     { id:'flowers',  kind:'shop', icon:'flower',  name:'Fennel & Fern',          x:54.3, y:54.3, day:30,
       blurb:"A striped awning, buckets of dahlias and a very serious cat called Parsley.", soon:"Soon you'll be able to buy fresh flowers here." },
-    { id:'antiques', kind:'shop', icon:'urn',     name:'Marigold & Moss Antiques', x:46.0, y:47.0, day:70,
-      blurb:"Chairs with stories, lamps with opinions. Everything is ‘one of a kind’ and most of it is very heavy.", soon:"Soon you'll be able to hunt for one-off pieces here." },
-    { id:'gallery',  kind:'shop', icon:'frame',   name:'The Paper Moth Gallery',   x:95.2, y:40.5, day:150,
+    { id:'antiques', kind:'shop', icon:'urn',     name:'Marigold & Moss Antiques', x:26.3, y:69.5, day:70,
+      blurb:"In the pink house with the porch, where the old Church Hill families send their attics. Chairs with stories, lamps with opinions, most of it very heavy.", soon:"Soon you'll be able to hunt for one-off pieces here." },
+    { id:'books',    kind:'shop', icon:'book',    name:'The Dog-Eared Bookshop',   x:27.0, y:22.0, day:112,
+      blurb:"A crooked little shop on Orchard Rise with a ladder on rails, a sleeping dog and a very good children's corner.", soon:"Soon you'll be able to browse the shelves here." },
+    { id:'gallery',  kind:'shop', icon:'frame',   name:'The Paper Moth Gallery',   x:95.2, y:40.5, day:142,
       blurb:"Small prints, big frames, and a free glass of something fizzy on opening night.", soon:"Soon you'll be able to buy art for your rooms here." },
-    { id:'bikes',    kind:'shop', icon:'wheel',   name:'Spoke & Sprocket',         x:51.6, y:62.0, needs:'THEO_01',
-      blurb:"The bicycle shop where Theo works. There is a shop cat. It supervises.", soon:"" },
+    { id:'bakery',   kind:'shop', icon:'loaf',    name:'Crumb & Crown Bakery',     x:41.5, y:56.5, day:0, old:true,
+      blurb:"Open at seven, sold out by eleven. The old baker retires soon, and Theo is quietly learning the recipes. A shop cat supervises.", soon:"Soon you'll be able to buy a warm loaf here." },
 
     { id:'fleamarket', kind:'happening', icon:'flag', name:'Flea Market on Orchard Green', x:46.0, y:19.5, day:40, len:8,
-      blurb:"Tables of teapots, bicycle bells and one suspiciously large clock. Bring a bag." },
-    { id:'regatta',  kind:'happening', icon:'sail',   name:'Midsummer Regatta',   x:61.5, y:87.0, day:47, len:9,
+      blurb:"Tables of teapots, brass bells and one suspiciously large clock. Bring a bag." },
+    { id:'regatta',  kind:'happening', icon:'sail',   name:'Summer Regatta',   x:61.5, y:87.0, day:52, len:9,
       blurb:"Sails, bunting and a prize for the most dramatic wobble." },
     { id:'lantern',  kind:'happening', icon:'lantern', name:'Lantern Night',       x:71.8, y:9.0, day:90, len:8,
       blurb:"Paper lanterns on the water, hot chocolate, and a lake-side neighbour who ‘didn't plan any of this’." },
-    { id:'harvest',  kind:'happening', icon:'flag',   name:'Harvest Market',      x:49.0, y:56.0, day:134, len:10,
+    { id:'harvest',  kind:'happening', icon:'flag',   name:'Harvest Market',      x:49.0, y:56.0, day:118, len:10,
       blurb:"Pumpkins, chutneys and a jam stall with a queue. Old Town smells of cinnamon." },
     { id:'lights',   kind:'happening', icon:'lantern', name:'Winter Lights',       x:30.0, y:63.0, day:200, len:16,
       blurb:"Every window on Church Hill gets a candle. The steeple gets a star." },
-    { id:'wedding',  kind:'happening', icon:'bell',   name:"Priya & Dev's Wedding", x:33.0, y:54.0, day:300, len:33,
+    { id:'streetparty', kind:'happening', icon:'flag', name:'Canal Row Street Party', x:61.0, y:70.0, day:8, len:5,
+      blurb:"Trestle tables across the cobbles, one very loud speaker and a neighbour who brought a whole ham." },
+    { id:'bonfire',  kind:'happening', icon:'lantern', name:'Midsummer Bonfire',   x:5.5, y:88.5, day:19, len:4,
+      blurb:"On the beach below Church Hill. Marshmallows, guitar, and someone's grandad telling the same story." },
+    { id:'kites',    kind:'happening', icon:'sail',   name:'Kite Day on Glimmer Bay', x:85.5, y:25.0, day:82, len:6,
+      blurb:"Kites over the water from the Glass Row quay. Three are still stuck in the clock tower." },
+    { id:'appleday', kind:'happening', icon:'flag',   name:'Apple Day on Orchard Green', x:46.0, y:19.5, day:98, len:6,
+      blurb:"Every garden brings its one stubborn apple tree's apples. There is a competition. There is always a competition." },
+    { id:'bakesale', kind:'happening', icon:'bell',   name:'Bake Sale at the White Church', x:31.5, y:55.5, day:136, len:5,
+      blurb:"Lemon loaf, cinnamon buns and a queue that goes round the steeple." },
+    { id:'openstudio', kind:'happening', icon:'frame', name:'Open Studio at the Mills', x:85.0, y:62.0, day:226, len:6,
+      blurb:"Doors open all along the loft stairwells. Paint, prints, tea and a cake that was definitely baked by someone else." },
+    { id:'tulips',   kind:'happening', icon:'flower', name:'Tulip Day at Fennel & Fern', x:54.3, y:52.0, day:285, len:6,
+      blurb:"A bucket of tulips outside for everyone, free. Parsley supervises the queue." },
+    { id:'eggs',     kind:'happening', icon:'flag',   name:'Egg Hunt on Orchard Green', x:46.0, y:19.5, day:314, len:4,
+      blurb:"Chocolate eggs in the hedges and one very suspicious dachshund." },
+    { id:'soupswap', kind:'happening', icon:'bell', name:'Soup Swap on Church Hill', x:29.5, y:60.0, day:165, len:5,
+      blurb:"Bring a pot, leave with a different pot. Forty ladles and a very opinionated dachshund." },
+    { id:'wedding',  kind:'happening', icon:'bell',   name:"Priya & Dev's Wedding", x:33.0, y:54.0, day:296, len:33,
       blurb:"Saturday 25 April, two o'clock, at the white church. The whole street is invited." },
     { id:'springmarket', kind:'happening', icon:'flag', name:'Spring Flea Market', x:46.0, y:19.5, day:334, len:9,
       blurb:"Back by popular demand. Seedlings, bunting and the large clock, still unsold." }
@@ -786,28 +877,48 @@ var Story = (function(){
   // Event cards pop up when the story reaches their day (or when a job is done).
   // kinds: shop | happening | invite | birth | home
   var EVENTS = [
+    { id:'e_street', react:[['mia',"Right outside my window. I'm bringing a tray of cookies, obviously."],['jules',"I'll draw the whole street. Please hold still."]], day:8, kind:'happening', spot:'streetparty', title:'Street Party on Canal Row',
+      lines:["Trestle tables across the cobbles, bunting from window to window and one very loud speaker.","Bring a chair. Bring a dish. Do not bring the ham; someone already has."], tease:"Street party on Canal Row" },
+    { id:'e_bonfire', react:[['jules',"Sparks and charcoal. I may sketch with a burnt stick."],['mia',"Marshmallows. Maybe I'll even stay past nine."],['sam',"I brought the sausages. I'm not saying I organised it."]], day:19, kind:'happening', spot:'bonfire', title:'Midsummer Bonfire on the Beach',
+      lines:["The longest day ends with a fire on the sand below Church Hill.","Marshmallows, a guitar and somebody's grandad telling the same story."], tease:"Midsummer bonfire on the beach" },
+    { id:'e_kites', react:[['jules',"A kite in cobalt and orange. Obviously."],['theo',"I built three frames. Don't tell Elena."],['sam',"I'm not flying a kite. I'm supervising one."]], day:82, kind:'happening', spot:'kites', title:'Kite Day on Glimmer Bay',
+      lines:["Kites from the Glass Row quay, high over the water, and the bay glittering below them.","Three kites are, as of Sunday, in the clock tower."], tease:"Kite Day on Glimmer Bay" },
+    { id:'e_apple', react:[['mia',"An apple tart. Perhaps three. For the competition, obviously."],['rosa',"Autumn. At last, a season with proper colours."],['theo',"Our tree's apples are tiny. I'm entering them anyway."]], day:98, kind:'happening', spot:'appleday', title:'Apple Day on Orchard Green',
+      lines:["Every garden on the Rise brings the apples of its one stubborn tree. There is a competition.","There is always a competition."], tease:"Apple Day on Orchard Green" },
+    { id:'e_bake', react:[['mia',"I'm baking two lemon loaves. One for the sale, one for emergencies."],['rosa',"I'll judge the buns. Gently. Mostly."],['noor',"I'll buy a loaf. And measure the queue."]], day:136, kind:'happening', spot:'bakesale', title:'Bake Sale at the White Church',
+      lines:["Lemon loaf, cinnamon buns and a queue that goes round the steeple.","The money goes to the new church roof. The buns go to everyone."], tease:"Bake sale at the white church" },
+    { id:'e_studio', react:[['mia',"I baked the cake. Jules asked very nicely. Several times."],['noor',"I'll come. I'll admire. I'll say nothing about the staircase."],['rosa',"I'll bring a shawl, in case someone needs a costume."]], day:226, kind:'happening', spot:'openstudio', title:'Open Studio at the Mills',
+      lines:["Doors open all along the loft stairwells: paint, prints, tea and a very large dog.","The cake was definitely baked by someone else."], tease:"Open Studio at the Mills" },
+    { id:'e_tulips', react:[['mia',"Tulips! For the bedroom, the table, and possibly my hair."],['jules',"Yellow ones. For the easel. Obviously."],['sam',"I walked past. Twice. I didn't take one. (I took one.)"]], day:285, kind:'happening', spot:'tulips', title:'Tulip Day at Fennel & Fern',
+      lines:["A bucket of tulips outside the shop for anyone who wants one, free.","Parsley supervises the queue and judges your choice."], tease:"Tulip Day at Fennel & Fern" },
+    { id:'e_eggs', react:[['theo',"Wren is too small for eggs. I'm hiding them anyway."],['mia',"I'll bake an egg-shaped cake. Don't judge me."],['rosa',"Costumes for the little ones: bunny ears, whiskers, the lot."]], day:314, kind:'happening', spot:'eggs', title:'Egg Hunt on Orchard Green',
+      lines:["Chocolate eggs in the hedges and one very suspicious dachshund.","Under-sevens first, then everybody."], tease:"Egg hunt on Orchard Green" },
+    { id:'e_books', react:[['noor',"A ladder on rails. I'd like the exact measurements, please."],['mia',"Fantasy shelf: thirty minutes. Cosy mysteries: the rest of my life."],['rosa',"Costume history on the second shelf, I hope. I'll check."],['jules',"Picture books! I'm going to be a nuisance in the children's corner."]], day:112, kind:'shop', spot:'books', title:'A bookshop on Orchard Rise',
+      lines:["The Dog-Eared Bookshop has opened in the crooked house on the lane: a ladder on rails, a sleeping dog and a very good children's corner.","The dog is not for sale. People have asked."] },
     { id:'e_flowers', react:[['mia',"Dahlias on my street! Parsley already knows my name."],['jules',"Orange ones, for the easel. Obviously."],['sam',"Flowers. How lovely. I'll walk the long way round."]], day:30, kind:'shop', spot:'flowers', title:'A florist has opened on Canal Row',
       lines:["Fennel & Fern has put out its striped awning and a hundred buckets of dahlias.","Parsley the shop cat is in charge of the till. Mia was seen outside before it opened. Obviously."] },
     { id:'e_flea', react:[['jules',"A teapot, a clock and nothing I needed. Perfect."],['mia',"I'm bringing a tin of lemon cookies. For research."],['sam',"Fourteen stalls and not one with a proper sign. I'm only offering to help."]], day:40, kind:'happening', spot:'fleamarket', title:'Flea Market on Orchard Green',
-      lines:["Saturday morning, long tables, hand-painted signs: teapots, bicycle bells, a very large clock.","Bring a bag. Haggle politely."], tease:"Flea market on Orchard Green" },
-    { id:'e_regatta', react:[['sam',"A prize for the most dramatic wobble? I've entered myself."],['theo',"Lovely boats. I'd have put gears on them."],['mia',"I'll wave from the harbour wall. And bake for the winners."]], day:47, kind:'happening', spot:'regatta', title:'Midsummer Regatta at the Harbour',
-      lines:["Bunting on every mast and a prize for the most dramatic wobble.","The harbour master has been practising his ‘ahoy’."], tease:"Midsummer Regatta at the Harbour" },
-    { id:'e_antiques', react:[['rosa',"Chairs with stories! At last, a shop that talks my language."],['noor',"I admire a chair from the doorway. It is two centimetres too wide."],['theo',"‘One of a kind’? Elena says I may look, not buy."],['jules',"A whole shop of things to draw. Send snacks."]], day:70, kind:'shop', spot:'antiques', title:'Antiques in Old Town',
-      lines:["Marigold & Moss has opened on the corner by the clock tower. Chairs with stories, lamps with opinions.","Everything is ‘one of a kind’. Most of it is very heavy."] },
+      lines:["Saturday morning, long tables, hand-painted signs: teapots, brass bells, a very large clock.","Bring a bag. Haggle politely."], tease:"Flea market on Orchard Green" },
+    { id:'e_regatta', react:[['sam',"A prize for the most dramatic wobble? I've entered myself."],['theo',"Lovely boats. I'd have put gears on them."],['mia',"I'll wave from the harbour wall. And bake for the winners."]], day:52, kind:'happening', spot:'regatta', title:'Summer Regatta at the Harbour',
+      lines:["Bunting on every mast and a prize for the most dramatic wobble.","The harbour master has been practising his ‘ahoy’."], tease:"Summer Regatta at the Harbour" },
+    { id:'e_antiques', react:[['rosa',"Chairs with stories! At last, a shop that talks my language."],['noor',"I admire a chair from the doorway. It is two centimetres too wide."],['theo',"‘One of a kind’? Elena says I may look, not buy."],['jules',"A whole shop of things to draw. Send snacks."]], day:70, kind:'shop', spot:'antiques', title:'Antiques on Church Hill',
+      lines:["Marigold & Moss has opened in the pink house with the porch on Church Hill, where the old families send their attics.","Everything is ‘one of a kind’. Most of it is very heavy."] },
     { id:'e_lantern', react:[['theo',"Hot chocolate at our cabin. Elena says we're hosting. News to me."],['mia',"I'm baking for the whole lake. Possibly twice."],['rosa',"Candlelight on water. I shall wear the green shawl."]], day:90, kind:'happening', spot:'lantern', title:'Lantern Night at the Lake',
       lines:["Paper boats with candles are set afloat at dusk. Hot chocolate by the cabins.","Bring a jumper; the lake gets cold fast."], tease:"Lantern Night at the Lake" },
-    { id:'e_harvest', react:[['rosa',"Ochre everywhere. Autumn finally agrees with me."],['mia',"I'm entering the pumpkin loaf. Quietly."],['sam',"I'm not catering. I'm advising. Loudly."]], day:134, kind:'happening', spot:'harvest', title:'Harvest Market in Old Town',
+    { id:'e_harvest', react:[['rosa',"Ochre everywhere. Autumn finally agrees with me."],['mia',"I'm entering the pumpkin loaf. Quietly."],['sam',"I'm not catering. I'm advising. Loudly."]], day:118, kind:'happening', spot:'harvest', title:'Harvest Market in Old Town',
       lines:["Pumpkins, chutneys and a jam stall with an actual queue.","The first red leaf landed on the clock tower on Tuesday. The market is its reward."], tease:"Harvest Market in Old Town" },
-    { id:'e_gallery', react:[['jules',"A GALLERY. I've already measured the wall. Just in case."],['noor',"Red brick, green door. The proportions are correct."],['rosa',"Someone will finally hang something with courage."],['mia',"Small prints for the bedroom. Yes, please."]], day:150, kind:'shop', spot:'gallery', title:'A gallery on the Far Shore',
+    { id:'e_gallery', react:[['jules',"A GALLERY. I've already measured the wall. Just in case."],['noor',"Red brick, green door. The proportions are correct."],['rosa',"Someone will finally hang something with courage."],['mia',"Small prints for the bedroom. Yes, please."]], day:142, kind:'shop', spot:'gallery', title:'A gallery on the Far Shore',
       lines:["The Paper Moth has opened in the red-brick house across the water: small prints, big frames, a very quiet owner.","Opening night: a free glass of something fizzy."] },
+    { id:'e_soup', react:[['mia',"Pumpkin and lemon soup. Don't ask. Do taste."],['rosa',"I'll bring a ladle and an opinion."],['noor',"A pot with a lid that fits. I check."]], day:165, kind:'happening', spot:'soupswap', title:'Soup Swap on Church Hill',
+      lines:["Bring a pot of something hot, leave with someone else's pot of something hot.","Forty ladles, six leeks and a very opinionated dachshund."], tease:"Soup swap on Church Hill" },
     { id:'e_lights', react:[['sam',"I may have helped with the star. Only a little. Robin held the ladder."],['rosa',"I'm sewing little cloaks for the lantern children."],['mia',"Soup. I'm bringing soup. And bread."]], day:200, kind:'happening', spot:'lights', title:'Winter Lights on Church Hill',
       lines:["Every window gets a candle. The steeple gets a star.","Neighbours bring soup, and a surprising amount of tinsel."], tease:"Winter Lights on Church Hill" },
-    { id:'e_birth', react:[['rosa',"Coat measured, cut and basted. She won't escape it."],['mia',"A lemon loaf is on its way. And no vases."],['jules',"I drew her a tiny heron in a tiny raincoat."]], day:296, kind:'birth', from:'theo', title:'Wren has arrived!',
-      lines:["Wren, born on a very rainy Tuesday morning. Loud, tiny, and already in charge.","Theo and Elena say thank you for the living room, and ask for no vases."], sign:'Theo, Elena & Wren' },
-    { id:'e_wedding', react:[['rosa',"I'm making the veil. Don't tell Priya."],['sam',"I offered to produce it. I've been told to stand quietly."],['noor',"I'll bring a gift and an opinion on the pews."]], day:300, kind:'invite', spot:'wedding', from:'mia', title:'You are invited',
+    { id:'e_birth', react:[['rosa',"Coat measured, cut and basted. She won't escape it."],['mia',"A lemon loaf is on its way. And no vases."],['jules',"I drew her a tiny heron in a tiny raincoat."]], day:258, kind:'birth', from:'theo', title:'Wren has arrived!',
+      lines:["Wren, born on a very rainy morning, a few weeks before she was due. Loud, tiny, and already in charge.","Theo and Elena say thank you for the living room, and ask for no vases."], sign:'Theo, Elena & Wren' },
+    { id:'e_wedding', react:[['rosa',"I'm making the veil. Don't tell Priya."],['sam',"I offered to produce it. I've been told to stand quietly."],['noor',"I'll bring a gift and an opinion on the pews."]], day:296, kind:'invite', spot:'wedding', from:'mia', title:'You are invited',
       names:'Priya & Dev', lines:["are getting married.","Saturday 25 April · Two o'clock · The white church on Church Hill","Cake to follow. Tea to follow cake. Dancing to follow tea."],
       sign:'Please say yes. There is a lemon loaf.', tease:"Priya & Dev's wedding" },
-    { id:'e_spring', react:[['theo',"Bike bells for the kids' stall. The shop cat will supervise."],['jules',"I'm selling prints. Next to the clock. Nobody buy the clock."],['mia',"Seedlings for the windowsill! Mine are already named."]], day:334, kind:'happening', spot:'springmarket', title:'The flea market is back',
+    { id:'e_spring', react:[['theo',"Bread for the kids' stall. The shop cat will supervise."],['jules',"I'm selling prints. Next to the clock. Nobody buy the clock."],['mia',"Seedlings for the windowsill! Mine are already named."]], day:334, kind:'happening', spot:'springmarket', title:'The flea market is back',
       lines:["Seedlings, bunting and the very large clock, still unsold.","Spring on Orchard Green."], tease:"Spring Flea Market" },
 
     // moves: these arrive when the matching job is finished
@@ -817,11 +928,11 @@ var Story = (function(){
       lines:["Same mill, one staircase higher: a loft with a door that closes and a room just for paint.","The Open Studio is next Saturday. There will be cake. (Mia is baking it.)"] },
     { id:'h_sam', react:[['noor',"A dish rack and a big kitchen. A good start."],['mia',"I'll bring bread. Sam will bring opinions."],['rosa',"Burgundy and leather? He listens, that one."]], after:'SAM_03', kind:'home', who:'sam', home:'SAM_HOME_B', title:'Sam & Robin bought a home',
       lines:["Their first place together, in Old Town, with a dish rack and a very big kitchen.","The oven is, we are told, ‘on its way’."] },
-    { id:'h_noor', react:[['sam',"A ceiling for a kite! I'll bring a ladder. And wine."],['jules',"I'm making her a very small, very square drawing."],['theo',"Up that many stairs? I'll bring the bike lift."]], after:'NOOR_03', kind:'home', who:'noor', home:'NOOR_HOME_B', title:'Noor bought the top floor',
+    { id:'h_noor', react:[['sam',"A ceiling for a kite! I'll bring a ladder. And wine."],['jules',"I'm making her a very small, very square drawing."],['theo',"Up that many stairs? I'll bring the bread. Warm."]], after:'NOOR_03', kind:'home', who:'noor', home:'NOOR_HOME_B', title:'Noor bought the top floor',
       lines:["Same tower, a few floors higher: tall windows, a ceiling you could lose a kite in.","No desk. She was very clear."] },
     { id:'h_theo', react:[['rosa',"A dining room for grandad and the aunts. Wonderful."],['mia',"I'm baking for the housewarming. Obviously."],['noor',"A sideboard that follows them. I respect that."]], after:'THEO_03', kind:'home', who:'theo', home:'THEO_HOME_B', title:'Theo & Elena have a family flat',
-      lines:["A proper dining room on Orchard Rise, with space for grandad, the aunts and the sideboard.","Theo is now co-owner of Spoke & Sprocket, too."] },
-    { id:'h_rosa', react:[['theo',"A lake neighbour! I'll bring the bike. And Wren."],['mia',"Tea by the water. I'm bringing the lemon loaf."],['jules',"Ducks on the cushions? I can draw some. Don't tell her."]], after:'ROSA_03', kind:'home', who:'rosa', home:'ROSA_CABIN_A', second:true, title:'Rosa has bought a cabin',
+      lines:["A proper dining room on Orchard Rise, with space for grandad, the aunts and the sideboard.","Theo is now co-owner of Crumb & Crown, too."] },
+    { id:'h_rosa', react:[['theo',"A lake neighbour! I'll bring bread. And Wren."],['mia',"Tea by the water. I'm bringing the lemon loaf."],['jules',"Ducks on the cushions? I can draw some. Don't tell her."]], after:'ROSA_03', kind:'home', who:'rosa', home:'ROSA_CABIN_A', second:true, title:'Rosa has bought a cabin',
       lines:["A little house on the lake, with a kitchen window that looks straight at the water.","She is keeping her flat in town. ‘I am not a monster, darling.’"] }
   ];
   var EVENT_BY_ID = {};
@@ -852,43 +963,43 @@ var Story = (function(){
   // "The Cove Courier": an issue appears once the story reaches its day.
   var NEWS = [
     { day:0, lead:{ h:"Pennywhistle Cove Wakes Up Slowly", t:"The bakery opens at seven, the clock tower runs four minutes fast, and nobody minds. New neighbours are arriving all week, say the removal vans." },
-      items:[ {h:"Pigeon census", t:"Up by twelve. The council blames the bakery."}, {h:"Lost", t:"One blue bicycle bell. Reward: a lemon cookie."} ],
+      items:[ {h:"Pigeon census", t:"Up by twelve. The council blames the bakery."}, {h:"Lost", t:"One blue umbrella. Reward: a lemon cookie."} ],
       notice:"WANTED: someone who is good with rooms. Apply anywhere in the Cove." },
-    { day:30, lead:{ h:"A Florist for Canal Row", t:"Fennel & Fern opened its striped awning today with a hundred buckets of dahlias and one cat. Early customers described the queue as ‘polite but hungry for tulips’.", spot:'flowers' },
-      items:[ {h:"Dinner parties", t:"A flat in Glass Row now seats eleven. The neighbours are ‘delighted, mostly’."}, {h:"Harbour notice", t:"Starboard is the right-hand side. Please stop asking."} ],
-      notice:"FOR SALE: bicycle, hardly ridden. Ask for Theo." },
+    { day:29, lead:{ h:"A Florist for Canal Row", t:"Fennel & Fern opened its striped awning this month with a hundred buckets of dahlias and one cat. Early customers described the queue as ‘polite but hungry for tulips’.", spot:'flowers' },
+      items:[ {h:"Midsummer bonfire", t:"Lit on time, put out slightly late. The marshmallow shortage is being investigated."}, {h:"Dinner parties", t:"A flat in Glass Row now seats eleven. The neighbours are ‘delighted, mostly’."} ],
+      notice:"WANTED: a second oven, gently used. Ask at Crumb & Crown." },
     { day:60, lead:{ h:"Flea Market Sells Out of Teapots", t:"By ten o'clock on Saturday there wasn't a teapot left on Orchard Green. One shopper went home with a grandfather clock and no plan.", spot:'fleamarket' },
       items:[ {h:"Regatta results", t:"First place: the boat that stayed upright. Second: a very wobbly one."}, {h:"Weather", t:"Hottest week on record. The canal ducks are reported to be ‘sulking’."} ],
       notice:"OPEN MIC Thursday at the harbour café. Bring a song, or a snack." },
-    { day:90, lead:{ h:"Antiques Arrive in Old Town", t:"Marigold & Moss has opened on the corner by the clock tower. Every item is ‘one of a kind’ and most are extremely heavy. Browsers are advised to bring a friend.", spot:'antiques' },
-      items:[ {h:"Lantern Night", t:"This Saturday at the lake. Paper boats, hot chocolate, jumpers."}, {h:"Bike clinic", t:"Free tune-ups at Spoke & Sprocket for anyone who can find their bike."} ],
+    { day:91, lead:{ h:"Antiques Arrive on Church Hill", t:"Marigold & Moss has opened in the pink porch house on Church Hill. Every item is ‘one of a kind’ and most are extremely heavy. Browsers are advised to bring a friend.", spot:'antiques' },
+      items:[ {h:"Kite Day", t:"Glimmer Bay was full of kites on Sunday. Three are still in the clock tower."}, {h:"Lantern Night", t:"Paper boats, hot chocolate, and a lake-side neighbour who ‘didn't plan any of this’."} ],
       notice:"LOST: one cat, answers to ‘Parsley’. Does not answer." },
-    { day:120, lead:{ h:"Autumn Arrives, Tidily", t:"The first red leaf landed on the clock tower on Tuesday. The Courier welcomes it and asks the others to follow in an orderly fashion.", },
-      items:[ {h:"Sewing classes", t:"Full. The waiting list is now one dachshund."}, {h:"Harbour", t:"The summer sails are coming down. The winter coats are going on."} ],
-      notice:"SOUP SWAP Sunday, Church Hill. Bring a ladle." },
-    { day:150, lead:{ h:"Art Across the Water", t:"The Paper Moth Gallery has opened on the Far Shore, in the red-brick house with the green door. Prints are small, frames are big, the owner is shy.", spot:'gallery' },
-      items:[ {h:"Harvest Market", t:"The jam stall queue reached the clock tower. A new record."}, {h:"Pumpkins", t:"Carving results: ‘surprisingly anatomical’."} ],
+    { day:121, lead:{ h:"Autumn Arrives, Tidily", t:"The first red leaf landed on the clock tower on Tuesday. The Courier welcomes it and asks the others to follow in an orderly fashion.", },
+      items:[ {h:"A bookshop on the Rise", t:"The Dog-Eared Bookshop opened with a ladder on rails and a dog on the doormat. The dog has been asked to sign copies."}, {h:"Sewing classes", t:"Full. The waiting list is now one dachshund."} ],
+      notice:"SOUP SWAP in November, Church Hill. Bring a ladle." },
+    { day:152, lead:{ h:"Art Across the Water", t:"The Paper Moth Gallery has opened on the Far Shore, in the red-brick house with the green door. Prints are small, frames are big, the owner is shy.", spot:'gallery' },
+      items:[ {h:"Harvest Market", t:"The jam stall queue reached the clock tower. A new record."}, {h:"Bake sale", t:"The church roof is two buns away from a new tile."} ],
       notice:"EXTRA FERRY on Saturdays. It will be late, as always." },
-    { day:180, lead:{ h:"Candles in Every Window", t:"Church Hill is stringing up its Winter Lights: a candle in every window and a star on the steeple. Soup will be provided by anyone with a pot.", spot:'lights' },
-      items:[ {h:"First frost", t:"The canal has a thin glass lid. The ducks are unbothered."}, {h:"Mills", t:"Waiting list for a window seat in the old lofts. Longer than the stairs."} ],
+    { day:182, lead:{ h:"Candles in Every Window", t:"Church Hill is stringing up its Winter Lights: a candle in every window and a star on the steeple. Soup will be provided by anyone with a pot.", spot:'lights' },
+      items:[ {h:"Soup swap", t:"Forty ladles, six leeks and one very opinionated dachshund."}, {h:"First frost", t:"The canal has a thin glass lid. The ducks are unbothered."} ],
       notice:"LOST: one mitten, red. Possibly on the clock tower." },
-    { day:210, lead:{ h:"The Year in Review", t:"Looking back: a florist, an antiques shop, a gallery, two markets and a great many casseroles. The Cove has had a busy seven months, and a very good season for cake.", },
+    { day:213, lead:{ h:"The Year in Review", t:"Looking back: a florist, an antiques shop, a gallery, two markets and a great many casseroles. The Cove has had a busy seven months, and a very good season for cake.", },
       items:[ {h:"New Year's swim", t:"Cancelled due to common sense."}, {h:"Resolutions", t:"The bakery reports a 300% rise in ‘just one more’."} ],
       notice:"THANK YOU to whoever left soup on the clock tower steps." },
-    { day:240, lead:{ h:"Snow Day", t:"School is closed, the bakery is open, and the ducks are furious. Chimneys all over town are smoking happily, the lake-side cabins most of all.", },
-      items:[ {h:"Hot soup index", t:"Rising. Alarmingly."}, {h:"Sledges", t:"The hill behind the church is officially ‘fast’. Spoke & Sprocket has fitted three with bells."} ],
+    { day:244, lead:{ h:"Snow Day", t:"School is closed, the bakery is open, and the ducks are furious. Chimneys all over town are smoking happily, the lake-side cabins most of all.", },
+      items:[ {h:"Open Studio", t:"Half the Mills opened their doors, and the stairwells hummed. The cake was Mia's."}, {h:"Sledges", t:"The hill behind the church is officially ‘fast’. Crumb & Crown sold hot buns from the top of it."} ],
       notice:"FOUND: one sledge. Not yours. Very good sledge." },
-    { day:270, lead:{ h:"Thaw!", t:"The first crocus appeared on Orchard Rise this morning, to cheers from a cat. The canal has un-frozen. The ducks have forgiven everyone.", },
-      items:[ {h:"Window boxes", t:"Planting season is officially open. Neighbours are asked not to overdo the geraniums."}, {h:"Ferry", t:"Back on schedule. Almost."} ],
+    { day:272, lead:{ h:"Thaw!", t:"The first crocus appeared on Orchard Rise this morning, to cheers from a cat. The canal has un-frozen. The ducks have forgiven everyone.", },
+      items:[ {h:"A new arrival", t:"Wren, 3.1 kilos, a little early and entirely loud. Mother, father and the shop cat are doing well."}, {h:"Ferry", t:"Back on schedule. Almost."} ],
       notice:"SEEDLINGS free outside Fennel & Fern, Saturday." },
-    { day:300, lead:{ h:"A Wedding Invitation Goes Round Town", t:"Priya (of the vet practice) and Dev will marry at the white church on Saturday 25 April, and the whole street is invited. The bakery has been warned about the cake.", spot:'wedding' },
-      items:[ {h:"Spring flea market", t:"Returns in May. The large clock is still unsold."}, {h:"A new arrival", t:"Wren, 3.1 kilos, loud. Mother, father and the shop cat are doing well."} ],
+    { day:303, lead:{ h:"A Wedding Invitation Goes Round Town", t:"Priya (of the vet practice) and Dev will marry at the white church on Saturday 25 April, and the whole street is invited. The bakery has been warned about the cake.", spot:'wedding' },
+      items:[ {h:"Tulip Day", t:"Parsley judged every bucket. Six people left with tulips and a smaller ego."}, {h:"Egg hunt", t:"Orchard Green, soon. Under-sevens first, dachshund last."} ],
       notice:"CONFETTI: biodegradable, please." },
-    { day:330, lead:{ h:"Wedding Bells (and One Dropped Cake)", t:"The church was full, the sun came out for the vows, and the three-tier lemon cake survived all but one corner. The veil, sewn by retired costume-maker Rosa, got more applause than the cake. Priya and Dev left in a bicycle sidecar.", },
+    { day:333, lead:{ h:"Wedding Bells (and One Dropped Cake)", t:"The church was full, the sun came out for the vows, and the three-tier lemon cake survived all but one corner. The veil, sewn by retired costume-maker Rosa, got more applause than the cake. Priya and Dev left in a bicycle sidecar.", },
       items:[ {h:"Dancing", t:"Went on until the ducks complained."}, {h:"Flowers", t:"The church smelled of peonies. Fennel & Fern sold out."} ],
       notice:"THANK YOU to everyone who stayed to wash up." },
-    { day:360, lead:{ h:"A Whole Year in the Cove", t:"A year ago the removal vans started arriving. Today the clock tower is still four minutes fast, the harbour is full of sails, and the neighbours know whose bicycle is whose.", },
-      items:[ {h:"Midsummer", t:"The regatta is back on the calendar. Please practise your wobble."}, {h:"Lake", t:"Cabin windows are open again. Ducks have been told."} ],
+    { day:364, lead:{ h:"A Whole Year in the Cove", t:"A year ago the removal vans started arriving. Today the clock tower is still four minutes fast, the harbour is full of sails, and the neighbours know whose umbrella is whose.", },
+      items:[ {h:"Midsummer", t:"The bonfire is back on the calendar. Please bring your own marshmallows."}, {h:"Lake", t:"Cabin windows are open again. Ducks have been told."} ],
       notice:"WANTED (again): someone who is good with rooms. You know who you are." }
   ];
   function issuesAt(today){
@@ -932,6 +1043,25 @@ var Story = (function(){
     if (test.maxItems != null){
       return { met: total <= test.maxItems, progress: total + '/' + test.maxItems };
     }
+    if (test.combo){
+      var ha = entries.some(function(e){ return matchesTest(test.combo.a, e.asset); }), hb = entries.some(function(e){ return matchesTest(test.combo.b, e.asset); });
+      return { met: !(ha && hb), progress: (ha && hb) ? 'clash' : '' };
+    }
+    if (test.metals){
+      var warm = entries.some(function(e){ return e.asset.color === 'Gold' || e.asset.color === 'Brass'; });
+      var cool = entries.some(function(e){ return e.asset.color === 'Chrome' || e.asset.color === 'Steel' || e.asset.color === 'Silver'; });
+      return { met: !(warm && cool), progress: (warm && cool) ? 'mixed' : '' };
+    }
+    if (test.pair){
+      var okp = test.pair.every(function(g){ return entries.some(function(e){ return matchesTest(g, e.asset); }); });
+      return { met: okp, progress: okp ? '✓' : '' };
+    }
+    if (test.maxDistinct != null){
+      var seenD = {};
+      entries.forEach(function(e){ if (matchesTest(test, e.asset)) seenD[e.asset.color] = true; });
+      var nd = Object.keys(seenD).length;
+      return { met: nd <= test.maxDistinct, progress: String(nd) };
+    }
     if (test.newMin != null){
       var n = entries.filter(function(e){ return e.piece.q === questId && !e.piece.starter; }).length;
       return { met: n >= test.newMin, progress: n + '/' + test.newMin };
@@ -952,6 +1082,9 @@ var Story = (function(){
       var sh = total ? count / total : 0;
       return { met: sh <= test.maxShare, progress: Math.round(sh * 100) + '%' };
     }
+    if (test.max != null && test.min != null){
+      return { met: count >= test.min && count <= test.max, progress: String(count) };
+    }
     if (test.max != null){
       return { met: count <= test.max, progress: String(count) };
     }
@@ -961,7 +1094,7 @@ var Story = (function(){
 
   // pieces: [{assetId, roomKey, q, starter, x}] (only pieces in this property)
   // getAsset: id -> asset
-  function evaluate(quest, pieces, getAsset){
+  function evaluate(quest, pieces, getAsset, learnedMap){
     var entries = [];
     pieces.forEach(function(p){
       var a = getAsset(p.assetId);
@@ -969,7 +1102,7 @@ var Story = (function(){
     });
     function inRooms(keys){ return entries.filter(function(e){ return keys.indexOf(e.piece.roomKey) !== -1; }); }
 
-    var reqs = quest.brief.map(function(req){
+    function runReq(req){
       var t = req.test;
       var keys = t.room ? [t.room] : (t.rooms || quest.edit);
       var res;
@@ -981,6 +1114,11 @@ var Story = (function(){
         res = evalOnEntries(t, inRooms(keys), quest.id);
       }
       return { id:req.id, tier:req.tier, text:req.text, met:res.met, progress:res.progress, praise:req.praise, miss:req.miss };
+    }
+    var reqs = quest.brief.map(runReq);
+    // the unspoken things; learnedMap says which ones this neighbour has already taught you
+    var quirks = (quest.quirks || []).map(function(qk){
+      var r = runReq(qk); r.known = !!(learnedMap && learnedMap[qk.id]); return r;
     });
 
     function frac(tier){
@@ -990,10 +1128,14 @@ var Story = (function(){
     }
     var scoped = inRooms(quest.edit);
     var hasStuff = scoped.length > 0;
-    var brief = Math.round(100 * (0.55 * frac('must') + 0.30 * frac('like') + 0.15 * (hasStuff ? frac('avoid') : 0)));
+    var quirkFrac = quirks.length ? quirks.filter(function(r){ return r.met; }).length / quirks.length : 1;
+    var brief = quirks.length
+      ? Math.round(100 * (0.45 * frac('must') + 0.25 * frac('like') + 0.10 * (hasStuff ? frac('avoid') : 0) + 0.20 * (hasStuff ? quirkFrac : 0)))
+      : Math.round(100 * (0.55 * frac('must') + 0.30 * frac('like') + 0.15 * (hasStuff ? frac('avoid') : 0)));
     var mustAll = reqs.filter(function(r){ return r.tier === 'must'; }).every(function(r){ return r.met; });
+    var quirksOk = quirks.every(function(r){ return r.met; });
 
-    return { reqs:reqs, brief:brief, mustAll:mustAll };
+    return { reqs:reqs, quirks:quirks, brief:brief, mustAll:mustAll, quirksOk:quirksOk };
   }
 
   // "furnished nicely": measurable things only — fullness, variety, balance,
@@ -1115,11 +1257,12 @@ var Story = (function(){
     return null;
   }
 
-  function heartsFor(briefScore, qualityScore, mustAll, anyPieces){
+  function heartsFor(briefScore, qualityScore, mustAll, anyPieces, quirksOk){
     if (!anyPieces) return 1;
     var final = 0.5 * briefScore + 0.5 * qualityScore;
-    var h = final < 25 ? 1 : (final < 45 ? 2 : (final < 65 ? 3 : (final < 86 ? 4 : 5)));
+    var h = final < 25 ? 1 : (final < 45 ? 2 : (final < 65 ? 3 : (final < 88 ? 4 : 5)));
     if (mustAll && h < 3) h = 3;     // if you listened to every must-have, you get at least 3
+    if (quirksOk === false && h > 4) h = 4;   // five hearts means they felt truly understood
     return h;
   }
 
@@ -1132,10 +1275,13 @@ var Story = (function(){
     // favour must-haves first, then likes
     met.sort(function(a,b){ return (a.tier === 'must' ? 0 : 1) - (b.tier === 'must' ? 0 : 1); });
     out.praised = met.slice(0, 2).map(function(r){ return r.praise; });
+    var qk = (evalResult.quirks || []);
+    var qBroke = qk.filter(function(r){ return !r.met && r.miss; }), qMet = qk.filter(function(r){ return r.met && r.praise; });
+    if (qMet.length && out.praised.length < 2) out.praised.push(qMet[0].praise);
     var missed = evalResult.reqs.filter(function(r){ return !r.met && r.miss && r.tier !== 'avoid'; });
     var broke = evalResult.reqs.filter(function(r){ return !r.met && r.miss && r.tier === 'avoid'; });
     if (hearts <= 4){
-      var m = missed[0] || broke[0];
+      var m = qBroke[0] || missed[0] || broke[0];
       if (m) out.miss = m.miss;
     }
     return out;
@@ -1145,8 +1291,8 @@ var Story = (function(){
     TOWN: TOWN, RENOWN_LEVELS: RENOWN_LEVELS, renownLevel: renownLevel,
     CHARACTERS: CHARACTERS, PROPERTIES: PROPERTIES, QUESTS: QUESTS, ROLES: ROLES, KINDS: KINDS, MOODS: MOODS,
     questById: questById, questsOf: questsOf, isUnlocked: isUnlocked,
-    giftsEarned: giftsEarned, giftOwner: giftOwner, REWARDS: REWARDS, VOICES: VOICES,
+    QUIRKS: QUIRKS, giftsEarned: giftsEarned, giftOwner: giftOwner, REWARDS: REWARDS, VOICES: VOICES,
     starsFor: starsFor, isKind: isKind,
-    evaluate: evaluate, quality: quality, qualityDetail: qualityDetail, analyze: analyze, districtAt: districtAt, dateOf: dateOf, seasonOf: seasonOf, todayOf: todayOf, SPOTS: SPOTS, spotById: function(id){ return SPOT_BY_ID[id] || null; }, spotsAt: spotsAt, EVENTS: EVENTS, eventById: function(id){ return EVENT_BY_ID[id] || null; }, eventsDue: eventsDue, upcoming: upcoming, pastEvents: pastEvents, NEWS: NEWS, issuesAt: issuesAt, heartsFor: heartsFor, buildReply: buildReply
+    evaluate: evaluate, quality: quality, qualityDetail: qualityDetail, analyze: analyze, districtAt: districtAt, dateOf: dateOf, monthOf: monthOf, seasonOf: seasonOf, todayOf: todayOf, SPOTS: SPOTS, spotById: function(id){ return SPOT_BY_ID[id] || null; }, spotsAt: spotsAt, EVENTS: EVENTS, eventById: function(id){ return EVENT_BY_ID[id] || null; }, eventsDue: eventsDue, upcoming: upcoming, pastEvents: pastEvents, NEWS: NEWS, issuesAt: issuesAt, heartsFor: heartsFor, buildReply: buildReply
   };
 })();
