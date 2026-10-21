@@ -1389,20 +1389,7 @@
 
   /* ---- ambient life on the map ---- */
   .town-fx{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-  .fx-glint{
-    position:absolute; width:calc(var(--u) * var(--s,.55)); height:calc(var(--u) * var(--s,.55)); margin:calc(var(--u) * var(--s,.55) * -.5) 0 0 calc(var(--u) * var(--s,.55) * -.5);
-    background:
-      radial-gradient(circle, rgba(255,255,255,.95) 0 18%, rgba(255,255,255,0) 62%),
-      linear-gradient(90deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.85) 50%, rgba(255,255,255,0) 60%),
-      linear-gradient(0deg, rgba(255,255,255,0) 40%, rgba(255,255,255,.85) 50%, rgba(255,255,255,0) 60%);
-    opacity:0; transform:scale(.3) rotate(0deg);
-    animation:glint var(--d,4s) ease-in-out var(--delay,0s) infinite;
-  }
-  @keyframes glint{
-    0%,62%,100%{ opacity:0; transform:scale(.3) rotate(0deg); }
-    72%{ opacity:.95; transform:scale(1) rotate(25deg); }
-    84%{ opacity:.0; transform:scale(.5) rotate(50deg); }
-  }
+  .fx-glints{ position:absolute; inset:0; width:100%; height:100%; display:block; }
   .fx-boat{
     position:absolute; left:0; top:0; width:calc(var(--u) * 2.3); height:calc(var(--u) * 2.3);
     margin:calc(var(--u) * -1.9) 0 0 calc(var(--u) * -1.15);
@@ -1418,18 +1405,11 @@
   @keyframes boatBob{ 0%,100%{ transform:translateY(0) rotate(-2deg); } 50%{ transform:translateY(calc(var(--u) * .12)) rotate(2deg); } }
   .fx-gull{
     position:absolute; width:calc(var(--u) * 1.5); height:calc(var(--u) * .8); left:0; top:0;
-    will-change:left, top; opacity:.9;
+    will-change:transform; opacity:.9;
   }
   .fx-gull svg{ width:100%; height:100%; overflow:visible; }
   .fx-gull .wing{ transform-origin:50% 60%; animation:flap .55s ease-in-out infinite alternate; }
   @keyframes flap{ from{ transform:scaleY(1); } to{ transform:scaleY(-.55); } }
-  .fx-cloud{
-    position:absolute; width:calc(var(--u) * 26); height:calc(var(--u) * 11); left:-30%; top:var(--y,20%);
-    background:radial-gradient(ellipse at 50% 50%, rgba(20,30,50,.30), rgba(20,30,50,0) 68%);
-    mix-blend-mode:multiply; filter:blur(8px); opacity:.55;
-    animation:cloudDrift var(--t,150s) linear var(--delay,0s) infinite;
-  }
-  @keyframes cloudDrift{ from{ transform:translate(0,0); } to{ transform:translate(calc(var(--u) * 150), calc(var(--u) * 14)); } }
   .fx-leaf{
     position:absolute; width:calc(var(--u) * .62); height:calc(var(--u) * .42); border-radius:70% 0 70% 0;
     background:var(--c,#d9964a); opacity:0; left:var(--x); top:var(--y);
@@ -2442,6 +2422,10 @@
   @media (max-width:640px){ .cal-months{ grid-template-columns:repeat(3,1fr); gap:12px 8px; } .cal-m{ min-height:104px; padding:18px 8px 8px; } .cal-m b{ font-size:15px; } .cal-m ul{ font-size:13px; } .cm-ic{ width:20px; height:20px; right:6px; } }
   @media (max-width:420px){ .cal-months{ grid-template-columns:repeat(2,1fr); } }
 
+/* ROUND 5: drifting cloud shadows (one small canvas, scaled to the stage) */
+.town-clouds{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:.3; display:block; }
+.town-clouds.multiply{ mix-blend-mode:multiply; }
+
 </style>
 </head>
 <body>
@@ -2535,6 +2519,7 @@
   <div class="town-stage" id="townStage">
     <img class="town-map" id="townMap" src="story/town_map.jpg" alt="Map of Pennywhistle Cove" draggable="false">
     <div class="town-fx" id="townFx" aria-hidden="true"></div>
+    <canvas class="town-clouds" id="townClouds" width="384" height="216" aria-hidden="true"></canvas>
     <div class="town-veil" id="townVeil"></div>
     <svg class="town-districts" id="townDistricts" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="townDistrictPath" d=""/></svg>
     <div id="townSpots"></div>
@@ -2954,10 +2939,11 @@
       discoveredAchievements: state.discoveredAchievements
     };
   }
+  var lastSaveSnap = '';
   function saveGame(){
     // while story mode owns the editor, free play's save must stay untouched
     if (story.inStory){ if (story.active) storyPersist(); return; }
-    try{ localStorage.setItem(SAVE_KEY, JSON.stringify(serializeState())); }
+    try{ var snap = JSON.stringify(serializeState()); if (snap === lastSaveSnap) return; lastSaveSnap = snap; localStorage.setItem(SAVE_KEY, snap); }
     catch(err){ /* storage full/unavailable — nothing more we can do here */ }
   }
   function loadSavedGame(){
@@ -2970,6 +2956,7 @@
     }catch(err){ return null; }
   }
   function clearSavedGame(){
+    lastSaveSnap = '';
     try{ localStorage.removeItem(SAVE_KEY); }catch(err){}
   }
   function applySavedGame(data){
@@ -3066,6 +3053,7 @@
       screens[key].classList.toggle('active', key === name);
       if (key === name && isTitle) screens[key].classList.add('flex');
     });
+    if (name === 'builder') runWhenIdle(preloadAheadOfNeed);
   }
 
   var hasExistingSave = false;
@@ -3125,19 +3113,39 @@
     if (typeof requestIdleCallback === 'function') requestIdleCallback(fn, { timeout:2000 });
     else setTimeout(fn, 300);
   }
+  // Only warm what the player is actually likely to click next, and do it one
+  // picture at a time so the game never stutters (or downloads the whole art
+  // library): first the other times of day for the rooms that are up, then the
+  // other rooms of the same flat style at the current time of day.
+  var preloadedSrc = {}, preloadQueue = [], preloadTimer = 0;
+  function preloadQueueSrc(src){
+    if (!src || preloadedSrc[src]) return;
+    preloadedSrc[src] = true; preloadQueue.push(src);
+  }
+  function preloadDrip(){
+    if (preloadTimer || !preloadQueue.length) return;
+    preloadTimer = setTimeout(function(){
+      preloadTimer = 0;
+      if (document.visibilityState === 'visible' && screens.builder.classList.contains('active')) preloadImage(preloadQueue.shift());
+      preloadDrip();
+    }, 450);
+  }
   function preloadAheadOfNeed(){
-    BACKGROUNDS.forEach(function(bg){
-      if (bg.architectures){
-        bg.architectures.forEach(function(arch){
-          if (arch.times) arch.times.forEach(function(t){ preloadImage(t.src); });
-          else if (arch.src) preloadImage(arch.src);
-        });
-      } else if (bg.times){
-        bg.times.forEach(function(t){ preloadImage(t.src); });
-      } else if (bg.src){
-        preloadImage(bg.src);
-      }
+    if (!screens.builder.classList.contains('active')) return;
+    var seenBg = {};
+    state.rooms.forEach(function(room){
+      var bg = getBackground(room.backgroundId), arch = bg && bg.architectures ? architectureFor(room) : bg;
+      if (arch && arch.times) arch.times.forEach(function(t){ preloadQueueSrc(t.src); });
     });
+    state.rooms.forEach(function(room){
+      if (seenBg[room.backgroundId]) return; seenBg[room.backgroundId] = true;
+      var bg = getBackground(room.backgroundId);
+      if (bg && bg.architectures) bg.architectures.forEach(function(a){
+        if (a.times){ var t = a.times.filter(function(x){ return x.id === state.activeTime; })[0] || a.times[0]; preloadQueueSrc(t.src); }
+        else preloadQueueSrc(a.src);
+      });
+    });
+    preloadDrip();
   }
 
   function renderRoomGrid(){
@@ -3638,6 +3646,7 @@
     renderArchPicker();
     updateRoomNavButtons();
     setupRoomFocusTracking();
+    if (screens.builder.classList.contains('active')) runWhenIdle(preloadAheadOfNeed);
   }
 
   /* ---------------- render: tray ---------------- */
@@ -3735,7 +3744,7 @@
     card.className = 'sticker';
     card.style.setProperty('--tilt', tiltFor(item.id)+'deg');
     card.innerHTML =
-      '<div class="sticker-thumb"><img src="'+item.src+'" alt="">'+attributePillsHtml(item)+'</div>' +
+      '<div class="sticker-thumb"><img src="'+item.src+'" alt="" loading="lazy" decoding="async">'+attributePillsHtml(item)+'</div>' +
       '<div class="sticker-label">'+item.name+'</div>';
     card.addEventListener('pointerdown', function(e){ startTrayDrag(e, item, card); });
     storyDecorateCard(card, item);
@@ -3752,7 +3761,7 @@
     card.className = 'sticker sticker-primary';
     card.style.setProperty('--tilt', tiltFor(primary.id)+'deg');
     card.innerHTML =
-      '<div class="sticker-thumb"><img src="'+primary.src+'" alt="">'+attributePillsHtml(primary)+'</div>' +
+      '<div class="sticker-thumb"><img src="'+primary.src+'" alt="" loading="lazy" decoding="async">'+attributePillsHtml(primary)+'</div>' +
       '<div class="sticker-label">'+group.label+'</div>' +
       '<div class="variant-dots">' + variants.map(function(v){ return '<span class="variant-dot" style="'+swatchStyleFor(v.color)+'"></span>'; }).join('') + '</div>';
     // dragging still places this exact color immediately; a plain tap
@@ -3774,7 +3783,7 @@
         vcard.className = 'sticker';
         vcard.style.setProperty('--tilt', tiltFor(v.id)+'deg');
         vcard.innerHTML =
-          '<div class="sticker-thumb"><img src="'+v.src+'" alt="">'+attributePillsHtml(v)+'</div>' +
+          '<div class="sticker-thumb"><img src="'+v.src+'" alt="" loading="lazy" decoding="async">'+attributePillsHtml(v)+'</div>' +
           '<div class="sticker-label">'+v.color+'</div>';
         vcard.addEventListener('pointerdown', function(e){ startTrayDrag(e, v, vcard); });
         storyDecorateCard(vcard, v);
@@ -5533,7 +5542,9 @@
     }catch(err){}
     return storyDefaultData();
   }
-  function storySaveData(){ try{ localStorage.setItem(STORY_KEY, JSON.stringify(story.data)); }catch(err){} }
+  // (skips the write when nothing changed, since the autosave runs every few seconds)
+  var storyLastSaved = '';
+  function storySaveData(){ try{ var s = JSON.stringify(story.data); if (s === storyLastSaved) return; localStorage.setItem(STORY_KEY, s); storyLastSaved = s; }catch(err){} }
 
   // the player's name (asked for when a new story begins); {you} in a letter becomes it
   function storyName(){ return (story.data && story.data.playerName) || ''; }
@@ -6375,7 +6386,7 @@
     var html = '<div class="tc-head"><div class="tc-av" style="--pin:' + (sp.kind === 'shop' ? '#c9714a' : '#d9a441') + '">' + storyIcon(sp.icon).replace('<svg', '<svg style="width:24px;height:24px"') + '</div>' +
       '<div><div class="tc-name">' + storyEsc(sp.name) + '</div><div class="tc-sub">' + (sp.kind === 'shop' ? 'Shop' : 'Happening') + (dn ? ' · ' + storyEsc(dn) : '') + '</div></div>' +
       '<button class="tc-close" id="tcClose" type="button" aria-label="Close">&times;</button></div>' +
-      '<div class="tc-kicker">' + (sp.kind === 'shop' ? (sp.old ? 'A Cove institution' : 'Open since ' + storyEsc(Story.monthOf(sp.day || 0).label)) : 'On now · ' + storyEsc(storyUntilLabel(sp))) + '</div>' +
+      '<div class="tc-kicker">' + (sp.kind === 'shop' ? 'Open since ' + storyEsc(Story.monthOf(sp.day || 0).label) : 'On now · ' + storyEsc(storyUntilLabel(sp))) + '</div>' +
       '<p class="tc-blurb">' + storyEsc(sp.blurb) + '</p>' +
       (sp.soon ? '<div class="tc-soon">' + storyEsc(sp.soon) + '</div>' : '') +
       (issue ? '<div class="tc-actions"><button class="btn-ghost tc-mini" id="tcNews" type="button">Read about it in the Courier</button></div>' : '');
@@ -6706,19 +6717,7 @@
     var h = new Date().getHours(), veil = document.getElementById('townVeil');
     veil.classList.toggle('evening', h >= 17 && h < 21);
     veil.classList.toggle('night', h >= 21 || h < 5);
-    (fx.glints || []).forEach(function(p, i){
-      var g = document.createElement('i'); g.className = 'fx-glint';
-      g.style.left = p[0] + '%'; g.style.top = p[1] + '%';
-      if (p[2]) g.style.setProperty('--s', p[2]);
-      g.style.setProperty('--d', (3.4 + (i * 7 % 55) / 10).toFixed(1) + 's');
-      g.style.setProperty('--delay', (-(i * 13 % 90) / 10).toFixed(1) + 's');
-      layer.appendChild(g);
-    });
-    for (var ci = 0; ci < 3; ci++){
-      var cl = document.createElement('i'); cl.className = 'fx-cloud';
-      cl.style.setProperty('--y', (6 + ci * 30) + '%'); cl.style.setProperty('--t', (130 + ci * 40) + 's'); cl.style.setProperty('--delay', (-ci * 55) + 's');
-      layer.appendChild(cl);
-    }
+    storyGlintsBuild(layer, fx.glints || []);
     (fx.smoke || []).forEach(function(p){
       var s = document.createElement('div'); s.className = 'fx-smoke'; s.style.setProperty('--x', p[0] + '%'); s.style.setProperty('--y', p[1] + '%');
       for (var k = 0; k < 4; k++){ var pf = document.createElement('i'); pf.style.animationDelay = (-k * 1.5) + 's'; s.appendChild(pf); }
@@ -6733,6 +6732,121 @@
       layer.appendChild(el);
     });
   }
+
+  /* ---------- cloud shadows ----------
+     One small canvas, stretched over the whole map. The strip from story/cloud_shadows.jpg is
+     fitted to the full height, mirrored (so the loop has no seam) and slid sideways very slowly.
+     White in the strip means "no shadow", so it is turned into transparency once, up front. */
+  var storyCloud = { img:null, tile:null, tw:0, loading:false, raf:0, last:0, t0:0, running:false };
+  function storyCloudPrepare(done){
+    var cv = document.getElementById('townClouds'), cfg = (Story.TOWN && Story.TOWN.clouds) || null;
+    if (!cv || !cfg || !cfg.src) return;
+    if (storyCloud.tile){ done(); return; }
+    if (storyCloud.loading) return;
+    storyCloud.loading = true;
+    var img = new Image();
+    img.onload = function(){
+      var H = cv.height, w = Math.round(H * img.naturalWidth / img.naturalHeight);
+      var tile = document.createElement('canvas'); tile.width = w * 2; tile.height = H;
+      var tc = tile.getContext('2d');
+      tc.drawImage(img, 0, 0, w, H);
+      tc.save(); tc.translate(w * 2, 0); tc.scale(-1, 1); tc.drawImage(img, 0, 0, w, H); tc.restore();
+      try {
+        // white -> transparent, dark -> a soft blue-grey shadow (cheaper than blending every frame)
+        var d = tc.getImageData(0, 0, tile.width, H), px = d.data;
+        for (var i = 0; i < px.length; i += 4){
+          var a = 255 - (px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11);
+          px[i] = 14; px[i + 1] = 24; px[i + 2] = 44; px[i + 3] = a < 0 ? 0 : a;
+        }
+        tc.putImageData(d, 0, 0);
+      } catch (err) {
+        cv.classList.add('multiply'); // opened from a file: pixels can't be read, so let the browser multiply it
+      }
+      storyCloud.tile = tile; storyCloud.tw = w * 2; storyCloud.loading = false;
+      done();
+    };
+    img.onerror = function(){ storyCloud.loading = false; };
+    img.src = cfg.src;
+  }
+  function storyCloudDraw(now){
+    if (!storyCloud.tile) return;
+    var cv = document.getElementById('townClouds'), cfg = Story.TOWN.clouds;
+    var ctx = cv.getContext('2d'), tw = storyCloud.tw;
+    var off = ((now - storyCloud.t0) / (cfg.minutes * 60000) * tw) % tw;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(storyCloud.tile, -off, 0);
+    if (tw - off < cv.width) ctx.drawImage(storyCloud.tile, tw - off, 0);
+  }
+  /* ---------- glimmers on the water ----------
+     Hundreds of tiny sparkles would be hundreds of animated elements. Instead they are drawn on one
+     canvas, only the few that are "on" at any moment, in the same loop as the cloud shadows. */
+  var storyGlints = { cv:null, list:[], sprite:null, w:0, h:0 };
+  function storyGlintSprite(){
+    var s = document.createElement('canvas'); s.width = s.height = 64;
+    var g = s.getContext('2d'), c = 32, grad = g.createRadialGradient(c, c, 0, c, c, c);
+    grad.addColorStop(0, 'rgba(255,255,255,.95)'); grad.addColorStop(.18, 'rgba(255,255,255,.95)'); grad.addColorStop(.62, 'rgba(255,255,255,0)');
+    g.fillStyle = grad; g.beginPath(); g.arc(c, c, c, 0, 7); g.fill();
+    var l1 = g.createLinearGradient(0, 0, 64, 0), l2 = g.createLinearGradient(0, 0, 0, 64);
+    [l1, l2].forEach(function(l){ l.addColorStop(.4, 'rgba(255,255,255,0)'); l.addColorStop(.5, 'rgba(255,255,255,.85)'); l.addColorStop(.6, 'rgba(255,255,255,0)'); });
+    g.fillStyle = l1; g.fillRect(0, 0, 64, 64); g.fillStyle = l2; g.fillRect(0, 0, 64, 64);
+    return s;
+  }
+  function storyGlintsSize(){
+    var cv = storyGlints.cv; if (!cv) return;
+    var r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    var w = Math.max(2, Math.round(r.width * dpr)), h = Math.max(2, Math.round(r.height * dpr));
+    if (w !== cv.width || h !== cv.height){ cv.width = w; cv.height = h; }
+    storyGlints.w = cv.width; storyGlints.h = cv.height;
+  }
+  function storyGlintsBuild(layer, glints){
+    if (storyReduced() || !glints.length) return;
+    var cv = document.createElement('canvas'); cv.className = 'fx-glints'; layer.insertBefore(cv, layer.firstChild);
+    storyGlints.cv = cv; storyGlints.sprite = storyGlintSprite();
+    storyGlints.list = glints.map(function(p, i){
+      return { x:p[0] / 100, y:p[1] / 100, s:(p[2] || .55) / 100, d:3.4 + (i * 7 % 55) / 10, o:-(i * 13 % 90) / 10 };
+    });
+    storyGlintsSize();
+    if (window.ResizeObserver) new ResizeObserver(storyGlintsSize).observe(document.getElementById('townStage'));
+    else window.addEventListener('resize', storyGlintsSize);
+  }
+  function storyGlintsDraw(now){
+    var cv = storyGlints.cv; if (!cv) return;
+    var ctx = cv.getContext('2d'), W = storyGlints.w, H = storyGlints.h, t = now / 1000, spr = storyGlints.sprite;
+    ctx.clearRect(0, 0, W, H);
+    var L = storyGlints.list;
+    for (var i = 0; i < L.length; i++){
+      var q = L[i], ph = (((t + q.o) % q.d) + q.d) % q.d / q.d;
+      if (ph < .62 || ph > .84) continue;
+      var a, sc, rot;
+      if (ph < .72){ var k = (ph - .62) / .1; a = .95 * k; sc = .3 + .7 * k; rot = 25 * k; }
+      else { var k2 = (ph - .72) / .12; a = .95 * (1 - k2); sc = 1 - .5 * k2; rot = 25 + 25 * k2; }
+      var size = q.s * W * sc;
+      ctx.globalAlpha = a;
+      ctx.setTransform(Math.cos(rot * .01745), Math.sin(rot * .01745), -Math.sin(rot * .01745), Math.cos(rot * .01745), q.x * W, q.y * H);
+      ctx.drawImage(spr, -size / 2, -size / 2, size, size);
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
+  }
+  function storyCloudTick(now){
+    storyCloud.raf = 0;
+    var cv = document.getElementById('townClouds');
+    // only animate while the map is on screen and the tab is in front
+    if (!cv || document.hidden || !document.getElementById('screen-town').classList.contains('active')){ storyCloud.running = false; return; }
+    if (now - storyCloud.last >= 48){ storyCloud.last = now; storyCloudDraw(now); storyGlintsDraw(now); }
+    storyCloud.raf = requestAnimationFrame(storyCloudTick);
+  }
+  function storyCloudsStart(){
+    var cfg = Story.TOWN && Story.TOWN.clouds, cv = document.getElementById('townClouds');
+    if (cv && cfg){
+      cv.style.opacity = cfg.opacity != null ? cfg.opacity : .3;
+      storyCloudPrepare(function(){ if (storyReduced()) storyCloudDraw(performance.now()); });
+    }
+    if (!storyCloud.t0) storyCloud.t0 = performance.now() - Math.random() * 120000;
+    storyGlintsSize();
+    if (storyReduced() || storyCloud.raf) return;
+    storyCloud.running = true; storyCloud.raf = requestAnimationFrame(storyCloudTick);
+  }
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden && story.inStory) storyCloudsStart(); });
   function storyFxGull(){
     var layer = document.getElementById('townFx');
     if (!layer || storyReduced()) return;
@@ -6743,19 +6857,23 @@
       layer.appendChild(g);
       var yy = y0 + i * 2.2 + Math.random() * 1.5, dur = 17000 + Math.random() * 9000, d0 = i * 700;
       var a = dirR ? -4 : 104, b = dirR ? 104 : -4;
+      // moved with transform (not left/top) so a gull never forces the page to re-layout
+      var W = layer.clientWidth || 1000, H = layer.clientHeight || 560;
+      var tr = function(xp, yp){ return 'translate3d(' + (xp / 100 * W).toFixed(1) + 'px,' + (yp / 100 * H).toFixed(1) + 'px,0)'; };
       g.style.opacity = '0';
       var an = g.animate([
-        { left:a + '%', top:yy + '%', opacity:0 },
-        { left:(a + (b - a) * .08) + '%', top:(yy - 1) + '%', opacity:.92, offset:.08 },
-        { left:(a + (b - a) * .55) + '%', top:(yy + (Math.random() * 6 - 3)) + '%', opacity:.92, offset:.55 },
-        { left:(a + (b - a) * .92) + '%', top:(yy - 4) + '%', opacity:.92, offset:.92 },
-        { left:b + '%', top:(yy - 5) + '%', opacity:0 }
+        { transform:tr(a, yy), opacity:0 },
+        { transform:tr(a + (b - a) * .08, yy - 1), opacity:.92, offset:.08 },
+        { transform:tr(a + (b - a) * .55, yy + (Math.random() * 6 - 3)), opacity:.92, offset:.55 },
+        { transform:tr(a + (b - a) * .92, yy - 4), opacity:.92, offset:.92 },
+        { transform:tr(b, yy - 5), opacity:0 }
       ], { duration:dur, delay:d0, easing:'linear', fill:'forwards' });
       (function(el){ an.onfinish = function(){ if (el.parentNode) el.parentNode.removeChild(el); }; })(g);
     }
   }
   function storyFxStart(){
     storyFxBuild();
+    storyCloudsStart();
     clearTimeout(storyFx.gullTimer);
     function next(){
       storyFx.gullTimer = setTimeout(function(){
@@ -6938,7 +7056,6 @@
   setupTrayFilters();
   renderTray();
   setTrayOpen(state.trayOpen);
-  runWhenIdle(preloadAheadOfNeed);
 
   // autosave: a periodic snapshot covers virtually every change without
   // needing a save-hook wired into every single action in the game, and
