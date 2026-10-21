@@ -18,21 +18,40 @@ var Story = (function(){
   var TOWN = {
     name: 'Pennywhistle Cove',
     map: 'story/town_map.jpg',
-    // ambient life on the map (positions are % of the map image; water points
-    // and boat lanes were checked against the painting so nothing sails on land)
-    fx: {"glints":[[72.8,65.0],[68.8,70.4],[32.8,12.8],[24.2,96.9],[32.2,94.2],[12.2,92.5],[14.2,2.2],[83.2,49.1],[45.2,94.2],[60.8,6.6],[53.8,3.1],[47.2,11.9],[22.8,14.6],[93.2,35.8],[14.2,13.7],[27.8,88.9],[58.2,90.7],[12.8,8.4],[37.8,1.3],[29.8,91.6],[35.8,93.4],[30.2,8.4],[89.8,10.2],[59.2,87.2],[21.2,2.2],[7.2,8.4],[44.2,10.2],[37.2,88.1],[67.2,96.9],[50.7,89.8],[23.2,5.8],[53.8,96.0],[87.2,11.9],[4.8,10.2],[50.7,83.6],[34.8,97.8],[34.8,0.4],[10.2,97.8],[33.8,86.3],[34.8,7.5],[27.3,12.8],[61.8,90.7],[53.8,10.2],[2.2,93.4],[49.2,94.2],[52.2,86.3],[51.2,4.9],[68.8,74.8],[67.2,18.1],[46.8,86.3],[8.8,90.7],[62.7,96.0],[52.2,98.7],[2.2,5.8],[36.8,11.1],[88.2,42.9],[81.2,57.1],[12.2,4.9],[7.2,87.2],[41.8,81.9],[4.2,0.4],[85.2,9.3],[16.8,98.7],[87.2,47.3],[41.8,85.4],[27.3,96.9],[28.7,2.2],[48.2,6.6],[45.2,82.7],[7.8,11.9]],"boats":[{"path":[[26,96.5],[38,94],[49,92.5]],"dur":110,"startAt":0.1},{"path":[[44,7.5],[52,7],[59,6.5]],"dur":85,"startAt":0.55},{"path":[[96.5,31.5],[92,37.5],[88,43],[84,49]],"dur":70,"startAt":0.3}],"leaves":{"area":[1,18,30,66],"count":14},"smoke":[]},
+    aspect: [2400, 1350],
+    // Seasonal versions of the map. Put a file name here (for example 'story/town_map_autumn.jpg')
+    // and the town switches to it whenever the story calendar reaches that season.
+    // A season left as null just uses the main map with a gentle colour wash.
+    seasonMaps: { spring:null, summer:null, autumn:null, winter:null },
+    // the story calendar: day 0 is this date (month is 0-based: 5 = June)
+    calendar: { year:2025, month:5, day:2 },
+    // ambient life on the map (positions are in % of the map image; the sparkle
+    // points were checked against the painting so nothing glitters on land)
+    fx: {"glints":[[0.0,0.0],[21.1,0.0],[25.0,0.0],[28.9,0.0],[32.9,0.0],[36.8,0.0],[41.7,0.0],[46.0,0.0],[50.2,0.0],[39.0,3.0],[43.7,3.2],[26.9,3.3],[35.0,3.3],[19.3,3.3],[30.8,3.4],[23.2,3.6],[48.2,4.1],[15.2,4.1],[91.7,5.1],[52.1,5.3],[11.5,5.3],[87.5,5.4],[97.5,5.5],[59.0,6.0],[83.8,6.3],[37.2,6.4],[79.5,6.3],[33.2,6.6],[41.5,6.6],[21.1,6.7],[45.3,6.7],[29.0,6.8],[25.2,6.8],[64.0,7.0],[55.3,7.3],[16.8,7.6],[94.4,7.9],[67.6,8.0],[76.0,7.9],[99.9,8.4],[49.8,8.4],[89.6,8.6],[13.0,8.7],[8.8,9.4],[81.7,9.5],[85.6,9.6],[61.0,9.6],[39.2,9.6],[0.3,9.3],[72.4,9.6],[43.4,10.0],[31.4,9.9],[26.8,10.2],[22.7,10.1],[35.2,10.3],[52.9,10.5],[97.0,10.9],[64.8,10.8],[19.0,11.0],[47.0,11.0],[78.0,11.2],[92.5,11.2],[68.9,11.6],[15.2,12.0],[57.8,11.8],[88.4,12.3],[11.5,12.4],[83.2,13.0],[74.5,12.9],[41.2,13.0]],
+      "boats":[
+      // x/y = where the boat floats (in % of the map), w = its width (1 = 1% of the picture),
+      // rx/ry = how far it drifts, dur = seconds for one slow loop, flip = face the other way
+      {img:"story/boats/boat2.png", x:30.4, y:4.6,  w:1.8, rx:.7, ry:.28, dur:52, delay:0,  flip:false},
+      {img:"story/boats/boat1.png", x:38.0, y:4.4,  w:2.1, rx:.6, ry:.25, dur:61, delay:-14, flip:true},
+      {img:"story/boats/boat6.png", x:41.0, y:5.4,  w:2.0, rx:1.1,ry:.35, dur:74, delay:-30, flip:false},
+      {img:"story/boats/boat5.png", x:10.3, y:13.3, w:1.5, rx:.5, ry:.22, dur:47, delay:-9,  flip:false},
+      {img:"story/boats/boat4.png", x:23.7, y:1.9,  w:1.5, rx:.6, ry:.2,  dur:56, delay:-22, flip:true},
+      {img:"story/boats/boat3.png", x:78.8, y:55.2, w:1.9, rx:.35,ry:.3,  dur:44, delay:-5,  flip:false}
+    ],
+      "leaves":{"area":[1,30,33,72],"count":14},"smoke":[]},
     // named neighbourhoods (polygons in % of the map image). The first one that
     // contains a point wins, so the small ones come first.
     districts: [
-      {id:"lake",name:"Lantern Lake",blurb:"Log cabins around a still pond. Smoke from at least one chimney, always.",poly:[[75,0],[100,0],[100,26],[90,28],[80,25],[75,14]],label:[88,4]},
-      {id:"orchard",name:"Orchard Rise",blurb:"Tidy lanes, neat gardens and a surprising number of cats.",poly:[[17,19],[38,16],[50,20],[52,29],[40,33],[24,32],[16,28]],label:[32,24]},
-      {id:"glass",name:"Glass Row",blurb:"The new towers. Lifts, balconies, and a view of the other towers.",poly:[[62,24],[75,20],[86,24],[88,40],[80,52],[70,53],[63,46],[61,34]],label:[75,31]},
-      {id:"canal",name:"Canal Row",blurb:"Narrow brick houses with their feet in the water.",poly:[[62,50],[70,50],[74,58],[76,72],[68,80],[60,76],[60,60]],label:[66,67]},
-      {id:"mills",name:"The Old Mills",blurb:"Warehouses turned into lofts: high ceilings, big windows, echoing stairwells.",poly:[[82,48],[100,44],[100,100],[70,100],[70,86],[74,72],[82,62]],label:[90,76]},
-      {id:"oldtown",name:"Old Town",blurb:"Red brick, a clock tower that runs a little fast, and the best pavement for gossip.",poly:[[40,27],[52,24],[60,28],[62,38],[62,50],[60,60],[60,76],[54,74],[42,72],[40,60],[42,46]],label:[51,48]},
-      {id:"church",name:"Church Hill",blurb:"White clapboard, a very tall steeple, and neighbours who bring casseroles.",poly:[[0,36],[14,33],[30,36],[41,40],[43,64],[38,82],[20,86],[0,84]],label:[18,66]},
-      {id:"harbour",name:"The Harbour",blurb:"Boats come and go. Mostly come.",poly:[[0,88],[20,90],[42,84],[60,84],[66,92],[70,100],[0,100]],label:[34,94]},
-      {id:"bay",name:"Kingfisher Bay",blurb:"Wide, bright, and full of sails on a Sunday.",poly:[[0,0],[56,0],[60,6],[66,16],[40,16],[20,20],[0,20]],label:[28,8]}
+      {id:"lake",name:"Lantern Lake",blurb:"Log cabins on the point. Smoke from at least one chimney, always.",poly:[[47,0],[100,0],[100,8],[86,8.5],[72,10],[60,9.5],[50,6]],label:[75,2.2]},
+      {id:"eastbank",name:"Far Shore",blurb:"Quiet brick houses across the water. Reached by a very patient ferry.",poly:[[91,30],[100,28],[100,56],[94,52],[91,44]],label:[96,36]},
+      {id:"orchard",name:"Orchard Rise",blurb:"Tidy lanes, neat gardens and a surprising number of cats.",poly:[[14,17],[24,15],[40,14],[52,15],[53,22],[52,29],[44,30],[34,31],[24,31],[16,28]],label:[33,22.5]},
+      {id:"glass",name:"Glass Row",blurb:"The new towers. Lifts, balconies, and a view of the other towers.",poly:[[63,24],[72,20],[84,21],[91,26],[91,40],[84,50],[75,52],[67,47],[63,38]],label:[77,31]},
+      {id:"canal",name:"Canal Row",blurb:"Narrow brick houses with their feet in the water.",poly:[[52,47],[60,43],[66,49],[72,55],[73,68],[70,79],[62,81],[54,77],[52,64]],label:[61,72]},
+      {id:"oldtown",name:"Old Town",blurb:"Red brick, a clock tower that runs a little fast, and the best pavement for gossip.",poly:[[37,26],[47,24],[58,25],[63,28],[63,42],[58,44],[52,47],[52,70],[44,72],[38,64],[36,48],[37,34]],label:[45,44]},
+      {id:"church",name:"Church Hill",blurb:"White clapboard, a very tall steeple, and neighbours who bring casseroles.",poly:[[0,33],[12,28],[26,31],[34,34],[37,40],[36,60],[40,70],[32,79],[16,83],[0,81]],label:[17,60]},
+      {id:"mills",name:"The Old Mills",blurb:"Warehouses turned into lofts: high ceilings, big windows, echoing stairwells.",poly:[[73,54],[91,50],[100,57],[100,100],[74,100],[72,86],[75,72]],label:[90,78]},
+      {id:"harbour",name:"The Harbour",blurb:"Boats come and go. Mostly come.",poly:[[0,86],[20,88],[40,84],[56,83],[72,86],[74,100],[0,100]],label:[36,94]},
+      {id:"bay",name:"Kingfisher Bay",blurb:"Wide, bright, and full of sails on a Sunday.",poly:[[0,0],[47,0],[50,6],[60,9.5],[60,14],[40,14],[20,16],[0,17]],label:[28,8]}
     ],
     prologue: [
       "Pennywhistle Cove is the kind of town where everybody knows whose bicycle is whose.",
@@ -81,48 +100,48 @@ var Story = (function(){
   // only unlocks the rooms it lists in `edit`. Doors are chosen so
   // neighbouring rooms connect: right door -> next room's left door.
   var PROPERTIES = {
-    MIA_HOME_A:    { owner:'mia',   name:"Mia's first flat",       family:'sunlit-living-room-twin-windows', district:'oldtown', map:{x:56.5,y:62},
+    MIA_HOME_A:    { owner:'mia',   name:"Mia's first flat",       family:'sunlit-living-room-twin-windows', district:'canal', map:{x:59.5,y:63},
                      rooms:[ {key:'living',  label:'Living room', arch:'both-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'both-bothdoors'},
                              {key:'spare',   label:'Little spare room', arch:'both-leftdoor'} ] },
-    MIA_HOME_B:    { owner:'mia',   name:"Mia & Alex's flat",      family:'sunlit-living-room-twin-windows', district:'church', map:{x:20.5,y:50},
+    MIA_HOME_B:    { owner:'mia',   name:"Mia & Alex's flat",      family:'sunlit-living-room-twin-windows', district:'church', map:{x:21,y:58},
                      rooms:[ {key:'living',  label:'Living room', arch:'both-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'both-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'both-leftdoor'} ] },
-    JULES_HOME_A:  { owner:'jules', name:"Jules's tiny studio",    family:'historic', district:'canal', map:{x:61.5,y:66},
+    JULES_HOME_A:  { owner:'jules', name:"Jules's attic studio",    family:'historic', district:'mills', map:{x:83,y:64},
                      rooms:[ {key:'studio',  label:'The studio',  arch:'onewindow-nodoors'} ] },
-    JULES_HOME_B:  { owner:'jules', name:"Jules's live-work loft", family:'loft', district:'mills', map:{x:80,y:83},
+    JULES_HOME_B:  { owner:'jules', name:"Jules's top-floor loft", family:'loft', district:'mills', map:{x:88,y:63},
                      rooms:[ {key:'living',  label:'Living room', arch:'threewindows-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'threewindows-bothdoors'},
                              {key:'art',     label:'Art room',    arch:'threewindows-leftdoor'} ] },
-    SAM_HOME_A:    { owner:'sam',   name:"Sam's city apartment",   family:'sunlit-living-room-twin-windows', district:'glass', map:{x:72,y:43},
+    SAM_HOME_A:    { owner:'sam',   name:"Sam's city apartment",   family:'sunlit-living-room-twin-windows', district:'glass', map:{x:75,y:38},
                      rooms:[ {key:'kitchen', label:'Kitchen',     arch:'big-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'big-bothdoors'},
                              {key:'living',  label:'Living room', arch:'big-leftdoor'} ] },
-    SAM_HOME_B:    { owner:'sam',   name:"Sam & Robin's home",     family:'historic', district:'oldtown', map:{x:45,y:34},
+    SAM_HOME_B:    { owner:'sam',   name:"Sam & Robin's home",     family:'historic', district:'oldtown', map:{x:44,y:35},
                      rooms:[ {key:'kitchen', label:'Kitchen',     arch:'twowindows-rightdoor'},
                              {key:'living',  label:'Living room', arch:'roundwindow-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'baywindowright-leftdoor'} ] },
-    NOOR_HOME_A:   { owner:'noor',  name:"Noor's rental",          family:'sunlit-living-room-twin-windows', district:'glass', map:{x:65.5,y:36.5},
+    NOOR_HOME_A:   { owner:'noor',  name:"Noor's rental",          family:'sunlit-living-room-twin-windows', district:'glass', map:{x:69,y:31},
                      rooms:[ {key:'bedroom', label:'Bedroom',     arch:'right-rightdoor'},
                              {key:'living',  label:'Living room', arch:'right-bothdoors'},
                              {key:'kitchen', label:'Kitchen',     arch:'right-leftdoor'} ] },
-    NOOR_HOME_B:   { owner:'noor',  name:"Noor's industrial flat", family:'loft', district:'mills', map:{x:87,y:62},
+    NOOR_HOME_B:   { owner:'noor',  name:"Noor's top-floor flat", family:'loft', district:'glass', map:{x:72.5,y:34},
                      rooms:[ {key:'living',  label:'Living room', arch:'twowindows-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'onewindow-bothdoors'},
                              {key:'study',   label:'Quiet room',  arch:'onewindow-leftdoor'} ] },
-    THEO_HOME_A:   { owner:'theo',  name:"Theo & Elena's cabin",   family:'cozy-cabin', district:'lake', map:{x:86.6,y:16},
+    THEO_HOME_A:   { owner:'theo',  name:"Theo & Elena's cabin",   family:'cozy-cabin', district:'lake', map:{x:73.4,y:7.4},
                      rooms:[ {key:'living',  label:'Living room', arch:'bigwindow-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'smallwindow-leftdoor'} ] },
-    THEO_HOME_B:   { owner:'theo',  name:"Theo's family flat",     family:'sunlit-living-room-twin-windows', district:'orchard', map:{x:25.5,y:26.5},
+    THEO_HOME_B:   { owner:'theo',  name:"Theo's family flat",     family:'sunlit-living-room-twin-windows', district:'orchard', map:{x:35,y:22},
                      rooms:[ {key:'living',  label:'Living room', arch:'left-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'left-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'left-leftdoor'} ] },
-    ROSA_HOME_A:   { owner:'rosa',  name:"Rosa's old apartment",   family:'historic', district:'oldtown', map:{x:45.5,y:61},
+    ROSA_HOME_A:   { owner:'rosa',  name:"Rosa's old apartment",   family:'historic', district:'oldtown', map:{x:46.5,y:63},
                      rooms:[ {key:'sitting', label:'Sitting room',arch:'twowindows-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'roundwindow-bothdoors'},
                              {key:'guest',   label:'Guest bedroom',arch:'baywindowright-leftdoor'} ] },
-    ROSA_CABIN_A:  { owner:'rosa',  name:"Rosa's lakeside cabin",   family:'cozy-cabin', district:'lake', map:{x:79.6,y:13.2},
+    ROSA_CABIN_A:  { owner:'rosa',  name:"Rosa's lakeside cabin",   family:'cozy-cabin', district:'lake', map:{x:70.2,y:7.6},
                      rooms:[ {key:'living',  label:'Living room', arch:'bigwindow-rightdoor'},
                              {key:'kitchen', label:'Kitchen & dining', arch:'woodenroom-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'smallwindow-leftdoor'} ] }
@@ -223,9 +242,9 @@ var Story = (function(){
 
   /* ======================== MIA ======================== */
   { id:'MIA_01', char:'mia', title:'A Key of My Own', property:'MIA_HOME_A', change:'new', edit:['living'],
-    requires:[], allowance:24,
+    requires:[], day:0, allowance:32,
     story:"Mia has started at the vet practice and finally has her own keys. Most of her savings went on the deposit, so there's exactly one room she can afford to feel good in.",
-    message:"I've never had a room where I get to choose everything! Green and cream, light wood, somewhere comfy to sit. And flowers, please. I always stop at the flower-shop window on my way home. (Apparently that's 'a lot of stopping'.)",
+    message:"I've never had a room where I get to choose everything! Green and cream, light wood, somewhere comfy to sit. And flowers, please. There's a florist about to open on my street and I'm already emotionally invested.",
     brief:[
       R('must','role','A proper living room: a couch or armchair, a table and a lamp',{role:'living',room:'living'},
         ["It's a real living room — I can actually sit down in it!","I'm still sitting on a moving box, but I'm sure it's character-building."]),
@@ -243,7 +262,7 @@ var Story = (function(){
     reply:{ low:"It's a start. I'm just happy it's mine.", mid:"It feels like a place I could live in. Thank you!", high:"I came home, sat down, and just stayed there. This is the first place that's really felt like mine." }
   },
   { id:'MIA_02', char:'mia', title:'Now the Rest Feels Empty', property:'MIA_HOME_A', change:'more', edit:['bedroom','spare'],
-    requires:['MIA_01','JULES_01'], allowance:34,
+    requires:['MIA_01','JULES_01'], day:46, allowance:58,
     story:"Mia passed her probation (and got a small raise). Every evening she ends up in the living room you did, because the rest of the flat still feels temporary.",
     message:"Every evening I end up in the room you did. Could you help with the other two? A soft pink bedroom, I think, and green in the little room. You already know how I feel about flowers.",
     brief:[
@@ -257,7 +276,7 @@ var Story = (function(){
     reply:{ low:"The rooms feel less empty, and that's a lot already.", mid:"Now the whole flat feels like me. Thank you.", high:"I invited my mum round. I didn't apologise for anything. That's new." }
   },
   { id:'MIA_03', char:'mia', title:'Our First Place', property:'MIA_HOME_B', change:'move', edit:['living','dining','bedroom'],
-    requires:['MIA_02'], minRenown:15, allowance:60,
+    requires:['MIA_02'], minRenown:15, day:178, allowance:92,
     story:"Mia and Alex are moving in together. Alex likes navy and simple shapes. Mia wants her softer, greener self to come along.",
     message:"Alex wants navy, I still want green, and we both want it to feel like home. Could you bring a bit of my old living room with us? And leave room for flowers on the dining table. (Alex says hi. Alex is very organised.)",
     brief:[
@@ -274,8 +293,8 @@ var Story = (function(){
 
   /* ======================== JULES ======================== */
   { id:'JULES_01', char:'jules', title:'Everything Happens Here', property:'JULES_HOME_A', change:'new', edit:['studio'],
-    requires:['MIA_01'], allowance:24,
-    story:"Mia sent Jules your way. Jules has arrived in Pennywhistle Cove to finish an illustration course, and has already unpacked every art supply before the bed.",
+    requires:['MIA_01'], day:10, allowance:34,
+    story:"Mia sent Jules your way. Jules has arrived in Pennywhistle Cove to finish an illustration course, and has taken an attic room in an old mill. Every art supply is unpacked; the bed is not.",
     message:"The easel goes in first. After that, somewhere to sleep would be sensible, I suppose. Blue and orange, please! I want to walk in and feel like making something. (Please don't make it beige. Beige is how they get you.)",
     brief:[
       R('must','easel','An easel, for the important part',{kinds:['easel'],min:1},["THE EASEL. I could cry."]),
@@ -288,7 +307,7 @@ var Story = (function(){
     reply:{ low:"It's a roof and an easel. I can work with that.", mid:"I can walk in and want to make something. That's all I wanted.", high:"I put the easel down and painted until 3am. The room made me do it." }
   },
   { id:'JULES_02', char:'jules', title:'My First Paid Commission', property:'JULES_HOME_A', change:'refresh', edit:['studio'],
-    requires:['JULES_01','SAM_01'], allowance:24,
+    requires:['JULES_01','SAM_01'], day:58, allowance:30,
     story:"Someone has actually paid Jules for an illustration! The studio gets a refresh — the room you made stays as it is, with a few new things.",
     message:"Someone has actually PAID me. I'd like to spend a little on this place. Keep the easel and the blue, but could we try something lilac with it? It still needs to feel like my room.",
     brief:[
@@ -300,9 +319,9 @@ var Story = (function(){
     ],
     reply:{ low:"A tiny bit fancier. A tiny bit more me.", mid:"It's like my room grew up and kept its personality.", high:"I'm going to tell the client it's from my 'inspiration space'. It's from you." }
   },
-  { id:'JULES_03', char:'jules', title:'A Door with My Name on It', property:'JULES_HOME_B', change:'move', edit:['living','bedroom','art'],
-    requires:['JULES_02'], minRenown:15, allowance:65,
-    story:"Jules graduated and a small creative grant arrived. A live-work loft with an actual room for art. Jules is slightly overwhelmed by the idea of a door that closes.",
+  { id:'JULES_03', char:'jules', title:'A Door with My Name on It', property:'JULES_HOME_B', change:'upstairs', edit:['living','bedroom','art'],
+    requires:['JULES_02'], minRenown:15, day:214, allowance:94,
+    story:"Jules graduated and a small creative grant arrived. The mill's landlord has offered Jules the whole top floor: a live-work loft with an actual room for art. Jules is slightly overwhelmed by the idea of a door that closes.",
     message:"An actual room for painting! Give that room ALL the colour. The bedroom can be softer. And please don't make the living room look like a reception area.",
     brief:[
       R('must','art','The art room: an easel and something on the walls',{role:'artroom',room:'art'},["The art room smells of future mess. Perfect."]),
@@ -317,7 +336,7 @@ var Story = (function(){
 
   /* ======================== SAM ======================== */
   { id:'SAM_01', char:'sam', title:'Dinner at Mine', property:'SAM_HOME_A', change:'new', edit:['kitchen'],
-    requires:['JULES_01'], allowance:34,
+    requires:['JULES_01'], day:24, allowance:42,
     story:"Sam has moved for a better-paying job and has already invited his entire new team to dinner. The kitchen comes first. The oven is, as of this week, 'on its way'.",
     message:"The bedroom can wait. I want a kitchen I'm excited to cook in. Dark wood, burgundy, plenty of metal. Spare no mixers! (The oven is on back-order. It's been on back-order for six weeks. We don't talk about it.)",
     brief:[
@@ -331,7 +350,7 @@ var Story = (function(){
     reply:{ low:"It's a kitchen. I'll make dinner anyway — on the floor if needed.", mid:"This is a kitchen I'd happily burn something in.", high:"This is exactly the kitchen I wanted to invite people into. Dinner at mine. Bring wine." }
   },
   { id:'SAM_02', char:'sam', title:'Come Through to the Living Room', property:'SAM_HOME_A', change:'more', edit:['dining','living'],
-    requires:['SAM_01','NOOR_01'], minRenown:5, allowance:58,
+    requires:['SAM_01','NOOR_01'], minRenown:5, day:104, allowance:64,
     story:"Dinner at Sam's has become a Thing. The kitchen is working overtime, and the guests now need somewhere lovely to eat and then to lie around dramatically.",
     message:"The kitchen's getting plenty of use. Now: somewhere lovely to eat, and somewhere to collapse afterwards. Keep that dark wood. Leather would be wonderful. (Velvet is also on back-order. Don't ask.)",
     brief:[
@@ -347,7 +366,7 @@ var Story = (function(){
     reply:{ low:"A place to sit. People will sit. People are flexible.", mid:"I can already hear the clinking of glasses.", high:"People stayed until 2am and nobody wanted to leave the couch. That's the review I wanted." }
   },
   { id:'SAM_03', char:'sam', title:'A Key for Both of Us', property:'SAM_HOME_B', change:'move', edit:['kitchen','living','bedroom'],
-    requires:['SAM_02'], minRenown:15, allowance:89,
+    requires:['SAM_02'], minRenown:15, day:238, allowance:104,
     story:"Sam got promoted and he and Robin, a teacher, have bought their first home together. Robin loves Sam's taste but would like to sleep somewhere that doesn't feel like a stage.",
     message:"I'd still put the kitchen first. Robin wants the bedroom lighter, which is fair. Can you make it feel like one home without making every room equally dramatic? (We now own a dish rack. It's the best day of my life.)",
     brief:[
@@ -366,7 +385,7 @@ var Story = (function(){
 
   /* ======================== NOOR ======================== */
   { id:'NOOR_01', char:'noor', title:'Somewhere to Switch Off', property:'NOOR_HOME_A', change:'new', edit:['bedroom'],
-    requires:['SAM_01'], allowance:34,
+    requires:['SAM_01'], day:38, allowance:32,
     story:"Noor has moved within Pennywhistle Cove after a breakup, and has decided that is entirely her own business. She wants one calm room finished before looking at the rest.",
     message:"The bedroom first. Chalk white, blue, pale wood. I look at plans all day; I don't want work following me to bed. Fewer things, chosen well.",
     brief:[
@@ -380,7 +399,7 @@ var Story = (function(){
     reply:{ low:"It's a bedroom. I'll make it work.", mid:"Calm. Mostly. I could sleep here.", high:"It feels calm. You paid attention. Most people don't." }
   },
   { id:'NOOR_02', char:'noor', title:'You Understood Me', property:'NOOR_HOME_A', change:'more', edit:['living','kitchen'],
-    requires:['NOOR_01','THEO_01'], allowance:55,
+    requires:['NOOR_01','THEO_01'], day:124, allowance:60,
     story:"Noor liked the bedroom enough to say so. Out loud. In the office, within hearing of two colleagues. She'd like the living room and kitchen to follow it.",
     message:"You listened. I'd like you to do the kitchen and living room too. The same restraint, but they don't have to look identical. Keep the blue.",
     brief:[
@@ -394,10 +413,10 @@ var Story = (function(){
     ],
     reply:{ low:"Functional. I can work with that.", mid:"It feels like one person lives here. That person is me.", high:"I invited my sister over. I didn't tidy first. That's how I know." }
   },
-  { id:'NOOR_03', char:'noor', title:'A Place of My Own', property:'NOOR_HOME_B', change:'move', edit:['living','bedroom','study'],
-    requires:['NOOR_02'], minRenown:15, allowance:91,
-    story:"Noor got promoted and bought a flat in a converted warehouse. She's thrilled by the old brick and the high windows, and absolutely clear about one thing: no desk. 'Desks are how work follows you home.'",
-    message:"I intend to stay here. I'd like the furniture to feel considered. A quiet bedroom, somewhere I actually want to sit at the end of the day, and a small room to think in. No desk. A chair, a shelf, a good lamp.",
+  { id:'NOOR_03', char:'noor', title:'A Place of My Own', property:'NOOR_HOME_B', change:'upstairs', edit:['living','bedroom','study'],
+    requires:['NOOR_02'], minRenown:15, day:270, allowance:96,
+    story:"Noor got promoted and bought the top floor of her own building: tall windows, a ceiling you could lose a kite in, and absolutely one rule: no desk. 'Desks are how work follows you home.'",
+    message:"I bought the top floor, so I intend to stay. I'd like the furniture to feel considered. A quiet bedroom, somewhere I actually want to sit at the end of the day, and a small room to think in. No desk. A chair, a shelf, a good lamp.",
     brief:[
       R('must','living','A living room',{role:'living',room:'living'},["I'll sit here at the end of every day."]),
       R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["The bedroom is a respite."]),
@@ -412,9 +431,9 @@ var Story = (function(){
 
   /* ======================== THEO ======================== */
   { id:'THEO_01', char:'theo', title:'Before the Baby Arrives', property:'THEO_HOME_A', change:'new', edit:['living'],
-    requires:['NOOR_01'], allowance:28,
+    requires:['NOOR_01'], day:74, allowance:32,
     starters:[ {room:'living', asset:'sideboard-akio-mediumwood', x:56, y:58, width:null} ],
-    story:"Theo and Elena have found a little cabin by the pond with just enough room for a growing family. Their belongings have arrived. The living room is a collection of temporary solutions.",
+    story:"Theo and Elena have found a little cabin on the lake point with just enough room for a growing family. Their belongings have arrived. The living room is a collection of temporary solutions.",
     message:"We want somewhere we can both sit and breathe for a minute. Elena likes warm white; I'd love some mustard or blue. It doesn't need to be fancy. Oh, and we kept the old sideboard. It might be useful.",
     brief:[
       R('must','living','A living room to sit and breathe in',{role:'living',room:'living'},["We sat down and just… breathed. Thank you."]),
@@ -428,7 +447,7 @@ var Story = (function(){
     reply:{ low:"It's a good start. We'll make it ours.", mid:"This feels like somewhere we can actually settle in.", high:"Elena cried a little and said it was 'hormones'. I think it was the sideboard." }
   },
   { id:'THEO_02', char:'theo', title:'A Room for Us, Too', property:'THEO_HOME_A', change:'more', edit:['bedroom'],
-    requires:['THEO_01','ROSA_01'], allowance:32,
+    requires:['THEO_01','ROSA_01'], day:345, allowance:36,
     story:"The baby has arrived and so has a lot of laundry. Theo and Elena have spent their money on essentials and left their own bedroom for last. They'd love one room that's restful and adult.",
     message:"The living room still makes us happy. Could you help with our bedroom now? Elena suggested green. I'd like to keep the wood and keep it simple. And somewhere to put clothes that isn't 'the chair'.",
     brief:[
@@ -442,7 +461,7 @@ var Story = (function(){
     reply:{ low:"It's somewhere to sleep. That's a lot, right now.", mid:"Restful. Adult. That's all we asked.", high:"We slept for six hours straight. The baby did too. Is this witchcraft?" }
   },
   { id:'THEO_03', char:'theo', title:'Enough Room for Everyone', property:'THEO_HOME_B', change:'move', edit:['living','dining','bedroom'],
-    requires:['THEO_02'], minRenown:15, allowance:73,
+    requires:['THEO_02'], minRenown:15, day:380, allowance:86,
     starters:[ {room:'living', asset:'sideboard-akio-mediumwood', x:60, y:58, width:null} ],
     story:"Theo is now a co-owner of the bicycle shop and the family has moved to a bigger flat with a proper dining room. They can afford new furniture, but they brought the sideboard. It might be useful.",
     message:"We've finally got a proper dining room! I'd love us all to sit down together when family visits. Bring what still works from the old place, we don't need to start from zero. (The sideboard is back. It followed us.)",
@@ -461,7 +480,7 @@ var Story = (function(){
 
   /* ======================== ROSA ======================== */
   { id:'ROSA_01', char:'rosa', title:'Finally, the Sitting Room', property:'ROSA_HOME_A', change:'new', edit:['sitting'],
-    requires:['THEO_01'], allowance:39,
+    requires:['THEO_01'], day:88, allowance:42,
     starters:[ {room:'sitting', asset:'sideboard-nikola-darkwood', x:58, y:56, width:null} ],
     story:"Rosa retired from the theatre costume department last month and hasn't enjoyed a single beige thing since. She knows which belongings she loves and which she's tolerated for years. She wants someone who'll work with her taste, not erase it.",
     message:"I've hated that arrangement for years. The dark wood stays — I'm very attached to the sideboard. And I want proper colour: wine, ochre, something with a pattern. Retirement is no reason to turn everything beige, darling.",
@@ -476,7 +495,7 @@ var Story = (function(){
     reply:{ low:"It's a start. I'll complain about it fondly.", mid:"Plenty of colour, and it still feels like my home. Good.", high:"I sat in it and wanted to hold a small dinner party immediately. That's a compliment, darling." }
   },
   { id:'ROSA_02', char:'rosa', title:'Stay for Tea', property:'ROSA_HOME_A', change:'more', edit:['dining','guest'],
-    requires:['ROSA_01','MIA_02'], allowance:60,
+    requires:['ROSA_01','MIA_02'], day:146, allowance:68,
     story:"Rosa has started teaching small sewing classes in the village hall. Friends stay for tea afterwards, and her daughter visits at weekends. The dining room needs attention, and the guest room is 'where I put things I haven't decided about'.",
     message:"Everyone ends up staying longer now. The dining room needs some attention, and my daughter deserves better than the room where I put things I haven't decided about. Teal in her room, I think. Wine and ochre for the table.",
     brief:[
@@ -491,7 +510,7 @@ var Story = (function(){
     reply:{ low:"A fine beginning. One expects improvements.", mid:"Lovely. Now everyone will stay even longer. Good.", high:"Four people stayed until midnight. I've found the room's 'one more cup' effect. Marvellous." }
   },
   { id:'ROSA_03', char:'rosa', title:'The Little House by the Lake', property:'ROSA_CABIN_A', change:'second', edit:['living','kitchen','bedroom'],
-    requires:['ROSA_02'], minRenown:15, allowance:102,
+    requires:['ROSA_02'], minRenown:15, day:366, allowance:110,
     story:"With long-held savings and an inheritance, Rosa has bought a little cabin on the lake. She keeps her city flat. The cabin is small and bright, and calls for a lighter, breezier version of her taste.",
     message:"I want to know I'm near the water when I open the windows. I don't need little ducks on the cushions. Lighter wood, some green and blue — but don't make it anonymous, darling. A little ochre. I do have a reputation.",
     brief:[
@@ -554,101 +573,85 @@ var Story = (function(){
   // is clipped to the letter and pinned up while you decorate.
   var LETTERS = {
     MIA_01: { hello:"Hello!",
-      body:["I hope it's alright that I'm writing. Priya at the vet practice says you're the person who ‘does rooms’, and that you once made her sister's bedroom so calm she fell asleep during the tour. I have a key now. My own key. I keep taking it out of my pocket to check.",
-            "There is exactly one room I can afford to make nice, so I'd like it to be the living room: somewhere comfy to sit, a little table for tea, a lamp. I think green, and cream, and light wood, if that makes sense? And flowers. Please, flowers. I walk past the flower shop every evening and I'm told that counts as ‘stopping a lot’.",
-            "No black furniture, if you can help it, and nothing shiny and chrome. I get nervous around shiny things."],
-      bye:"Thank you so much for even reading this,", ps:"There will be cookies when you visit. There are always cookies. It's a problem." },
+      body:["Priya at the vet practice says you're the person who ‘does rooms’. I have a key now. My own key! I keep checking my pocket.",
+            "I can only afford to make one room nice, so: the living room. Somewhere comfy, a little table, a lamp. Green, cream and light wood, please. And flowers! (A florist is about to open on my street and I'm already emotionally invested.)",
+            "No black furniture or shiny chrome, please. Shiny things make me nervous."],
+      bye:"Thank you so much,", ps:"There will be cookies." },
     MIA_02: { hello:"Hello again!",
-      body:["Good news first: I passed my probation. Slightly less good news: every evening I end up in the living room you made, like a cat in the only sunny spot, because the rest of the flat still feels like a waiting room.",
-            "Could you help with the other two rooms? I'd love the bedroom soft and pink and cream, with a proper bed and somewhere to put my glasses. The little room at the end could be a reading room (a comfy seat, a lamp, a pile of books I will definitely read) and green again, please, like a tiny garden.",
-            "Flowers in both rooms. I know. I KNOW. And nothing dark if possible; I get gloomy."],
-      bye:"With thanks and a slightly bigger smile,", ps:"Jules from the art course says hi. I told them about you and they talked for forty minutes. Sorry in advance." },
+      body:["I passed my probation! And every evening I still end up in the living room you made, like a cat in the only sunny spot.",
+            "Could you do the other two rooms? A soft pink bedroom, and the little room as a reading corner, green like a tiny garden. Flowers in both, please, and nothing too dark."],
+      bye:"Thank you again,", ps:"Jules says hi. They talked about you for forty minutes." },
     MIA_03: { hello:"Dear friend,",
-      body:["Big news, and I'm writing this with flour on my fingers: Alex and I are moving in together! A real flat, with a real dining table. (We have never owned a table that wasn't also a desk.)",
-            "Alex likes navy and clean shapes. I like green and anything that smells of baking. We'd love to find the middle. Could you bring a little of my old living room with us (the green, the cream, the light wood) and add some blue for Alex? We'll need a living room, a dining room and a bedroom.",
-            "Flowers on the dining table AND in the living room; I told Alex it was non-negotiable and Alex said ‘obviously’, which is why I'm moving in with Alex. And nothing too dark, please. We're cosy people, not moody ones."],
-      bye:"Gratefully (and sticky),", ps:"I've made you a lemon loaf. It's in the post. Okay, it isn't. But it is very much in my head." },
+      body:["Alex and I are moving in together! A real flat with a real dining table. We've never owned a table that wasn't also a desk.",
+            "Alex likes navy and clean shapes; I like green and anything that smells of baking. Could you find the middle? A living room, a dining room and a bedroom. Flowers on the table, a few blue pieces for Alex, and nothing too dark. We're cosy people, not moody ones."],
+      bye:"Gratefully (and sticky),", ps:"There's a lemon loaf waiting. In my head, but still." },
 
     JULES_01: { hello:"HELLO!!",
-      body:["Mia gave me your name and a lemon cookie and said you were ‘good at rooms’. I have JUST arrived. I have one suitcase and ELEVEN boxes of paint. The paint is unpacked. The bed is… somewhere?",
-            "So: one room, and it has to do everything. The EASEL goes in first (non-negotiable), then somewhere to sleep, then somewhere to sit and stare at the ceiling when an idea won't come. I want blue, a proper cobalt, and some orange so it feels like making things is allowed. Lots of different colours. Nothing that matches. Matching is how they get you.",
-            "Please don't make it beige. BEIGE IS HOW THEY GET YOU. (I've said it twice. That's how serious it is.)"],
-      bye:"Yours in turpentine,", ps:"I drew you a tiny portrait on the back. It looks like a potato in a nice jumper. It's your best angle." },
+      body:["Mia gave me your name and a cookie. I have one suitcase and ELEVEN boxes of paint. The paint is unpacked. The bed is… somewhere?",
+            "One room that does everything. The EASEL first, then somewhere to sleep, then somewhere to sit and stare at the ceiling. Cobalt blue, some orange, lots of colours that don't match. Matching is how they get you.",
+            "Please don't make it beige. BEIGE IS HOW THEY GET YOU."],
+      bye:"Yours in turpentine,", ps:"I drew you on the back. You look like a potato in a nice jumper." },
     JULES_02: { hello:"OKAY SO,",
-      body:["SOMEONE PAID ME. Actual money. For a drawing of a heron in a raincoat. I have read the email eleven times and I've decided to believe it.",
-            "I'd like to put a little of it into my room. Keep the easel (obviously) and keep the blue, but bring in a few new things (three? four?) and could we try something lilac or pink alongside it? The Carla couch comes in lilac and I have been staring at it for days. It should still feel like MY room, just a version that pays its rent.",
-            "Less beige. I can feel it creeping back. I dream about it."],
-      bye:"Gratefully chaotic,", ps:"The heron is going on a mug. I'm going to be a mug person." },
+      body:["SOMEONE PAID ME. For a drawing of a heron in a raincoat. I've read the email eleven times.",
+            "Keep the easel and the blue, but bring in three or four new things, and could we try lilac or pink? The Carla couch comes in lilac and I've been staring at it for days. And less beige. I can feel it creeping back."],
+      bye:"Gratefully chaotic,", ps:"The heron is going on a mug." },
     JULES_03: { hello:"GUESS WHAT,",
-      body:["I GRADUATED. And a small arts grant landed in my inbox and I screamed in a library. We don't need to talk about it.",
-            "I've found a live-work loft. A DOOR THAT CLOSES. A real art room, a living room and a bedroom. The art room needs ALL the colour: the easel, something on the walls, a rainbow that has had too much coffee. The bedroom should be soft and quiet, the first calm room I've ever owned. And please, PLEASE don't let the living room look like a dentist's waiting room."],
-      bye:"Yours, slightly overwhelmed,", ps:"I'm planning an Open Studio. Nobody will come. I'll make cake. (I can't bake. Mia will have to help.)" },
+      body:["I GRADUATED. And the mill's landlord has offered me the whole top floor. A live-work loft. A DOOR THAT CLOSES.",
+            "The art room needs ALL the colour: easel, things on the walls, a rainbow that had too much coffee. The bedroom should be soft and quiet. And please don't let the living room look like a dentist's waiting room."],
+      bye:"Yours, slightly overwhelmed,", ps:"I'm planning an Open Studio. I will make cake. (I can't bake.)" },
 
     SAM_01: { hello:"Good evening,",
-      body:["I've just moved here for a better job and, in a moment my sister calls ‘optimism’, invited my entire new team to dinner on Friday. Eleven people in a flat that seats four. It's going to be wonderful.",
-            "So the kitchen comes first. Everything else can wait; the bedroom is currently a mattress with ambition. I'd like it dramatic: dark wood, burgundy, plenty of chrome and steel, a counter or an island big enough to put a party on, and a fridge that hums reassuringly. And gadgets. Spare no mixers. Three at the very least, a coffee machine that looks like it could land a plane.",
-            "No flowers, please. I'm not against them in principle, they simply wilt when I look at them. And nothing pale and rustic; I'd like the kitchen to look like somewhere something might get flambéed.",
-            "(The oven is on back-order. It has been on back-order for six weeks. We don't discuss it.)"],
-      bye:"Warmly, and in need of a whisk,", ps:"Friday, seven o'clock. Bring an appetite. That's not a request; it's an invitation." },
+      body:["I've just moved for a better job and invited my whole team to dinner on Friday. Eleven people, a flat that seats four. It'll be wonderful.",
+            "The kitchen comes first: dark wood, burgundy, plenty of chrome and steel, an island big enough to put a party on, and a fridge that hums reassuringly. And gadgets: three mixers at least. No flowers (they wilt when I look at them) and nothing pale and rustic.",
+            "(The oven is on back-order. We don't discuss it.)"],
+      bye:"Warmly, and in need of a whisk,", ps:"Friday, seven o'clock. That's an invitation, not a request." },
     SAM_02: { hello:"My friend,",
-      body:["The kitchen is a triumph. Eleven people ate in it and the only casualty was a lemon. Dinner at mine has accidentally become a Thing, and people now ask if they can ‘stay a bit longer’.",
-            "So: a proper dining table with enough seats to pretend I planned this, and a room next door to collapse in afterwards. Leather would be wonderful. Keep the dark wood and the burgundy going, add some burnt orange for sunset, a little chrome or black for the seventies. A couch, a table, a lamp. People should want to stay till 2 a.m.",
-            "Still no flowers. Still nothing pale. You know my feelings. (Velvet is also on back-order. Don't ask.)"],
-      bye:"Gratefully, and with my sleeves rolled up,", ps:"Somebody asked whether the dishwasher was a ‘feature wall’. I've decided to be flattered." },
+      body:["The kitchen is a triumph. Eleven people ate in it and the only casualty was a lemon. Now people ask if they can ‘stay a bit longer’.",
+            "A dining table with enough seats to pretend I planned this, and a room next door to collapse in. Leather, please. Keep the dark wood and burgundy, add burnt orange and a little chrome or black. Still no flowers. Still nothing pale."],
+      bye:"Gratefully,", ps:"Someone asked if the dishwasher was a ‘feature wall’. I'm flattered." },
     SAM_03: { hello:"Dear friend,",
-      body:["Two things have happened. I got promoted. And Robin (you'll have heard me mention Robin; I mention Robin often) and I have bought a place. Together. We own a dish rack. It is the best day of my life.",
-            "Robin adores my taste but would like to sleep somewhere that doesn't feel like a stage set, which is fair. So: the kitchen first, obviously, with gadgets worth bragging about. The living room in the dark wood, burgundy and leather. The bedroom lighter: cream and white, mostly, something calm.",
-            "I'd like it to feel like one home without every room being equally dramatic. A little drama is a seasoning, not a main course. (Write that down.) And no flowers. I found one in the post last week. I'm choosing to be calm."],
+      body:["I got promoted. And Robin and I have bought a place, together. We own a dish rack. Best day of my life.",
+            "Kitchen first, obviously, with gadgets worth bragging about. Dark wood, burgundy and leather in the living room. The bedroom lighter, cream and white, because Robin would like to sleep somewhere that isn't a stage set. A little drama is a seasoning, not a main course. And no flowers!"],
       bye:"Yours, in a rare moment of restraint,", ps:"Robin says I'm not allowed a second mixer. We'll see." },
 
     NOOR_01: { hello:"Hello.",
-      body:["Sam passed on your details. He described you as ‘someone who actually listens, which is rare, and possibly a witch’. I'll assume the first part.",
-            "I have moved house. That is not up for discussion. I would like one room finished: the bedroom. A bed, a bedside table. Chalk white, a little blue, pale wood. I spend ten hours a day looking at plans; I don't want my bedroom to look like one.",
-            "Fewer things, chosen well. Twelve at most; I counted. Somewhere to put things away. No busy patterns. They have opinions."],
-      bye:"Regards,", ps:"If a shelf is two centimetres off, I will know. I won't say anything. I will know." },
+      body:["Sam passed on your details. He said you actually listen. I'll assume that's true.",
+            "I've moved. That's not up for discussion. I'd like one room finished: the bedroom. A bed, a bedside table, chalk white, a little blue, pale wood. Twelve things at most; I counted. Somewhere to put things away. No busy patterns."],
+      bye:"Regards,", ps:"If a shelf is two centimetres off, I'll know." },
     NOOR_02: { hello:"Hello again.",
-      body:["The bedroom works. I said so out loud, in the office, within hearing of two colleagues. One of them dropped a stapler.",
-            "I would like the living room and the kitchen next. The same restraint, but they don't need to look identical; a room should have its own temperament. Pale wood in the living room. Steel, chrome or white in the kitchen. Keep the blue. Keep the air. Fourteen pieces a room is the ceiling.",
-            "No patterns."],
-      bye:"Regards,", ps:"My sister asked who did the bedroom. I said ‘a professional’. She said ‘a what?’. I said ‘someone good’. She's coming round on Sunday." },
+      body:["The bedroom works. I said so out loud, in the office. One colleague dropped a stapler.",
+            "Now the living room and the kitchen: the same restraint, but each with its own temperament. Pale wood in the living room; steel, chrome or white in the kitchen. Keep the blue. Fourteen pieces a room at most. No patterns."],
+      bye:"Regards,", ps:"My sister asked who did the bedroom. I said ‘someone good’." },
     NOOR_03: { hello:"Hello.",
-      body:["I have bought a flat. A converted warehouse: brick walls, tall windows, a ceiling you could lose a kite in. I intend to stay.",
-            "I'd like the furniture to feel considered. A living room I actually want to sit in at the end of the day. A quiet bedroom. And a small room to think in: a chair, a shelf, a good lamp. No desk. Desks are how work follows you home.",
-            "One good piece of stone or marble, somewhere. One. Not a collection. White, blue, grey, pale wood; twelve pieces a room at most; no patterns. You know the rest."],
-      bye:"With some warmth, which I'm told is noticeable,", ps:"The windows are 3.4 metres tall. I measured. Twice. I am very happy." },
+      body:["I have bought the top floor of my building: tall windows, a ceiling you could lose a kite in. I intend to stay.",
+            "A living room I want to sit in at the end of the day, a quiet bedroom, and a small room to think in: a chair, a shelf, a good lamp. No desk. One good piece of stone or marble. White, blue, grey, pale wood; twelve pieces a room at most; no patterns."],
+      bye:"With some warmth, which I'm told is noticeable,", ps:"The windows are 3.4 metres tall. I measured twice." },
 
     THEO_01: { hello:"Hi there!",
-      body:["Noor said you were good, and she doesn't say that about anyone, so I figured I'd write before she changes her mind.",
-            "Elena and I have found a little cabin by the pond. The baby's due in spring, our boxes have arrived, and the living room is currently a collection of ‘temporary solutions’. We'd love somewhere we can both sit and breathe for a minute.",
-            "Elena likes warm white and cream; I'd love a bit of mustard and some denim blue, and solid wood, nothing that falls over when you look at it. Practical, mostly. Nothing white to sit on, please, we're about to have a small person who throws things. And nothing breakable like vases. I once owned a vase. It's a sad story.",
-            "Oh, and we kept the old sideboard. It might be useful."],
-      bye:"Cheers!", ps:"If you ever need a bike fixed, I'm yours. No charge. It's the least I can do. I'm not great with words." },
+      body:["Noor said you were good, and she doesn't say that about anyone. Elena and I have found a little cabin on the lake. The baby's due in spring and the living room is full of ‘temporary solutions’.",
+            "We'd love somewhere to sit and breathe: warm white, a bit of mustard, denim blue, solid wood. Nothing white to sit on (small person incoming) and nothing breakable. I once owned a vase. It's a sad story. We kept the old sideboard. It might be useful."],
+      bye:"Cheers!", ps:"If you ever need a bike fixed, I'm yours. I'm not great with words." },
     THEO_02: { hello:"Hi again!",
-      body:["She's here! Seven weeks old, very loud, and has already learned to steal my heart and my socks. Elena sends a very tired thank-you for the living room. It's the only room in the flat we've sat down in since.",
-            "Our bedroom is last on the list and it's where we put the things we haven't decided about. Could you make it restful? Elena would love green and warm white, I'd keep the wood and keep it simple. A proper bed and a bedside table (not white though, mind; spills) and somewhere to put clothes that isn't ‘the chair’. We have a chair. It has become load-bearing.",
-            "Nothing fragile. We learned."],
-      bye:"Sleepily yours,", ps:"Rosa from the village hall has offered to sew the baby a little coat. I'm scared of her. Please advise." },
+      body:["She's here! Wren, seven weeks old, very loud, already stealing my heart and my socks. Elena sends a tired thank-you for the living room.",
+            "Our bedroom is last on the list. Restful, please: green and warm white, sturdy wood, a bed that isn't white, and somewhere for clothes that isn't ‘the chair’. It has become load-bearing. Nothing fragile."],
+      bye:"Sleepily yours,", ps:"Rosa has offered to sew Wren a coat. I'm scared of her." },
     THEO_03: { hello:"Hey you,",
-      body:["Two bits of news. I'm now co-owner of the bicycle shop (the old owner finally retired; he cried, I cried, the shop cat cried). And we've found a flat with a proper dining room.",
-            "I'd love for everyone to sit around one table when the family visits: grandad, aunts, the lot. A living room for naps, a dining room for noise, a bedroom for six hours of sleep, ideally in a row. Bring what still works from the old place; we don't need to start from zero. The sideboard followed us. It does that.",
-            "Same as before: warm white, green, mustard, denim blue, solid wood. Nothing fragile. Nothing white to sit on. We still have a small tornado in the house."],
-      bye:"Thank you, again and always,", ps:"Bring your bike round. I'll tune it. I won't take no for an answer." },
+      body:["Two bits of news. I'm now co-owner of the bicycle shop (the old owner cried, I cried, the shop cat cried). And we've found a flat with a proper dining room!",
+            "I'd love everyone round one table: grandad, aunts, the lot. Living room for naps, dining room for noise, bedroom for six hours of sleep. Bring what still works from the old place. The sideboard followed us. It does that. Same as before: warm white, green, mustard, denim, solid wood, nothing fragile."],
+      bye:"Thank you, again and always,", ps:"Bring your bike round. I'll tune it." },
 
     ROSA_01: { hello:"My dear,",
-      body:["I have retired from thirty-one years in the costume department of the Pennywhistle Playhouse, and I am informed that this is the moment to ‘relax’. I have never been less relaxed in my life. My sitting room has been wrong since 1998.",
-            "I'm told you listen. I hope it's true, because I have opinions. The sideboard stays (it has seen more of me than most people have), but everything else must earn its place. I require two places to sit, a table, and a lamp with some personality. And colour, darling: wine red, ochre, a splash of yellow or orange, dark wood, and something with a pattern. A rug, a cushion, a painting. One should feel dressed.",
-            "What I will not have is a pale room. Not cream. Not ‘greige’. I haven't enjoyed a beige thing since the nineties."],
-      bye:"With great expectations,", ps:"Theo from the cabin says you're good. A sweet boy. He once tried to pay me in bicycle tyres." },
+      body:["I have retired from thirty-one years in the costume department of the Playhouse and been told to ‘relax’. I have never been less relaxed. My sitting room has been wrong since 1998.",
+            "The sideboard stays. Everything else must earn its place: two places to sit, a table, and a lamp with personality. And colour, darling: wine red, ochre, dark wood and something patterned. What I will not have is a pale room. Not cream. Not ‘greige’."],
+      bye:"With great expectations,", ps:"Theo says you're good. He once tried to pay me in bicycle tyres." },
     ROSA_02: { hello:"Darling,",
-      body:["I've begun teaching small sewing classes at the village hall, and now everyone stays for tea afterwards. ‘Everyone’ is a flexible word. It is currently six people and one very opinionated dachshund.",
-            "The dining room therefore needs attention: a proper table, seats for all of us, and the mood of a stage set just before the curtain goes up. Wine, ochre, dark wood, and a touch of gold or brass, because one should always have a little gold.",
-            "My daughter visits at weekends and deserves better than the room where I put things I haven't decided about. A proper bed, a bedside table, and teal (greens and blues with cream) so she will sleep like a queen and ring me every morning to say so. And no white, darling. It's a home, not a hospital."],
-      bye:"Fondly, and with a flourish,", ps:"Mia's flowers have the whole village talking. I'd like one for the table. A small, tasteful riot." },
+      body:["I've begun teaching sewing at the village hall, and everyone stays for tea afterwards. ‘Everyone’ is currently six people and one opinionated dachshund.",
+            "The dining room needs a proper table, seats for all, and the mood of a stage set before the curtain goes up: wine, ochre, dark wood, a touch of gold. My daughter visits at weekends and deserves a proper guest room: a bed, a bedside table, and teal (greens and blues with cream). And no white. It's a home, not a hospital."],
+      bye:"Fondly, and with a flourish,", ps:"Mia's flowers have the whole village talking." },
     ROSA_03: { hello:"Darling,",
-      body:["I have done something impulsive. I have bought a house by the lake. Small, bright, slightly crooked, with a kitchen window that looks directly at the water. I'm keeping the flat in town; I'm not a monster.",
-            "It needs a lighter version of me. A living room with space for a book and the view; a kitchen with a counter, a fridge, and a table at which one can eat toast with dignity; a bedroom to be rocked to sleep in. Green, blue and cream, light wood, but don't make it anonymous. A small touch of ochre or gold. I do have a reputation.",
-            "No little ducks on the cushions; I would rather perish. And not too much dark wood. It's a lakeside cabin, not a library in a thriller."],
-      bye:"With wet boots already,", ps:"Come for tea when it's done. The kettle is yours. I've warned the ducks." }
+      body:["I have done something impulsive. I have bought a little house on the lake. Small, bright, slightly crooked, with a kitchen window that looks straight at the water. I'm keeping the flat in town; I'm not a monster.",
+            "It needs a lighter version of me: a living room for a book and the view, a kitchen with a table for toast with dignity, and a bedroom to be rocked to sleep in. Green, blue and cream, light wood, a small touch of ochre. No ducks on the cushions. And not too much dark wood. It's a cabin, not a library in a thriller."],
+      bye:"With wet boots already,", ps:"Come for tea when it's done. I've warned the ducks." }
   };
   QUESTS.forEach(function(q){ q.letter = LETTERS[q.id]; });
 
@@ -707,6 +710,190 @@ var Story = (function(){
     if (q.minRenown && renownPoints < q.minRenown) return false;
     for (var i = 0; i < q.requires.length; i++) if (!doneMap[q.requires[i]]) return false;
     return true;
+  }
+
+  /* ===================================================================== time
+     The story has a calendar. Day 0 is the date in TOWN.calendar. Every job has
+     a `day`; the town's "today" is the day of the latest job you've finished,
+     so time passes as you help your neighbours. Seasons follow the date, which
+     is how a spring / autumn / winter map can slot in later (TOWN.seasonMaps). */
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  function dateOf(day){
+    var c = TOWN.calendar, d = new Date(Date.UTC(c.year, c.month, c.day + Math.max(0, Math.round(day || 0))));
+    var wd = d.getUTCDay(), m = d.getUTCMonth(), dd = d.getUTCDate();
+    return { day:day, y:d.getUTCFullYear(), m:m, d:dd, wd:wd, monthName:MONTHS[m], weekday:WEEKDAYS[wd],
+             short: WEEKDAYS[wd].slice(0, 3) + ' ' + dd + ' ' + MONTHS[m].slice(0, 3),
+             label: WEEKDAYS[wd] + ' ' + dd + ' ' + MONTHS[m],
+             daysInMonth: new Date(Date.UTC(d.getUTCFullYear(), m + 1, 0)).getUTCDate() };
+  }
+  function seasonOf(day){
+    var m = dateOf(day).m;
+    return (m === 11 || m <= 1) ? 'winter' : (m <= 4 ? 'spring' : (m <= 7 ? 'summer' : 'autumn'));
+  }
+  // the day of the story that was reached by the jobs finished so far
+  function todayOf(doneMap){
+    var t = 0;
+    QUESTS.forEach(function(q){ if (doneMap && doneMap[q.id] && q.day > t) t = q.day; });
+    return t;
+  }
+
+  /* ----------------------------------------------------------- places & happenings */
+  // Little places that appear on the map as the story goes on. Shops stay for
+  // good. Happenings are on for `len` days from `day`. (You can't buy anything
+  // in the shops yet — the shop cards say "coming soon".)
+  var SPOTS = [
+    { id:'flowers',  kind:'shop', icon:'flower',  name:'Fennel & Fern',          x:54.3, y:54.3, day:30,
+      blurb:"A striped awning, buckets of dahlias and a very serious cat called Parsley.", soon:"Soon you'll be able to buy fresh flowers here." },
+    { id:'antiques', kind:'shop', icon:'urn',     name:'Marigold & Moss Antiques', x:46.0, y:47.0, day:70,
+      blurb:"Chairs with stories, lamps with opinions. Everything is ‘one of a kind’ and most of it is very heavy.", soon:"Soon you'll be able to hunt for one-off pieces here." },
+    { id:'gallery',  kind:'shop', icon:'frame',   name:'The Paper Moth Gallery',   x:95.2, y:40.5, day:150,
+      blurb:"Small prints, big frames, and a free glass of something fizzy on opening night.", soon:"Soon you'll be able to buy art for your rooms here." },
+    { id:'bikes',    kind:'shop', icon:'wheel',   name:'Spoke & Sprocket',         x:51.6, y:62.0, needs:'THEO_01',
+      blurb:"The bicycle shop where Theo works. There is a shop cat. It supervises.", soon:"" },
+
+    { id:'fleamarket', kind:'happening', icon:'flag', name:'Flea Market on Orchard Green', x:46.0, y:19.5, day:40, len:8,
+      blurb:"Tables of teapots, bicycle bells and one suspiciously large clock. Bring a bag." },
+    { id:'regatta',  kind:'happening', icon:'sail',   name:'Midsummer Regatta',   x:61.5, y:87.0, day:47, len:9,
+      blurb:"Sails, bunting and a prize for the most dramatic wobble." },
+    { id:'lantern',  kind:'happening', icon:'lantern', name:'Lantern Night',       x:71.8, y:9.0, day:90, len:8,
+      blurb:"Paper lanterns on the water, hot chocolate, and a lake-side neighbour who ‘didn't plan any of this’." },
+    { id:'harvest',  kind:'happening', icon:'flag',   name:'Harvest Market',      x:49.0, y:56.0, day:134, len:10,
+      blurb:"Pumpkins, chutneys and a jam stall with a queue. Old Town smells of cinnamon." },
+    { id:'lights',   kind:'happening', icon:'lantern', name:'Winter Lights',       x:30.0, y:63.0, day:200, len:16,
+      blurb:"Every window on Church Hill gets a candle. The steeple gets a star." },
+    { id:'wedding',  kind:'happening', icon:'bell',   name:"Priya & Dev's Wedding", x:33.0, y:54.0, day:300, len:33,
+      blurb:"Saturday 25 April, two o'clock, at the white church. The whole street is invited." },
+    { id:'springmarket', kind:'happening', icon:'flag', name:'Spring Flea Market', x:46.0, y:19.5, day:334, len:9,
+      blurb:"Back by popular demand. Seedlings, bunting and the large clock, still unsold." }
+  ];
+  var SPOT_BY_ID = {};
+  SPOTS.forEach(function(s){ SPOT_BY_ID[s.id] = s; s.district = (districtAt(s.x, s.y) || {}).id || null; });
+  // `jump` = {from,to}: the stretch of town time your last finished job covered. Anything that
+  // came up during that stretch is still "on" until the next job moves time along again, so
+  // a happening is never over before you've had a chance to see it.
+  function spotsAt(today, doneMap, jump){
+    return SPOTS.filter(function(s){
+      if (s.needs && !(doneMap && doneMap[s.needs])) return false;
+      var from = s.day || 0;
+      if (today < from) return false;
+      if (!s.len || today < from + s.len) return true;
+      return !!(jump && from > jump.from && from <= jump.to);
+    });
+  }
+
+  /* ----------------------------------------------------------------- events */
+  // Event cards pop up when the story reaches their day (or when a job is done).
+  // kinds: shop | happening | invite | birth | home
+  var EVENTS = [
+    { id:'e_flowers', day:30, kind:'shop', spot:'flowers', title:'A florist has opened on Canal Row',
+      lines:["Fennel & Fern has put out its striped awning and a hundred buckets of dahlias.","Parsley the shop cat is in charge of the till. Mia was seen outside before it opened. Obviously."] },
+    { id:'e_flea', day:40, kind:'happening', spot:'fleamarket', title:'Flea Market on Orchard Green',
+      lines:["Saturday morning, long tables, hand-painted signs: teapots, bicycle bells, a very large clock.","Bring a bag. Haggle politely."], tease:"Flea market on Orchard Green" },
+    { id:'e_regatta', day:47, kind:'happening', spot:'regatta', title:'Midsummer Regatta at the Harbour',
+      lines:["Bunting on every mast and a prize for the most dramatic wobble.","The harbour master has been practising his ‘ahoy’."], tease:"Midsummer Regatta at the Harbour" },
+    { id:'e_antiques', day:70, kind:'shop', spot:'antiques', title:'Antiques in Old Town',
+      lines:["Marigold & Moss has opened on the corner by the clock tower. Chairs with stories, lamps with opinions.","Everything is ‘one of a kind’. Most of it is very heavy."] },
+    { id:'e_lantern', day:90, kind:'happening', spot:'lantern', title:'Lantern Night at the Lake',
+      lines:["Paper boats with candles are set afloat at dusk. Hot chocolate by the cabins.","Bring a jumper; the lake gets cold fast."], tease:"Lantern Night at the Lake" },
+    { id:'e_harvest', day:134, kind:'happening', spot:'harvest', title:'Harvest Market in Old Town',
+      lines:["Pumpkins, chutneys and a jam stall with an actual queue.","The first red leaf landed on the clock tower on Tuesday. The market is its reward."], tease:"Harvest Market in Old Town" },
+    { id:'e_gallery', day:150, kind:'shop', spot:'gallery', title:'A gallery on the Far Shore',
+      lines:["The Paper Moth has opened in the red-brick house across the water: small prints, big frames, a very quiet owner.","Opening night: a free glass of something fizzy."] },
+    { id:'e_lights', day:200, kind:'happening', spot:'lights', title:'Winter Lights on Church Hill',
+      lines:["Every window gets a candle. The steeple gets a star.","Neighbours bring soup, and a surprising amount of tinsel."], tease:"Winter Lights on Church Hill" },
+    { id:'e_birth', day:296, kind:'birth', from:'theo', title:'Wren has arrived!',
+      lines:["Wren, born on a very rainy Tuesday morning. Loud, tiny, and already in charge.","Theo and Elena say thank you for the living room, and ask for no vases."], sign:'Theo, Elena & Wren' },
+    { id:'e_wedding', day:300, kind:'invite', spot:'wedding', from:'mia', title:'You are invited',
+      names:'Priya & Dev', lines:["are getting married.","Saturday 25 April · Two o'clock · The white church on Church Hill","Cake to follow. Tea to follow cake. Dancing to follow tea."],
+      sign:'Please say yes. There is a lemon loaf.', tease:"Priya & Dev's wedding" },
+    { id:'e_spring', day:334, kind:'happening', spot:'springmarket', title:'The flea market is back',
+      lines:["Seedlings, bunting and the very large clock, still unsold.","Spring on Orchard Green."], tease:"Spring Flea Market" },
+
+    // moves: these arrive when the matching job is finished
+    { id:'h_mia', after:'MIA_03', kind:'home', who:'mia', home:'MIA_HOME_B', title:'Mia & Alex have moved in!',
+      lines:["Keys in, boxes unpacked (mostly), a dining table with an actual tablecloth.","Mia's first flat on Canal Row is quiet now. The new place is on Church Hill."] },
+    { id:'h_jules', after:'JULES_03', kind:'home', who:'jules', home:'JULES_HOME_B', title:'Jules has moved upstairs',
+      lines:["Same mill, one staircase higher: a loft with a door that closes and a room just for paint.","The Open Studio is next Saturday. There will be cake. (Mia is baking it.)"] },
+    { id:'h_sam', after:'SAM_03', kind:'home', who:'sam', home:'SAM_HOME_B', title:'Sam & Robin bought a home',
+      lines:["Their first place together, in Old Town, with a dish rack and a very big kitchen.","The oven is, we are told, ‘on its way’."] },
+    { id:'h_noor', after:'NOOR_03', kind:'home', who:'noor', home:'NOOR_HOME_B', title:'Noor bought the top floor',
+      lines:["Same tower, a few floors higher: tall windows, a ceiling you could lose a kite in.","No desk. She was very clear."] },
+    { id:'h_theo', after:'THEO_03', kind:'home', who:'theo', home:'THEO_HOME_B', title:'Theo & Elena have a family flat',
+      lines:["A proper dining room on Orchard Rise, with space for grandad, the aunts and the sideboard.","Theo is now co-owner of Spoke & Sprocket, too."] },
+    { id:'h_rosa', after:'ROSA_03', kind:'home', who:'rosa', home:'ROSA_CABIN_A', second:true, title:'Rosa has bought a cabin',
+      lines:["A little house on the lake, with a kitchen window that looks straight at the water.","She is keeping her flat in town. ‘I am not a monster, darling.’"] }
+  ];
+  var EVENT_BY_ID = {};
+  EVENTS.forEach(function(e){
+    EVENT_BY_ID[e.id] = e;
+    if (e.after){ e.day = (QUEST_BY_ID_EARLY(e.after) || {}).day || 0; }
+  });
+  function QUEST_BY_ID_EARLY(id){ for (var i = 0; i < QUESTS.length; i++) if (QUESTS[i].id === id) return QUESTS[i]; return null; }
+  // events that are due: their day has come (or their job is done) and they haven't been shown
+  function eventsDue(today, doneMap, seen){
+    var s = {}; (seen || []).forEach(function(id){ s[id] = true; });
+    return EVENTS.filter(function(e){
+      if (s[e.id]) return false;
+      return e.after ? !!(doneMap && doneMap[e.after]) : e.day <= today;
+    }).sort(function(a, b){ return a.day - b.day; });
+  }
+  // what's coming up in the next few weeks (for the calendar)
+  function upcoming(today, doneMap, horizon){
+    return EVENTS.filter(function(e){ return !e.after && e.tease && e.day > today && e.day <= today + (horizon || 45); })
+      .sort(function(a, b){ return a.day - b.day; });
+  }
+  // what already happened, for the calendar's month view
+  function pastEvents(today, doneMap){
+    return EVENTS.filter(function(e){ return e.after ? !!(doneMap && doneMap[e.after]) : e.day <= today; });
+  }
+
+  /* ------------------------------------------------------------- newspaper */
+  // "The Cove Courier": an issue appears once the story reaches its day.
+  var NEWS = [
+    { day:0, lead:{ h:"Pennywhistle Cove Wakes Up Slowly", t:"The bakery opens at seven, the clock tower runs four minutes fast, and nobody minds. New neighbours are arriving all week, say the removal vans." },
+      items:[ {h:"Pigeon census", t:"Up by twelve. The council blames the bakery."}, {h:"Lost", t:"One blue bicycle bell. Reward: a lemon cookie."} ],
+      notice:"WANTED: someone who is good with rooms. Apply anywhere in the Cove." },
+    { day:30, lead:{ h:"A Florist for Canal Row", t:"Fennel & Fern opened its striped awning today with a hundred buckets of dahlias and one cat. Early customers described the queue as ‘polite but hungry for tulips’.", spot:'flowers' },
+      items:[ {h:"Dinner parties", t:"A flat in Glass Row now seats eleven. The neighbours are ‘delighted, mostly’."}, {h:"Harbour notice", t:"Starboard is the right-hand side. Please stop asking."} ],
+      notice:"FOR SALE: bicycle, hardly ridden. Ask for Theo." },
+    { day:60, lead:{ h:"Flea Market Sells Out of Teapots", t:"By ten o'clock on Saturday there wasn't a teapot left on Orchard Green. One shopper went home with a grandfather clock and no plan.", spot:'fleamarket' },
+      items:[ {h:"Regatta results", t:"First place: the boat that stayed upright. Second: a very wobbly one."}, {h:"Weather", t:"Hottest week on record. The canal ducks are reported to be ‘sulking’."} ],
+      notice:"OPEN MIC Thursday at the harbour café. Bring a song, or a snack." },
+    { day:90, lead:{ h:"Antiques Arrive in Old Town", t:"Marigold & Moss has opened on the corner by the clock tower. Every item is ‘one of a kind’ and most are extremely heavy. Browsers are advised to bring a friend.", spot:'antiques' },
+      items:[ {h:"Lantern Night", t:"This Saturday at the lake. Paper boats, hot chocolate, jumpers."}, {h:"Bike clinic", t:"Free tune-ups at Spoke & Sprocket for anyone who can find their bike."} ],
+      notice:"LOST: one cat, answers to ‘Parsley’. Does not answer." },
+    { day:120, lead:{ h:"Autumn Arrives, Tidily", t:"The first red leaf landed on the clock tower on Tuesday. The Courier welcomes it and asks the others to follow in an orderly fashion.", },
+      items:[ {h:"Sewing classes", t:"Full. The waiting list is now one dachshund."}, {h:"Harbour", t:"The summer sails are coming down. The winter coats are going on."} ],
+      notice:"SOUP SWAP Sunday, Church Hill. Bring a ladle." },
+    { day:150, lead:{ h:"Art Across the Water", t:"The Paper Moth Gallery has opened on the Far Shore, in the red-brick house with the green door. Prints are small, frames are big, the owner is shy.", spot:'gallery' },
+      items:[ {h:"Harvest Market", t:"The jam stall queue reached the clock tower. A new record."}, {h:"Pumpkins", t:"Carving results: ‘surprisingly anatomical’."} ],
+      notice:"EXTRA FERRY on Saturdays. It will be late, as always." },
+    { day:180, lead:{ h:"Candles in Every Window", t:"Church Hill is stringing up its Winter Lights: a candle in every window and a star on the steeple. Soup will be provided by anyone with a pot.", spot:'lights' },
+      items:[ {h:"First frost", t:"The canal has a thin glass lid. The ducks are unbothered."}, {h:"Mills", t:"Waiting list for a window seat in the old lofts. Longer than the stairs."} ],
+      notice:"LOST: one mitten, red. Possibly on the clock tower." },
+    { day:210, lead:{ h:"The Year in Review", t:"Looking back: a florist, an antiques shop, a gallery, two markets and a great many casseroles. The Cove has had a busy seven months, and a very good season for cake.", },
+      items:[ {h:"New Year's swim", t:"Cancelled due to common sense."}, {h:"Resolutions", t:"The bakery reports a 300% rise in ‘just one more’."} ],
+      notice:"THANK YOU to whoever left soup on the clock tower steps." },
+    { day:240, lead:{ h:"Snow Day", t:"School is closed, the bakery is open, and the ducks are furious. Chimneys all over town are smoking happily, the lake-side cabins most of all.", },
+      items:[ {h:"Hot soup index", t:"Rising. Alarmingly."}, {h:"Sledges", t:"The hill behind the church is officially ‘fast’."} ],
+      notice:"FOUND: one sledge. Not yours. Very good sledge." },
+    { day:270, lead:{ h:"Thaw!", t:"The first crocus appeared on Orchard Rise this morning, to cheers from a cat. The canal has un-frozen. The ducks have forgiven everyone.", },
+      items:[ {h:"Window boxes", t:"Planting season is officially open. Neighbours are asked not to overdo the geraniums."}, {h:"Ferry", t:"Back on schedule. Almost."} ],
+      notice:"SEEDLINGS free outside Fennel & Fern, Saturday." },
+    { day:300, lead:{ h:"A Wedding Invitation Goes Round Town", t:"Priya (of the vet practice) and Dev will marry at the white church on Saturday 25 April, and the whole street is invited. The bakery has been warned about the cake.", spot:'wedding' },
+      items:[ {h:"Spring flea market", t:"Returns in May. The large clock is still unsold."}, {h:"A new arrival", t:"Wren, 3.1 kilos, loud. Mother, father and the shop cat are doing well."} ],
+      notice:"CONFETTI: biodegradable, please." },
+    { day:330, lead:{ h:"Wedding Bells (and One Dropped Cake)", t:"The church was full, the sun came out for the vows, and the three-tier lemon cake survived all but one corner. Priya and Dev left in a bicycle sidecar.", },
+      items:[ {h:"Dancing", t:"Went on until the ducks complained."}, {h:"Flowers", t:"The church smelled of peonies. Fennel & Fern sold out."} ],
+      notice:"THANK YOU to everyone who stayed to wash up." },
+    { day:360, lead:{ h:"A Whole Year in the Cove", t:"A year ago the removal vans started arriving. Today the clock tower is still four minutes fast, the harbour is full of sails, and the neighbours know whose bicycle is whose.", },
+      items:[ {h:"Midsummer", t:"The regatta is back on the calendar. Please practise your wobble."}, {h:"Lake", t:"Cabin windows are open again. Ducks have been told."} ],
+      notice:"WANTED (again): someone who is good with rooms. You know who you are." }
+  ];
+  function issuesAt(today){
+    var list = NEWS.map(function(n, i){ n.no = i + 1; return n; });
+    return list.filter(function(n){ return n.day <= today; }).sort(function(a, b){ return b.day - a.day; });
   }
 
   /* -------------------------------------------------------------- scoring */
@@ -960,6 +1147,6 @@ var Story = (function(){
     questById: questById, questsOf: questsOf, isUnlocked: isUnlocked,
     giftsEarned: giftsEarned, giftOwner: giftOwner, REWARDS: REWARDS, VOICES: VOICES,
     starsFor: starsFor, isKind: isKind,
-    evaluate: evaluate, quality: quality, qualityDetail: qualityDetail, analyze: analyze, districtAt: districtAt, heartsFor: heartsFor, buildReply: buildReply
+    evaluate: evaluate, quality: quality, qualityDetail: qualityDetail, analyze: analyze, districtAt: districtAt, dateOf: dateOf, seasonOf: seasonOf, todayOf: todayOf, SPOTS: SPOTS, spotById: function(id){ return SPOT_BY_ID[id] || null; }, spotsAt: spotsAt, EVENTS: EVENTS, eventById: function(id){ return EVENT_BY_ID[id] || null; }, eventsDue: eventsDue, upcoming: upcoming, pastEvents: pastEvents, NEWS: NEWS, issuesAt: issuesAt, heartsFor: heartsFor, buildReply: buildReply
   };
 })();
