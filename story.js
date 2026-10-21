@@ -12,7 +12,7 @@
    are matched by item id / category below. If an item is added or renamed in
    data.js, only the KINDS table has to learn about it.
    ========================================================================== */
-var STORY_FILE_VERSION = '0.7.0'; // stamped by the build, shown on the title screen
+var STORY_FILE_VERSION = '0.8.0'; // stamped by the build, shown on the title screen
 var Story = (function(){
 
   /* ------------------------------------------------------------------ town */
@@ -206,6 +206,7 @@ var Story = (function(){
   // Every item is worth 1-5 stars. Most things are 1-3; a few really special
   // pieces are 4-5 and only unlock as your renown grows.
   var STAR_RULES = [
+    [/^desk-/, 3], [/^grand-piano/, 4], [/^piano-/, 3], [/^drums-/, 2],
     [/^fireplace/, 4], [/^chandelier/, 3], [/^(couch|sofa)-/, 3], [/^armchair-/, 2], [/^chair-/, 2], [/^stool-/, 1],
     [/^bed-/, 2], [/^bedding-/, 2], [/^bedsidetable-/, 2], [/^sidetable-/, 1], [/couchtable/, 2], [/^diningtable-/, 3],
     [/^(sideboard|cabinet)-/, 3], [/^bookshelf-/, 3], [/^wallshelf-/, 2],

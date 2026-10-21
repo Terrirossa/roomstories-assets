@@ -2481,7 +2481,7 @@
   <div class="title-scrim"></div>
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
-    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.7.0 &middot; Side Drawers</div>
+    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.8.0 &middot; Food & Hobbies</div>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
     <button class="title-fresh-link title-newstory-link" id="titleNewStoryBtn" type="button" style="display:none;">Or begin a brand new story</button>
@@ -2760,8 +2760,8 @@
   </div>
 </div>
 
-<script src="data.js?v=0.7.0"></script>
-<script src="story.js?v=0.7.0"></script>
+<script src="data.js?v=0.8.0"></script>
+<script src="story.js?v=0.8.0"></script>
 <script>
 (function(){
   "use strict";
@@ -2781,6 +2781,26 @@
     { id:'decor', label:'Decor' },
     { id:'textiles', label:'Textiles' },
   ];
+  // The tray tabs. They are only for finding things: an item's own `tab` (in data.js) decides which
+  // tab it sits in, and falls back to its category. Categories stay as they are because the
+  // achievements, the score and the story all use them.
+  var TABS = [
+    { id:'seating', label:'Seating' },
+    { id:'bed', label:'Bed' },
+    { id:'kitchen', label:'Kitchen' },
+    { id:'food', label:'Food' },
+    { id:'tables', label:'Tables' },
+    { id:'storage', label:'Storage' },
+    { id:'lighting', label:'Lighting' },
+    { id:'rugs', label:'Rugs' },
+    { id:'wall-art', label:'Wall Art' },
+    { id:'curtains', label:'Curtains' },
+    { id:'plants', label:'Plants' },
+    { id:'decor', label:'Decor' },
+    { id:'hobbies', label:'Hobbies' },
+    { id:'textiles', label:'Textiles' },
+  ];
+  function tabOf(item){ return item.tab || item.category; }
 
   /* ---------------- color-variant families ----------------
      Items that are the same piece in different colors (e.g. "Hale Couch
@@ -2827,7 +2847,8 @@
     'curtain-siri-darkbrown': 'curtains::curtain-siri',
     'book-collection-blue-21': 'decor::book-collection',
     'book-collection-blue-22': 'decor::book-collection',
-    'book-collection-earthy': 'decor::book-collection'
+    'book-collection-earthy': 'decor::book-collection',
+    'lamp-heidi-creme': 'lighting::lamp-heidi'
   };
   // some items carry a size modifier after the color in their id (e.g.
   // "couch-hennes-beige-long" / "...-short") rather than the color being
@@ -3700,7 +3721,7 @@
   /* ---------------- render: tray ---------------- */
   function renderTabs(){
     trayTabs.innerHTML = '';
-    CATEGORIES.forEach(function(cat){
+    TABS.forEach(function(cat){
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'tab' + (cat.id===state.activeCategory ? ' active' : '');
@@ -3746,7 +3767,7 @@
   function renderTray(){ trayFlyoutPending = null; renderTrayInner(); syncFlyout(); }
   function renderTrayInner(){
     trayGrid.innerHTML = '';
-    var itemsInCat = ITEMS.filter(function(it){ return it.category===state.activeCategory; });
+    var itemsInCat = ITEMS.filter(function(it){ return tabOf(it)===state.activeCategory; });
     var filtering = !!(state.styleFilter || state.colorFilter);
     if (state.styleFilter){
       itemsInCat = itemsInCat.filter(function(it){ return it.style1===state.styleFilter || it.style2===state.styleFilter; });
@@ -7162,7 +7183,7 @@
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   // version check: shows which build of each file is live, so a stale upload or cache is obvious
   (function(){
-    var want = '0.7.0', box = document.getElementById('titleFiles');
+    var want = '0.8.0', box = document.getElementById('titleFiles');
     var d = (typeof DATA_FILE_VERSION !== 'undefined') ? DATA_FILE_VERSION : null;
     var st = (typeof STORY_FILE_VERSION !== 'undefined') ? STORY_FILE_VERSION : null;
     var stale = [];
@@ -7172,7 +7193,7 @@
       box.className = 'title-files stale';
       box.textContent = 'Not up to date: ' + stale.join(', ') + '. Upload it, then refresh.';
     } else {
-      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 21 Oct, 16:37';
+      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 21 Oct, 20:48';
     }
   })();
   renderRoomGrid();
