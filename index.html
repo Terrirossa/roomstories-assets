@@ -992,8 +992,6 @@
      reveals the rest (see renderGroupCard) so the tray doesn't need a
      separate slot per color */
   .sticker-group{ display:contents; }
-  .sticker-group.expanded{ display:block; grid-column:1 / -1; }
-  .sticker-group.expanded .sticker-primary{ max-width:calc(50% - 4px); }
   .sticker-primary{ position:relative; }
   .variant-dots{
     display:flex;
@@ -1008,16 +1006,42 @@
     border-radius:50%;
     box-shadow:0 0 0 1px rgba(54,43,34,.18), inset 0 0 0 1px rgba(255,255,255,.35);
   }
-  .sticker-group.expanded .sticker-primary{
+  .sticker-primary.open{
     box-shadow:0 0 0 1.5px var(--gold);
   }
-  .variant-row{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(70px, 1fr));
-    gap:8px;
-    margin-top:8px;
-    padding-top:8px;
-    border-top:1px dashed var(--line-strong);
+  /* the other colours open in a little panel beside the tray, so the tray itself never jumps */
+  .variant-flyout{
+    position:fixed;
+    z-index:3100;
+    width:178px;
+    max-height:min(70vh, 520px);
+    display:none;
+    flex-direction:column;
+    padding:9px 9px 9px;
+    background:var(--glass-bg);
+    backdrop-filter:blur(20px) saturate(160%);
+    -webkit-backdrop-filter:blur(20px) saturate(160%);
+    border:1px solid var(--glass-border);
+    border-radius:18px;
+    box-shadow:0 14px 40px rgba(20,15,10,.32), inset 0 1px 0 rgba(255,255,255,.35);
+    animation:flyoutIn .14s ease;
+  }
+  .variant-flyout.show{ display:flex; }
+  @keyframes flyoutIn{ from{ opacity:0; transform:translateX(var(--fly-from,8px)); } to{ opacity:1; transform:none; } }
+  .variant-flyout-head{
+    display:flex; align-items:center; justify-content:space-between; gap:6px;
+    margin:0 2px 7px;
+    font-size:11.5px; font-weight:700; color:var(--ink-70);
+  }
+  .variant-flyout-head span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .variant-flyout-close{
+    flex:none; width:20px; height:20px; border:none; border-radius:50%;
+    background:rgba(54,43,34,.08); color:var(--ink-55); font-size:13px; line-height:1; cursor:pointer;
+  }
+  .variant-flyout-close:hover{ background:rgba(54,43,34,.16); color:var(--ink); }
+  .variant-flyout-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+    overflow-y:auto; padding-right:2px;
   }
 
   /* mute toggle */
@@ -2442,7 +2466,7 @@
   @media (max-width:420px){ .cal-months{ grid-template-columns:repeat(2,1fr); } }
 
 /* ROUND 5: drifting cloud shadows (one small canvas, scaled to the stage) */
-.town-clouds{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:.3; display:block; }
+.town-clouds{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:.4; display:block; }
 .town-clouds.multiply{ mix-blend-mode:multiply; }
 
 </style>
@@ -2457,7 +2481,7 @@
   <div class="title-scrim"></div>
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
-    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.6.0 &middot; Lantern Lane</div>
+    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.7.0 &middot; Side Drawers</div>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
     <button class="title-fresh-link title-newstory-link" id="titleNewStoryBtn" type="button" style="display:none;">Or begin a brand new story</button>
@@ -2736,8 +2760,8 @@
   </div>
 </div>
 
-<script src="data.js?v=0.6.0"></script>
-<script src="story.js?v=0.6.0"></script>
+<script src="data.js?v=0.7.0"></script>
+<script src="story.js?v=0.7.0"></script>
 <script>
 (function(){
   "use strict";
@@ -3719,7 +3743,8 @@
     });
   }
 
-  function renderTray(){
+  function renderTray(){ trayFlyoutPending = null; renderTrayInner(); syncFlyout(); }
+  function renderTrayInner(){
     trayGrid.innerHTML = '';
     var itemsInCat = ITEMS.filter(function(it){ return it.category===state.activeCategory; });
     var filtering = !!(state.styleFilter || state.colorFilter);
@@ -3779,57 +3804,115 @@
     var primary = group.primary, variants = group.variants;
     var expanded = state.expandedGroup === group.key;
     var wrap = document.createElement('div');
-    wrap.className = 'sticker-group' + (expanded ? ' expanded' : '');
+    wrap.className = 'sticker-group';
 
     var card = document.createElement('div');
-    card.className = 'sticker sticker-primary';
+    card.className = 'sticker sticker-primary' + (expanded ? ' open' : '');
     card.style.setProperty('--tilt', tiltFor(primary.id)+'deg');
     card.innerHTML =
       '<div class="sticker-thumb"><img src="'+primary.src+'" alt="" loading="lazy" decoding="async">'+attributePillsHtml(primary)+'</div>' +
       '<div class="sticker-label">'+group.label+'</div>' +
       '<div class="variant-dots">' + variants.map(function(v){ return '<span class="variant-dot" style="'+swatchStyleFor(v.color)+'"></span>'; }).join('') + '</div>';
     // dragging still places this exact color immediately; a plain tap
-    // toggles the other colors open instead of placing right away
+    // opens the other colors in the side panel instead of placing right away
     card.addEventListener('pointerdown', function(e){
-      startTrayDrag(e, primary, card, function(){
-        state.expandedGroup = expanded ? null : group.key;
-        renderTray();
-      });
+      startTrayDrag(e, primary, card, function(){ toggleFlyout(group, card); });
     });
     storyDecorateCard(card, primary);
     wrap.appendChild(card);
-
-    if (expanded){
-      var row = document.createElement('div');
-      row.className = 'variant-row';
-      variants.forEach(function(v){
-        var vcard = document.createElement('div');
-        vcard.className = 'sticker';
-        vcard.style.setProperty('--tilt', tiltFor(v.id)+'deg');
-        vcard.innerHTML =
-          '<div class="sticker-thumb"><img src="'+v.src+'" alt="" loading="lazy" decoding="async">'+attributePillsHtml(v)+'</div>' +
-          '<div class="sticker-label">'+v.color+'</div>';
-        vcard.addEventListener('pointerdown', function(e){ startTrayDrag(e, v, vcard); });
-        storyDecorateCard(vcard, v);
-        row.appendChild(vcard);
-      });
-      wrap.appendChild(row);
-    }
+    if (expanded) trayFlyoutPending = { group:group, card:card };
 
     trayGrid.appendChild(wrap);
   }
+
+  /* ---------------- colour variants: side panel next to the tray ---------------- */
+  var trayFlyoutPending = null;
+  var flyoutEl = null, flyoutCard = null;
+  function flyoutNode(){
+    if (flyoutEl) return flyoutEl;
+    flyoutEl = document.createElement('div');
+    flyoutEl.className = 'variant-flyout';
+    flyoutEl.setAttribute('role', 'group');
+    document.body.appendChild(flyoutEl);
+    return flyoutEl;
+  }
+  function closeFlyout(){
+    state.expandedGroup = null;
+    if (flyoutEl) flyoutEl.classList.remove('show');
+    if (flyoutCard){ flyoutCard.classList.remove('open'); flyoutCard = null; }
+  }
+  function toggleFlyout(group, card){
+    if (state.expandedGroup === group.key){ closeFlyout(); return; }
+    if (flyoutCard) flyoutCard.classList.remove('open');
+    openFlyout(group, card);
+  }
+  function openFlyout(group, card){
+    var fly = flyoutNode();
+    state.expandedGroup = group.key;
+    flyoutCard = card; card.classList.add('open');
+    fly.innerHTML = '<div class="variant-flyout-head"><span></span><button class="variant-flyout-close" type="button" aria-label="Close">\u00d7</button></div><div class="variant-flyout-grid"></div>';
+    fly.querySelector('.variant-flyout-head span').textContent = group.label;
+    fly.querySelector('.variant-flyout-close').addEventListener('click', closeFlyout);
+    var grid = fly.querySelector('.variant-flyout-grid');
+    group.variants.forEach(function(v){
+      var vcard = document.createElement('div');
+      vcard.className = 'sticker';
+      vcard.style.setProperty('--tilt', tiltFor(v.id)+'deg');
+      vcard.innerHTML =
+        '<div class="sticker-thumb"><img src="'+v.src+'" alt="" decoding="async">'+attributePillsHtml(v)+'</div>' +
+        '<div class="sticker-label">'+v.color+'</div>';
+      vcard.addEventListener('pointerdown', function(e){ startTrayDrag(e, v, vcard); });
+      storyDecorateCard(vcard, v);
+      grid.appendChild(vcard);
+    });
+    fly.classList.add('show');
+    positionFlyout();
+  }
+  function positionFlyout(){
+    if (!flyoutEl || !flyoutEl.classList.contains('show')) return;
+    if (!flyoutCard || !flyoutCard.isConnected || !state.trayOpen){ closeFlyout(); return; }
+    var cr = flyoutCard.getBoundingClientRect(), gr = trayGrid.getBoundingClientRect(), pr = trayPanel.getBoundingClientRect();
+    if (cr.bottom < gr.top + 8 || cr.top > gr.bottom - 8){ closeFlyout(); return; }
+    var fr = flyoutEl.getBoundingClientRect(), gap = 8;
+    // open on whichever side of the tray has more room (normally the room side, to its left)
+    var spaceLeft = pr.left, spaceRight = window.innerWidth - pr.right;
+    var toLeft = spaceLeft >= fr.width + gap || spaceLeft >= spaceRight;
+    var left = toLeft ? pr.left - fr.width - gap : pr.right + gap;
+    left = clamp(left, 4, Math.max(4, window.innerWidth - fr.width - 4));
+    var top = clamp(cr.top - 6, 4, Math.max(4, window.innerHeight - fr.height - 4));
+    flyoutEl.style.left = left + 'px';
+    flyoutEl.style.top = top + 'px';
+    flyoutEl.style.setProperty('--fly-from', toLeft ? '8px' : '-8px');
+  }
+  function syncFlyout(){
+    var pend = trayFlyoutPending; trayFlyoutPending = null;
+    if (pend && state.expandedGroup === pend.group.key){
+      if (flyoutCard && flyoutCard !== pend.card) flyoutCard.classList.remove('open');
+      openFlyout(pend.group, pend.card);
+    } else closeFlyout();
+  }
+  trayGrid.addEventListener('scroll', positionFlyout, { passive:true });
+  window.addEventListener('resize', positionFlyout);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && state.expandedGroup) closeFlyout(); });
+  document.addEventListener('pointerdown', function(e){
+    if (!state.expandedGroup || !flyoutEl) return;
+    var t = e.target;
+    if (flyoutEl.contains(t) || (t.closest && (t.closest('.sticker-primary') || t.closest('.tray-drag-handle')))) return;
+    closeFlyout();
+  }, true);
 
   /* ---------------- hit-testing helper (glass tray floats over the stage) ---------------- */
   function roomStageAtPoint(x, y){
     var topEl = document.elementFromPoint(x, y);
     if (!topEl) return null;
-    if (topEl.closest('.tray-panel') || topEl.closest('.tray-toggle') || topEl.closest('.builder-topbar')) return null;
+    if (topEl.closest('.tray-panel') || topEl.closest('.variant-flyout') || topEl.closest('.tray-toggle') || topEl.closest('.builder-topbar')) return null;
     return topEl.closest('.room-stage');
   }
 
   /* ---------------- show / hide the items panel ---------------- */
   function setTrayOpen(open){
     state.trayOpen = open;
+    if (!open) closeFlyout();
     trayPanel.classList.toggle('hidden', !open);
     trayToggle.classList.toggle('open', open);
     trayToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -3869,6 +3952,7 @@
     var newTop = clamp(trayPanelDrag.startTop + dy, 4, window.innerHeight - rect.height - 4);
     trayPanel.style.left = newLeft + 'px';
     trayPanel.style.top = newTop + 'px';
+    positionFlyout();
   }
   function onTrayPanelDragEnd(e){
     if (!trayPanelDrag || e.pointerId !== trayPanelDrag.pointerId) return;
@@ -6779,8 +6863,10 @@
         // white -> transparent, dark -> a soft blue-grey shadow (cheaper than blending every frame)
         var d = tc.getImageData(0, 0, tile.width, H), px = d.data;
         for (var i = 0; i < px.length; i += 4){
-          var a = 255 - (px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11);
-          px[i] = 14; px[i + 1] = 24; px[i + 2] = 44; px[i + 3] = a < 0 ? 0 : a;
+          var dk = (255 - (px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11)) / 255;
+          // steeper edge so a shadow reads as a cloud-shaped patch with clear sky around it, not as a general dimming
+          var t = (dk - 0.22) / 0.5; t = t < 0 ? 0 : (t > 1 ? 1 : t);
+          px[i] = 14; px[i + 1] = 24; px[i + 2] = 44; px[i + 3] = t * t * (3 - 2 * t) * 255;
         }
         tc.putImageData(d, 0, 0);
       } catch (err) {
@@ -7076,7 +7162,7 @@
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   // version check: shows which build of each file is live, so a stale upload or cache is obvious
   (function(){
-    var want = '0.6.0', box = document.getElementById('titleFiles');
+    var want = '0.7.0', box = document.getElementById('titleFiles');
     var d = (typeof DATA_FILE_VERSION !== 'undefined') ? DATA_FILE_VERSION : null;
     var st = (typeof STORY_FILE_VERSION !== 'undefined') ? STORY_FILE_VERSION : null;
     var stale = [];
@@ -7086,7 +7172,7 @@
       box.className = 'title-files stale';
       box.textContent = 'Not up to date: ' + stale.join(', ') + '. Upload it, then refresh.';
     } else {
-      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 21 Oct, 15:56';
+      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 21 Oct, 16:37';
     }
   })();
   renderRoomGrid();
