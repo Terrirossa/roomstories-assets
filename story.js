@@ -12,7 +12,7 @@
    are matched by item id / category below. If an item is added or renamed in
    data.js, only the KINDS table has to learn about it.
    ========================================================================== */
-var STORY_FILE_VERSION = '0.12.0'; // stamped by the build, shown on the title screen
+var STORY_FILE_VERSION = '0.13.0'; // stamped by the build, shown on the title screen
 var Story = (function(){
 
   /* ------------------------------------------------------------------ town */
@@ -64,6 +64,13 @@ var Story = (function(){
     ]
   };
 
+  // D(m) = the story day of the 2nd of month m (0 = June 2025). Jobs, shops and
+  // happenings are all pinned to months, so the three years read as a calendar.
+  function D(m){
+    var c = TOWN.calendar;
+    return Math.round((Date.UTC(c.year, c.month + m, c.day) - Date.UTC(c.year, c.month, c.day)) / 86400000);
+  }
+
   // renown = the sum of hearts you've earned. It unlocks fancier (more
   // starry) furniture and more neighbours.
   var RENOWN_LEVELS = [
@@ -81,17 +88,17 @@ var Story = (function(){
   /* ------------------------------------------------------------ characters */
   // `color` is the accent used for their map pin and letters.
   var CHARACTERS = {
-    mia:   { id:'mia',   name:'Mia',   age:24, job:'Vet receptionist',        color:'#8fb996',
+    mia:   { id:'mia',   name:'Mia',   age:24, bday:9, job:'Vet receptionist',        color:'#8fb996',
              blurb:"Just got her own keys. Shy, bakes a lot, can't walk past a flower shop." },
-    jules: { id:'jules', name:'Jules', age:22, job:'Illustration student',    color:'#4f7fd6',
+    jules: { id:'jules', name:'Jules', age:22, bday:2, job:'Illustration student',    color:'#4f7fd6',
              blurb:"Arrived with a suitcase and eleven boxes of paint. The paint was unpacked first." },
-    sam:   { id:'sam',   name:'Sam',   age:35, job:'Events producer',         color:'#a8454f',
+    sam:   { id:'sam',   name:'Sam',   age:35, bday:7, job:'Events producer',         color:'#a8454f',
              blurb:"Confident, generous, plans a dinner for twelve in a flat that seats four." },
-    noor:  { id:'noor',  name:'Noor',  age:40, job:'Architect',               color:'#4a5f7a',
+    noor:  { id:'noor',  name:'Noor',  age:40, bday:0, job:'Architect',               color:'#4a5f7a',
              blurb:"Dry, precise, secretly funny. Can tell when a shelf is two centimetres off." },
-    theo:  { id:'theo',  name:'Theo',  age:29, job:'Baker',        color:'#d9a441',
+    theo:  { id:'theo',  name:'Theo',  age:29, bday:10, job:'Baker',        color:'#d9a441',
              blurb:"Keeps everything 'because it might be useful'. About to become a dad." },
-    rosa:  { id:'rosa',  name:'Rosa',  age:68, job:'Retired costume maker',   color:'#7a3b5e',
+    rosa:  { id:'rosa',  name:'Rosa',  age:68, bday:11, job:'Retired costume maker',   color:'#7a3b5e',
              blurb:"Theatrical, outspoken, wonderful. Has opinions about workmanship and about you." }
   };
   // mood steers how "nice" is judged: cohesive = a calm, related palette;
@@ -104,52 +111,72 @@ var Story = (function(){
   // only unlocks the rooms it lists in `edit`. Doors are chosen so
   // neighbouring rooms connect: right door -> next room's left door.
   var PROPERTIES = {
+    /* ---- Mia ---- */
     MIA_HOME_A:    { owner:'mia',   name:"Mia's first flat",       family:'modern', district:'canal', map:{x:59.5,y:63},
                      rooms:[ {key:'living',  label:'Living room', arch:'twowindows-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'bigwindow-bothdoors'},
-                             {key:'spare',   label:'Little spare room', arch:'onewindow-leftdoor'} ] },
-    MIA_HOME_B:    { owner:'mia',   name:"Mia & Alex's flat",      family:'sunlit-living-room-twin-windows', district:'church', map:{x:21,y:58},
+                             {key:'green',   label:'The little green room', arch:'onewindow-leftdoor'} ] },
+    MIA_HOME_B:    { owner:'mia',   name:"Mia & Alex's garden flat", family:'sunlit-living-room-twin-windows', district:'church', map:{x:21,y:58},
                      rooms:[ {key:'living',  label:'Living room', arch:'both-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'left-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'right-leftdoor'} ] },
+    /* ---- Jules ---- */
     JULES_HOME_A:  { owner:'jules', name:"Jules's attic studio",    family:'historic', district:'mills', map:{x:83,y:64},
                      rooms:[ {key:'studio',  label:'The studio',  arch:'onewindow-nodoors'} ] },
-    JULES_HOME_B:  { owner:'jules', name:"Jules's top-floor loft", family:'loft', district:'mills', map:{x:88,y:63},
+    JULES_HOME_B:  { owner:'jules', name:"Jules's studio flat",     family:'historic', district:'mills', map:{x:79,y:72},
+                     rooms:[ {key:'art',     label:'The painting room', arch:'twowindows-rightdoor'},
+                             {key:'living',  label:'Living & sleeping', arch:'roundwindow-leftdoor'} ] },
+    JULES_LOFT:    { owner:'jules', name:"Jules's top-floor loft", family:'loft', district:'mills', map:{x:88,y:63},
                      rooms:[ {key:'living',  label:'Living room', arch:'threewindows-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'twowindows-bothdoors'},
                              {key:'art',     label:'Art room',    arch:'onewindow-leftdoor'} ] },
+    /* ---- Sam ---- */
     SAM_HOME_A:    { owner:'sam',   name:"Sam's city apartment",   family:'brutalist', district:'glass', map:{x:75,y:38},
                      rooms:[ {key:'kitchen', label:'Kitchen',     arch:'bigwindow-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'twowindows-bothdoors'},
-                             {key:'living',  label:'Living room', arch:'rightwindow-leftdoor'} ] },
+                             {key:'living',  label:'Living room', arch:'bigwindow-bothdoors'},
+                             {key:'bedroom', label:'Bedroom',     arch:'rightwindow-leftdoor'} ] },
+    SAM_OFFICE:    { owner:'sam',   name:"Sam & Co. Events",       family:'brutalist', district:'glass', map:{x:80,y:33}, work:true,
+                     rooms:[ {key:'office',  label:'The office',  arch:'twowindows-nodoors'} ] },
     SAM_HOME_B:    { owner:'sam',   name:"Sam & Robin's home",     family:'historic', district:'oldtown', map:{x:44,y:35},
                      rooms:[ {key:'kitchen', label:'Kitchen',     arch:'twowindows-rightdoor'},
                              {key:'living',  label:'Living room', arch:'roundwindow-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'baywindowright-leftdoor'} ] },
+    /* ---- Noor ---- */
     NOOR_HOME_A:   { owner:'noor',  name:"Noor's rental",          family:'modern', district:'glass', map:{x:69,y:31},
                      rooms:[ {key:'bedroom', label:'Bedroom',     arch:'widenarrowwindow-rightdoor'},
                              {key:'living',  label:'Living room', arch:'bigwindow-bothdoors'},
-                             {key:'kitchen', label:'Kitchen',     arch:'onewindow-leftdoor'} ] },
+                             {key:'music',   label:'The practice room', arch:'onewindow-leftdoor'} ] },
     NOOR_HOME_B:   { owner:'noor',  name:"Noor's top-floor flat", family:'loft', district:'glass', map:{x:72.5,y:34},
                      rooms:[ {key:'living',  label:'Living room', arch:'twowindows-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'onewindow-bothdoors'},
                              {key:'study',   label:'Quiet room',  arch:'threewindows-leftdoor'} ] },
+    NOOR_OFFICE:   { owner:'noor',  name:"Noor Architects",       family:'modern', district:'glass', map:{x:66.5,y:41}, work:true,
+                     rooms:[ {key:'office',  label:'The office',  arch:'twowindows-nodoors'} ] },
+    /* ---- Theo ---- */
     THEO_HOME_A:   { owner:'theo',  name:"Theo & Elena's cabin",   family:'cozy-cabin', district:'lane', map:{x:36.8,y:23.4},
                      rooms:[ {key:'living',  label:'Living room', arch:'bigwindow-rightdoor'},
-                             {key:'bedroom', label:'Bedroom',     arch:'smallwindow-leftdoor'} ] },
+                             {key:'bedroom', label:'Bedroom',     arch:'smallwindow-bothdoors'},
+                             {key:'kitchen', label:'Kitchen',     arch:'woodenroom-leftdoor'} ] },
+    THEO_BAKERY:   { owner:'theo',  name:"Crumb & Crown",          family:'historic', district:'oldtown', map:{x:44.6,y:58.8}, work:true,
+                     rooms:[ {key:'shop',    label:'The corner table', arch:'twowindows-nodoors'} ] },
     THEO_HOME_B:   { owner:'theo',  name:"Theo's family flat",     family:'modern', district:'orchard', map:{x:20.3,y:24.8},
                      rooms:[ {key:'living',  label:'Living room', arch:'twowindows-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'widenarrowwindow-bothdoors'},
-                             {key:'bedroom', label:'Bedroom',     arch:'onewindow-leftdoor'} ] },
+                             {key:'wren',    label:"Wren's room", arch:'onewindow-leftdoor'} ] },
+    /* ---- Rosa ---- */
     ROSA_HOME_A:   { owner:'rosa',  name:"Rosa's old apartment",   family:'historic', district:'oldtown', map:{x:46.5,y:63},
                      rooms:[ {key:'sitting', label:'Sitting room',arch:'twowindows-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'roundwindow-bothdoors'},
-                             {key:'guest',   label:'Guest bedroom',arch:'baywindowright-leftdoor'} ] },
+                             {key:'spare',   label:'The sewing room', arch:'baywindowright-leftdoor'} ] },
     ROSA_CABIN_A:  { owner:'rosa',  name:"Rosa's cabin on Lantern Lane",   family:'cozy-cabin', district:'lane', map:{x:43,y:24.9},
                      rooms:[ {key:'living',  label:'Living room', arch:'bigwindow-rightdoor'},
                              {key:'kitchen', label:'Kitchen & dining', arch:'woodenroom-bothdoors'},
-                             {key:'bedroom', label:'Bedroom',     arch:'smallwindow-leftdoor'} ] }
+                             {key:'bedroom', label:'Bedroom',     arch:'smallwindow-leftdoor'} ] },
+    ROSA_ATELIER:  { owner:'rosa',  name:"The Costume Cupboard",   family:'historic', district:'oldtown', map:{x:50.5,y:52}, work:true,
+                     rooms:[ {key:'shop',    label:'The workroom', arch:'onewindow-nodoors'} ] }
   };
+
 
   /* ----------------------------------------------------------------- kinds */
   // A "kind" is a friendly name for a group of real catalog items.
@@ -183,7 +210,15 @@ var Story = (function(){
     // yet, so Sam's letters make a running joke of that
     gadget:      function(a){ return /^(standmixer|mixer|coffeemaschine|coffee-maker|coffeemaker|mocca|kettle)/.test(a.id); },
     patterned:   function(a){ return /pattern|persian|zebra|cowhide/.test(a.id) || a.color === 'Multi'; },
-    vase:        function(a){ return /^vase-/.test(a.id); }
+    vase:        function(a){ return /^vase-/.test(a.id); },
+    desk:        function(a){ return /^desk-/.test(a.id); },
+    deskchair:   function(a){ return /^deskchair-/.test(a.id); },
+    wardrobe:    function(a){ return /^wardrobe-/.test(a.id); },
+    tech:        function(a){ return /^(computer|laptop)-/.test(a.id); },
+    instrument:  function(a){ return /^(piano|grand-piano|keyboard|guitar|violin|drums)-/.test(a.id); },
+    drums:       function(a){ return /^drums-/.test(a.id); },
+    poof:        function(a){ return /^poof-/.test(a.id); },
+    wallshelf:   function(a){ return /^wallshelf-/.test(a.id); }
   };
   function isKind(kind, asset){ return !!(KINDS[kind] && KINDS[kind](asset)); }
 
@@ -199,7 +234,10 @@ var Story = (function(){
     reading: { label:'A reading room',        needs:[ {kinds:['armchair','chair','couch'],min:1,say:'a comfy seat'}, {kinds:['lamp'],min:1,say:'a lamp'}, {kinds:['books','bookshelf'],min:1,say:'something to read'} ] },
     studio:  { label:'Sleeping & sitting in one room', needs:[ {kinds:['bed'],min:1,say:'a bed'}, {kinds:['couch','armchair','chair'],min:1,say:'somewhere to sit'} ] },
     artroom: { label:'A room for making things', needs:[ {kinds:['easel'],min:1,say:'an easel'}, {kinds:['wallart'],min:1,say:'something on the walls'} ] },
-    study:   { label:'A quiet thinking room', needs:[ {kinds:['bookshelf','sideboard'],min:1,say:'a shelf or sideboard'}, {kinds:['chair','armchair'],min:1,say:'a chair'}, {kinds:['lamp'],min:1,say:'a good lamp'} ] }
+    study:   { label:'A quiet thinking room', needs:[ {kinds:['bookshelf','sideboard'],min:1,say:'a shelf or sideboard'}, {kinds:['chair','armchair'],min:1,say:'a chair'}, {kinds:['lamp'],min:1,say:'a good lamp'} ] },
+    office:  { label:'A proper office',       needs:[ {kinds:['desk'],min:1,say:'a desk'}, {kinds:['deskchair','chair','armchair'],min:1,say:'a chair'}, {kinds:['tech'],min:1,say:'a computer or laptop'}, {kinds:['lamp'],min:1,say:'a lamp'} ] },
+    music:   { label:'A music room',          needs:[ {kinds:['instrument'],min:1,say:'an instrument'}, {kinds:['chair','stool','armchair','deskchair','poof'],min:1,say:'somewhere to sit'}, {kinds:['bookshelf','sideboard','wallshelf','sidetable','desk'],min:1,say:'a place for the sheet music'} ] },
+    sewing:  { label:'A sewing room',         needs:[ {kinds:['dining','desk'],min:1,say:'a big table to cut on'}, {kinds:['chair','stool','armchair','deskchair'],min:1,say:'a chair'}, {kinds:['lamp'],min:1,say:'good light'} ] }
   };
 
   /* ----------------------------------------------------------------- stars */
@@ -243,11 +281,10 @@ var Story = (function(){
     return r;
   }
 
-  var QUESTS = [
-
+  var QUESTS = [].concat(
+  [
   /* ======================== MIA ======================== */
-  { id:'MIA_01', char:'mia', title:'A Key of My Own', property:'MIA_HOME_A', change:'new', edit:['living'],
-    requires:[], day:0, allowance:32,
+  { id:'MIA_01', n:0, char:'mia', job:'Vet receptionist', title:'A Key of My Own', property:'MIA_HOME_A', change:'new', edit:['living'], allowance:32,
     story:"Mia has started at the vet practice and finally has her own keys. Most of her savings went on the deposit, so there's exactly one room she can afford to feel good in.",
     message:"I've never had a room where I get to choose everything! Green and beige, light wood, somewhere comfy to sit. And flowers, please. There's a rumour that a florist is opening on my street and I'm already emotionally invested.",
     brief:[
@@ -257,48 +294,117 @@ var Story = (function(){
         ["You remembered the flowers!","The flower-shop lady is going to ask where my flowers went."]),
       R('like','palette','Mostly green, beige and light wood',{colors:['Green','Beige','White','Yellow','Light Wood'],minShare:0.5},
         ["It's so soft and green in here. It's like a hug.","I love it, I just… wanted a bit more green and beige?"]),
-      R('like','wood','Some light wood',{colors:['Light Wood'],min:1},
-        ["The light wood is exactly right."]),
       R('avoid','noblack','No black furniture',{colors:['Black'],max:0},
         [null,"There's a black piece in there. It's looking at me."]),
       R('avoid','nochrome','Nothing shiny and chrome',{colors:['Chrome'],max:0},
         [null,"Something chrome snuck in. It's very shiny. I'm a bit scared."])
     ],
-    reply:{ low:"It's a start. I'm just happy it's mine.", mid:"It feels like a place I could live in. Thank you!", high:"I came home, sat down, and just stayed there. This is the first place that's really felt like mine." }
-  },
-  { id:'MIA_02', char:'mia', title:'Now the Rest Feels Empty', property:'MIA_HOME_A', change:'more', edit:['bedroom','spare'],
-    requires:['MIA_01','JULES_01'], day:46, allowance:58,
-    story:"Mia passed her probation (and got a small raise). Every evening she ends up in the living room you did, because the rest of the flat still feels temporary.",
-    message:"Every evening I end up in the room you did. Could you help with the other two? A soft pink bedroom, I think, and green in the little room. You already know how I feel about flowers.",
+    reply:{ low:"It's a start. I'm just happy it's mine.", mid:"It feels like a place I could live in. Thank you!", high:"I came home, sat down, and just stayed there. This is the first place that's really felt like mine." },
+    letter:{ hello:"Hello {you}!",
+      body:["I have a key now. My own key! I keep checking my pocket. You were always the one who knew what I'd like before I did, so I'm asking the best person I know.",
+            "I can only afford to make one room nice: the living room. Somewhere comfy, a little table, a lamp. Green, beige and light wood. And flowers! (A florist is about to open on my street and I'm already emotionally invested.) My toes are always cold, so something soft for the floor?",
+            "No black furniture or shiny chrome, please. Shiny things make me nervous."],
+      bye:"Thank you so much,", ps:"There will be cookies." },
+    reward:{ items:['candle-joerg-off','flowers-sia-white'], bonus:['vase-victoria'] }, quirks:['mia_rug'] },
+
+  { id:'MIA_02', n:6, char:'mia', job:'Vet receptionist', title:'Now the Bedroom Feels Empty', property:'MIA_HOME_A', change:'more', edit:['bedroom'], allowance:36, minRenown:5,
+    story:"Mia passed her probation (and got a small raise). Every evening she ends up in the living room you did, because the bedroom still looks like a storage cupboard with a mattress.",
+    message:"I passed my probation! Every evening I end up in the room you did, like a cat in the only sunny spot. Could you do the bedroom now? Soft pink, I think. And flowers. You already know how I feel about flowers.",
     brief:[
-      R('must','bedroom','The bedroom: a bed and a bedside table',{role:'bedroom',room:'bedroom'},["I slept so well I was late for work. Worth it."]),
-      R('must','reading','The little room as a reading room: a comfy seat, a lamp, something to read',{role:'reading',room:'spare'},["I've already started a very long fantasy book in there."]),
-      R('must','flowers','Flowers in both new rooms',{kinds:['flowers'],min:1,rooms:['bedroom','spare'],each:true},["Flowers in BOTH rooms. You get me."]),
-      R('like','pink','Soft pink and beige in the bedroom',{colors:['Rosa','Pink','Blush','Beige','White'],minShare:0.5,room:'bedroom'},["The bedroom is the softest thing I've ever seen."]),
-      R('like','green','Plenty of green in the little room',{colors:['Green'],min:2,room:'spare'},["The little room feels like a garden."]),
+      R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["I slept so well I was late for work. Worth it."]),
+      R('must','flowers','Flowers by the bed',{kinds:['flowers'],min:1},["Flowers by the bed. You get me."]),
+      R('like','pink','Soft pink and beige',{colors:['Rosa','Pink','Blush','Beige','White'],minShare:0.5},["The bedroom is the softest thing I've ever seen."]),
+      R('like','light','A soft lamp for reading in bed',{kinds:['lamp'],min:1},["A reading lamp. I'm never getting up."]),
       R('avoid','nodark','Nothing dark or black',{colors:['Black','Dark Wood'],max:0},[null,"A couple of the pieces are a bit dark for my taste."])
     ],
-    reply:{ low:"The rooms feel less empty, and that's a lot already.", mid:"Now the whole flat feels like me. Thank you.", high:"I invited my mum round. I didn't apologise for anything. That's new." }
-  },
-  { id:'MIA_03', char:'mia', title:'Our First Place', property:'MIA_HOME_B', change:'move', edit:['living','dining','bedroom'],
-    requires:['MIA_02'], minRenown:15, day:178, allowance:92,
-    story:"Mia and Alex are moving in together. Alex likes blue and simple shapes. Mia wants her softer, greener self to come along.",
-    message:"Alex wants blue, I still want green, and we both want it to feel like home. Could you bring a bit of my old living room with us? And leave room for flowers on the dining table. (Alex says hi. Alex is very organised.)",
+    reply:{ low:"It's a bed in a room. That's an improvement.", mid:"Now the whole flat feels a bit more like me. Thank you.", high:"I invited my mum round. I didn't apologise for anything. That's new." },
+    letter:{ hello:"Hello again!",
+      body:["I passed my probation! I buy dahlias at Fennel & Fern every Friday (the shop cat waits for me), and every evening I still end up in the living room you made, like a cat in the only sunny spot. My room at Mum's had a black table on a dark rug, and it felt like a cave.",
+            "Could you do the bedroom? Soft pink, please, something warm underfoot, and a little lamp so I can read in bed until I fall asleep on the book. Flowers by the bed. And nothing too dark."],
+      bye:"Thank you again,", ps:"A friend called Alex carried my bookcase up the stairs. I'm saying nothing." },
+    reward:{ items:['blanket-basket','painting-flowers-pink'], bonus:['lamp-kay-blush'] }, quirks:['mia_rug','mia_cave'] },
+
+  { id:'MIA_03', n:12, char:'mia', job:'Vet receptionist · weekend gardener', title:'A Little Garden Indoors', property:'MIA_HOME_A', change:'more', edit:['green'], allowance:42, minRenown:12,
+    story:"Parsley's florist gave Mia a cutting of something, then another, then a whole tray of seedlings. The little spare room is now a jungle in waiting. Mia has discovered she likes growing things as much as buying them.",
+    message:"I've started growing things! It began with one cutting and now the little room looks like a greenhouse that lost its glass. Green everywhere, please, a spot for pots, a chair to sit and watch it all grow. And please don't cover the window. Plants need the light.",
+    brief:[
+      R('must','plants','At least four plants',{kinds:['plant'],min:4},["It's a jungle. A very tidy one."]),
+      R('must','chair','A comfy chair to sit in and watch them grow',{kinds:['armchair','chair','stool'],min:1},["I sat down for a minute and it was an hour later."]),
+      R('must','shelf','Somewhere to stand pots: a shelf, a sideboard or a table',{kinds:['sideboard','bookshelf','sidetable','wallshelf'],min:1},["A potting spot. I feel like a professional."]),
+      R('like','green','Lots of green',{colors:['Green'],min:4},["So much green. I might never leave."]),
+      R('like','wood','Light wood to go with all the leaves',{colors:['Light Wood','Beige','White'],minShare:0.4},["The light wood and the leaves are best friends."]),
+      R('like','flowers','A bunch of flowers, for the ones that have already bloomed',{kinds:['flowers'],min:1},["The first flowers I grew myself. Well. Nearly."]),
+      R('avoid','nodark','Nothing dark',{colors:['Black','Dark Wood'],max:0},[null,"It's a little dark in there for a room full of leaves."])
+    ],
+    reply:{ low:"The plants will forgive me. They're good like that.", mid:"The little room is my favourite one now. Don't tell the others.", high:"I gave Gerald's cousin a pot of basil and cried. It was a good day." },
+    letter:{ hello:"Hello {you}!",
+      body:["I have to tell you something. I've started growing things. It began with one cutting from the florist, then a second, then a tray of seedlings that now lives on every windowsill. The little room at the back is a greenhouse in waiting.",
+            "Could you make it a proper green room? Lots of plants, somewhere for the pots, one very comfy chair for watching it all grow. And please, nothing in front of the window. They need all the light they can get."],
+      bye:"Muddy hands, warm heart,", ps:"Parsley is not impressed by my basil. Parsley is hard to impress." },
+    reward:{ items:['hangingplant-jule','olive-branches'], bonus:['orange-tree'] }, quirks:['mia_rug','mia_cave','mia_sun'] },
+
+  { id:'MIA_04', n:18, char:'mia', job:'Vet receptionist · weekend gardener', title:'Room for Alex', property:'MIA_HOME_A', change:'refresh', edit:['living','bedroom'], allowance:58, minRenown:22,
+    story:"Alex has been 'staying over' for six months. Alex's bike is now in the hall. Alex's board games are in the living room. It's official: Alex lives here, and the flat needs to notice.",
+    message:"Alex is moving in! Properly. There are board games in the hall and a bike in the bedroom and I'm so happy I could cry. Could you make room for two? Keep what we love, bring in a few new things, and a bit of blue for Alex in the living room. And somewhere for Alex's clothes. I own four hangers.",
+    brief:[
+      R('must','new','Bring in at least five new pieces',{newMin:5},["A few new bits and it feels like two people live here."]),
+      R('must','wardrobe','Somewhere for two people’s clothes: a wardrobe in the bedroom',{kinds:['wardrobe'],min:1,room:'bedroom'},["Alex hung up a shirt and looked so proud."]),
+      R('must','living','The living room still works: seats, a table and a lamp',{role:'living',room:'living'},["The living room fits two. And a board game."]),
+      R('like','blue','A few blue pieces for Alex',{colors:['Blue'],min:2},["Blue! Alex went quiet. That's the good kind."]),
+      R('like','green','Keep the green and the light wood',{colors:['Green','Light Wood','Beige','White'],minShare:0.5},["It's still me. And now it's also us."]),
+      R('like','flowers','Flowers in both rooms',{kinds:['flowers'],min:1,rooms:['living','bedroom'],each:true},["Flowers for two."]),
+      R('avoid','notdark','Nothing dark or black',{colors:['Black','Dark Wood'],maxShare:0.15},[null,"A bit dark for us two cosy people."])
+    ],
+    reply:{ low:"It's a bit squashed, but we're squashed together, so it's fine.", mid:"It feels like a home for two. A small, happy one.", high:"Alex says it's the first place that feels like ours. I said it back. Then we both cried and ate cake." },
+    letter:{ hello:"Dear {you},",
+      body:["Alex is moving in! Properly. There's a bike in the hall, board games in every corner and a toothbrush next to mine, and I'm so happy I could pop.",
+            "Could you make a bit of room for two? The living room needs space for Alex's games and a few blue things (Alex's favourite colour), and the bedroom needs a wardrobe that isn't me. I own four hangers. Keep the green, keep the flowers, and still nothing dark or too shiny. We're cosy people, not moody ones."],
+      bye:"With a full heart and an empty wardrobe,", ps:"We've rented an allotment plot together. Alex thinks it's for vegetables. It's for dahlias." },
+    reward:{ items:['painting-turner-blue','lamp-kay-blue'], bonus:['rug-persian-blue'] }, quirks:['mia_rug','mia_cave'] },
+
+  { id:'MIA_05', n:24, char:'mia', job:'Vet receptionist · flower grower', title:'Our Place with a Garden', property:'MIA_HOME_B', change:'move', edit:['living','dining'], allowance:78, minRenown:35,
+    story:"The allotment became a garden and the garden became a reason: Mia and Alex have found a flat on Church Hill with its own little garden and a gate. Alex wants a table that fits the whole family. Mia wants flowers on it.",
+    message:"We found a flat with a garden! A real one, with a gate and a crooked apple tree. Alex wants a proper table and space for friends; I want flowers on it, from my own garden. Bring a bit of the old living room with us, please. And Alex's grandmother's wooden table was perfect, so a wooden one like that.",
     brief:[
       R('must','living','A living room',{role:'living',room:'living'},["The living room is ours already."]),
       R('must','dining','A dining table with seats',{role:'dining',room:'dining'},["We can have people over. A frightening thought!"]),
-      R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["We both want to go to bed right now, which is the best review."]),
-      R('must','flowers','Flowers in the living and dining rooms',{kinds:['flowers'],min:1,rooms:['living','dining'],each:true},["Flowers on the table! Alex actually gasped."]),
+      R('must','flowers','Flowers in both rooms',{kinds:['flowers'],min:1,rooms:['living','dining'],each:true},["Flowers on the table! Alex actually gasped."]),
       R('like','palette','Green, blue and beige together, with light wood',{colors:['Green','Blue','Beige','White','Light Wood'],minShare:0.6},["It's Alex AND me. I didn't think it would work!"]),
+      R('like','plants','Plenty of plants (the garden is coming indoors)',{kinds:['plant'],min:3},["The garden came inside. I love it."]),
       R('like','navy','A few blue pieces for Alex',{colors:['Blue'],min:3},["Alex found the blue and went very quiet. That's good."]),
-      R('avoid','notdark','Not too dark overall',{colors:['Black','Dark Wood'],maxShare:0.25},[null,"It's a bit heavy on the dark side. We're cosy people, not moody ones."])
+      R('avoid','notdark','Not too dark overall',{colors:['Black','Dark Wood'],maxShare:0.2},[null,"It's a bit heavy on the dark side. We're cosy people, not moody ones."])
     ],
-    reply:{ low:"It's a roof, a table and each other. That counts.", mid:"We have a home. A real one. With a table!", high:"Alex says it feels like both of us. I say it feels like the first room I ever chose, but bigger." }
-  },
+    reply:{ low:"It's a roof, a table and each other. That counts.", mid:"We have a home. A real one. With a table and a garden!", high:"Alex says it feels like both of us. I say it feels like the first room I ever chose, but bigger." },
+    letter:{ hello:"Dear {you},",
+      body:["We found a flat with a GARDEN. A real one, with a gate and one very crooked apple tree. It's on Church Hill, close enough to hear the bells and far enough to ignore them.",
+            "Alex wants a proper table, one like their grandmother's wooden one, that survived three house moves and a rave. I want flowers on it, from my own patch. A living room that has a bit of old me and a bit of new us: green, blue, beige, light wood, and plants. Lots of plants. And nothing too dark."],
+      bye:"Gratefully (and covered in soil),", ps:"I'm going to sell the extra flowers from the gate. Don't tell Parsley." },
+    reward:{ items:['fruit-bowl-oranges','rug-jannis-blue'], bonus:['vase-hannah'] }, quirks:['mia_rug','mia_cave','mia_table'] },
 
+  { id:'MIA_06', n:30, char:'mia', job:'Vet receptionist · flower grower', title:'A Bedroom to Wake Up Married In', property:'MIA_HOME_B', change:'more', edit:['bedroom'], allowance:60, minRenown:45,
+    story:"Alex asked on the allotment, between the dahlias and the compost heap. Mia said yes before the question was finished. The wedding is in spring, in the white church. Before then, one room has to feel like the quiet in the middle of it all.",
+    message:"ALEX ASKED. Between the dahlias and the compost heap, in muddy boots, and I said yes before they'd finished. The wedding is in spring! I'd love a bedroom that's calm after all the noise: soft, green, pale pink, flowers from my garden in every room. And a place for the dress to hang. Somewhere nobody sees it.",
+    brief:[
+      R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["A bedroom to be married in. I can't think of anything better."]),
+      R('must','wardrobe','A wardrobe for the dress (and the suit, and everything else)',{kinds:['wardrobe'],min:1},["The dress has a home. Nobody will find it."]),
+      R('must','flowers','Flowers by the bed, from the garden',{kinds:['flowers'],min:2},["Two bunches. One for me, one for the dress."]),
+      R('like','palette','Soft pink, green and beige',{colors:['Rosa','Pink','Blush','Green','Beige','White','Light Wood'],minShare:0.6},["The bedroom is a hug in a room."]),
+      R('like','plant','A plant or two',{kinds:['plant'],min:2},["Green things at the foot of the bed. Perfect."]),
+      R('like','soft','Soft things: a rug and a few cushions',{kinds:['rug','cushion'],min:2},["Soft underfoot and soft everywhere else."]),
+      R('like','light','Warm light: a lamp each side',{kinds:['lamp'],min:2},["Warm light on both sides. Alex's side has a book. It's still unread."]),
+      R('avoid','nodark','Nothing dark or black',{colors:['Black','Dark Wood'],max:0},[null,"There's a dark piece in there. It's looking at the dress."])
+    ],
+    reply:{ low:"It's a room, and in it I'll be married soon. It's perfect.", mid:"I lay on the bed and felt completely calm. That never happens before a wedding.", high:"Alex came in, looked around and said 'oh'. That's the best review of my life." },
+    letter:{ hello:"Dear {you},",
+      body:["Alex asked. In muddy boots, on the allotment, between the dahlias and the compost heap, and I said yes before they'd finished the question. The wedding is in spring, at the white church on Church Hill. The whole street is coming. I have already started growing the flowers.",
+            "Before the noise starts I'd like one calm room: a bedroom that feels like a deep breath. Soft pink, green and beige, light wood, flowers from the garden, something soft underfoot, and a wardrobe for the dress. The one nobody's allowed to see. Nothing dark. Not even a little."],
+      bye:"Yours, practically married,", ps:"Rosa has promised me a veil. I'm terrified and thrilled." },
+    reward:{ items:['lamp-heidi-blush','curtain-siri-blush'], bonus:['rug-elena-rosa'] }, quirks:['mia_rug','mia_cave','mia_blooms'] },
+
+  ],
+  [
   /* ======================== JULES ======================== */
-  { id:'JULES_01', char:'jules', title:'Everything Happens Here', property:'JULES_HOME_A', change:'new', edit:['studio'],
-    requires:['MIA_01'], day:10, allowance:34,
+  { id:'JULES_01', n:1, char:'jules', job:'Illustration student', title:'Everything Happens Here', property:'JULES_HOME_A', change:'new', edit:['studio'], allowance:34,
     story:"Mia sent Jules your way. Jules has arrived in Pennywhistle Cove to finish an illustration course, and has taken an attic room in an old mill. Every art supply is unpacked; the bed is not.",
     message:"The easel goes in first. After that, somewhere to sleep would be sensible, I suppose. Blue and orange, please! I want to walk in and feel like making something. (Please don't make it beige. Beige is how they get you.)",
     brief:[
@@ -309,39 +415,113 @@ var Story = (function(){
       R('like','mix','At least four different colours (nothing like a matching set)',{minDistinct:4},["Nothing matches and I love it."]),
       R('avoid','nobeige','Not predominantly beige or white',{colors:['Beige','White'],maxShare:0.4},[null,"It's gone a bit beige in here. I feel it in my bones."])
     ],
-    reply:{ low:"It's a roof and an easel. I can work with that.", mid:"I can walk in and want to make something. That's all I wanted.", high:"I put the easel down and painted until 3am. The room made me do it." }
-  },
-  { id:'JULES_02', char:'jules', title:'My First Paid Commission', property:'JULES_HOME_A', change:'refresh', edit:['studio'],
-    requires:['JULES_01','SAM_01'], day:58, allowance:30,
-    story:"Someone has actually paid Jules for an illustration! The studio gets a refresh — the room you made stays as it is, with a few new things.",
+    reply:{ low:"It's a roof and an easel. I can work with that.", mid:"I can walk in and want to make something. That's all I wanted.", high:"I put the easel down and painted until 3am. The room made me do it." },
+    letter:{ hello:"HELLO!!",
+      body:["Mia gave me your name and a cookie. I have one suitcase and ELEVEN boxes of paint. The paint is unpacked. The bed is… somewhere?",
+            "One room that does everything. The EASEL first, then somewhere to sleep, then somewhere to sit and stare at the ceiling. Blue and orange, the only couple I believe in, plus lots of colours that don't match. Matching is how they get you.",
+            "Please don't make it beige. BEIGE IS HOW THEY GET YOU."],
+      bye:"Yours in turpentine,", ps:"I drew you on the back. You look like a potato in a nice jumper." },
+    reward:{ items:['paintbrushes-incup-beige','painting-maja'], bonus:['magazines-stacked-orange'] }, quirks:['jules_pair'] },
+
+  { id:'JULES_02', n:7, char:'jules', job:'Illustration student', title:'My First Paid Commission', property:'JULES_HOME_A', change:'refresh', edit:['studio'], allowance:30, minRenown:5,
+    story:"Someone has actually paid Jules for an illustration! The studio gets a refresh. The room you made stays as it is, with a few new things.",
     message:"Someone has actually PAID me. I'd like to spend a little on this place. Keep the easel and the blue, but could we try something pink with it? It still needs to feel like my room.",
     brief:[
       R('must','easel','Keep the easel',{kinds:['easel'],min:1},["The easel is still the boss of the room."]),
       R('must','new','Bring in at least 3 new pieces',{newMin:3},["A few new bits and it feels like I grew up a little."]),
       R('like','blue','Keep the blue',{colors:['Blue'],min:3},["Blue stays. Good."]),
       R('like','lilac','Something pink (the Carla couch comes in pink!)',{colors:['Pink','Rosa','Blush'],min:2},["PINK. You found pink!"]),
+      R('like','plant','A plant (the fern is called Gerald and he is lonely)',{kinds:['plant'],min:1},["Gerald has a friend now. He's thrilled."]),
       R('avoid','nobeige','Not beige-dominated',{colors:['Beige','White'],maxShare:0.35},[null,"There's a lot of beige creeping back in."])
     ],
-    reply:{ low:"A tiny bit fancier. A tiny bit more me.", mid:"It's like my room grew up and kept its personality.", high:"I'm going to tell the client it's from my 'inspiration space'. It's from you." }
-  },
-  { id:'JULES_03', char:'jules', title:'A Door with My Name on It', property:'JULES_HOME_B', change:'upstairs', edit:['living','bedroom','art'],
-    requires:['JULES_02','ROSA_02'], minRenown:15, day:214, allowance:94,
-    story:"Jules graduated and a small creative grant arrived. The mill's landlord has offered Jules the whole top floor: a live-work loft with an actual room for art. Jules is slightly overwhelmed by the idea of a door that closes.",
-    message:"An actual room for painting! Give that room ALL the colour. The bedroom can be softer. And please don't make the living room look like a reception area.",
+    reply:{ low:"A tiny bit fancier. A tiny bit more me.", mid:"It's like my room grew up and kept its personality.", high:"I'm going to tell the client it's from my 'inspiration space'. It's from you." },
+    letter:{ hello:"OKAY SO,",
+      body:["SOMEONE PAID ME. For a drawing of a heron in a raincoat. I've read the email eleven times. (I spent half of it at the flea market, on a clock.)",
+            "Keep the easel and the blue, bring in three or four new things, and could we try pink? Also: I've named my fern Gerald and he needs a friend. The Carla couch comes in pink and I've been staring at it for days. And less beige. I can feel it creeping back."],
+      bye:"Gratefully chaotic,", ps:"The heron is going on a mug." },
+    reward:{ items:['lamp-kay-red','cowhide-carrie-cheetah'], bonus:['painting-horses-pink'] }, quirks:['jules_pair','jules_plant'] },
+
+  { id:'JULES_03', n:13, char:'jules', job:'Illustrator', title:'A Desk for Grown-Up Work', property:'JULES_HOME_A', change:'refresh', edit:['studio'], allowance:48, minRenown:12,
+    story:"The course is over. Jules graduated with a very small hat and a very large pile of unpaid invoices, and now works two days at the Dog-Eared Bookshop and draws the rest of the week. The easel is not enough anymore: clients want files, and files need a desk.",
+    message:"I GRADUATED (in a hat that didn't fit). Now I have actual clients, who want actual files, who send actual emails. I need a desk, a proper chair and a laptop, and the easel has to stay, because the easel is my soul. Blue and orange, obviously. And please nothing from the beige family.",
+    brief:[
+      R('must','desk','A proper desk and a chair to go with it',{kinds:['desk'],min:1},["A desk! It's like having a job. Because I do."]),
+      R('must','chairs','A desk chair',{kinds:['deskchair'],min:1},["My back will thank you. Eventually."]),
+      R('must','tech','A laptop or a computer',{kinds:['tech'],min:1},["The laptop is the only thing in here that isn't messy. Wait, give it time."]),
+      R('must','easel','Keep the easel, always',{kinds:['easel'],min:1},["The easel is still the boss."]),
+      R('like','blue','Blue (and orange to go with it)',{colors:['Blue','Orange'],min:4},["Blue and orange, the only couple I believe in."]),
+      R('like','mix','At least four different colours',{minDistinct:4},["It's chaos. Beautiful, planned chaos."]),
+      R('avoid','nobeige','Not predominantly beige or white',{colors:['Beige','White'],maxShare:0.35},[null,"It's gone a bit beige in here again."])
+    ],
+    reply:{ low:"A desk and an easel. It's a start, and it's mine.", mid:"It's a studio that sends invoices. Very grown-up. Very me.", high:"I sent my first invoice from here and cried a bit. In a good way." },
+    letter:{ hello:"HEY, {you}!!",
+      body:["I GRADUATED. In a hat that didn't fit, holding a certificate that says my name wrong. I now work two days at the Dog-Eared Bookshop (the dog sits on my feet) and the rest of the week I draw things for people who send emails.",
+            "Which means the attic needs a desk, a proper chair and a laptop. The easel stays, obviously; the easel is my soul. Blue and orange, lots of different colours, and please nothing from the beige family. I can still feel it."],
+      bye:"Yours, newly employed,", ps:"A gallery is opening on the Far Shore. I'm trying not to look in its direction." },
+    reward:{ items:['standing-lamp-hana-black','laptop-lumia'], bonus:['painting-fern-blue'] }, quirks:['jules_pair','jules_plant'] },
+
+  { id:'JULES_04', n:19, char:'jules', job:'Illustrator · gallery artist', title:'The Paper Moth Wants Six', property:'JULES_HOME_B', change:'move', edit:['art'], allowance:60, minRenown:22,
+    story:"The Paper Moth Gallery has asked Jules for six prints for its winter wall. A flat at the Mills just came free, with two rooms: one for painting, one for living. The painting room comes first.",
+    message:"THE PAPER MOTH WANTS SIX OF MY PRINTS. SIX. I'm moving into a flat at the Mills with two rooms, and the first thing I need is the room for painting. Colour, please, as much as you can. Somewhere to hang the prints, somewhere to lay them out, and Gerald needs a spot with light.",
+    brief:[
+      R('must','art','The art room: an easel and something on the walls',{role:'artroom',room:'art'},["The art room smells of future mess. Perfect."]),
+      R('must','table','A big table to lay prints out on',{kinds:['desk','dining'],min:1},["A big table. I'll be on the floor anyway, but now I'll feel guilty."]),
+      R('must','tech','A laptop, for the emails the gallery sends',{kinds:['tech'],min:1},["The laptop looks very official. I'll cover it in paint."]),
+      R('like','color','The art room bursting with colour',{minDistinct:5},["The art room is a rainbow that has had too much coffee. 10/10."]),
+      R('like','prints','Plenty on the walls',{kinds:['wallart'],min:3},["Walls full of things. It's like a gallery that hasn't been introduced yet."]),
+      R('like','plant','A plant by the window (Gerald, behave)',{kinds:['plant'],min:1},["Gerald has a view. He's insufferable."]),
+      R('avoid','nobeige','Not beige or white',{colors:['Beige','White'],maxShare:0.3},[null,"It's looking a bit like a waiting room."])
+    ],
+    reply:{ low:"It's a room with an easel and walls. I'll fill the rest myself.", mid:"It's the first room I've had that looks like I mean it.", high:"I stood in the middle of it and said 'oh no, it's real.' Then I painted for six hours." },
+    letter:{ hello:"{you}!! {you}!!",
+      body:["THE PAPER MOTH WANTS SIX OF MY PRINTS. SIX. Not for the back room, not for the bargain basket, for the winter wall by the window. I have read the email so many times I can recite it.",
+            "And the flat next to the stairwell at the Mills has come free: two rooms. The first one is for painting, so that comes first. Colour, as much as you dare. A big table for laying out prints, something on every wall, a laptop for the gallery emails and a good spot for Gerald."],
+      bye:"Yours, slightly feral with excitement,", ps:"Mia has promised to bake. Nobody knows what for." },
+    reward:{ items:['painting-livia','vase-lisa-orange'], bonus:['cowhide-carrie-rosa'] }, quirks:['jules_pair','jules_plant'] },
+
+  { id:'JULES_05', n:25, char:'jules', job:'Gallery artist', title:'Somewhere to Live, Finally', property:'JULES_HOME_B', change:'more', edit:['living'], allowance:56, minRenown:35,
+    story:"Six prints sold out in a week. The gallery wants twelve more. The painting room is full of canvases and the second room is still a mattress on the floor. Jules would like to be a person who lives somewhere, not just paints somewhere.",
+    message:"They sold. All six! The gallery wants twelve more and I'd like to sleep somewhere that isn't a mattress next to the radiator. The second room is for living: somewhere to sleep, somewhere to sit, somewhere to eat toast. It can have plenty of colour but, please, a quieter kind than the art room, or I'll never fall asleep.",
+    brief:[
+      R('must','studio','Somewhere to sleep and somewhere to sit, in the same room',{role:'studio',room:'living'},["A bed AND a sofa. In one room. This is what grown-ups do."]),
+      R('must','storage','Somewhere to put clothes and things: a wardrobe or a sideboard',{kinds:['wardrobe','sideboard'],min:1},["Storage! My clothes finally have a home. They're nervous."]),
+      R('must','lamp','Lamps for a room that is lived in at night',{kinds:['lamp'],min:2},["A glow in the evening. Not a spotlight. Revolutionary."]),
+      R('like','soft','Softer, more restful colours than the art room',{colors:['Beige','White','Blue','Pink','Rosa','Blush','Light Wood','Green'],minShare:0.5},["Quiet colours. I could actually sleep here."]),
+      R('like','mix','Still at least three colours (nothing matching, ever)',{minDistinct:3},["Three colours. No waiting-room beige. I'm safe."]),
+      R('like','plant','Plants (Gerald has cousins now)',{kinds:['plant'],min:2},["Gerald's whole family has moved in."]),
+      R('avoid','nobeige','Not a beige waiting room',{colors:['Beige','White'],maxShare:0.4},[null,"The living room looks suspiciously like a dentist's waiting room."])
+    ],
+    reply:{ low:"It's somewhere to sleep. I don't ask for more tonight.", mid:"A home. With a sofa and everything. I almost don't recognise myself.", high:"I came home, kicked off my shoes and sat on the sofa. Just sat. That's what other people do." },
+    letter:{ hello:"{you}, my friend,",
+      body:["They SOLD. All six prints, in a week. The gallery wants twelve more and a person from the paper wants to take my photo. I told her I was busy. I wasn't. I just panicked.",
+            "The painting room is done and I'm very proud of it. The other room is still a mattress next to the radiator. I'd like a room where I live: a bed, a sofa, a wardrobe, proper lamps for the evenings. Colourful, but quieter than the studio, or I'll never sleep."],
+      bye:"Yours, newly a person with a sofa,", ps:"The gallery owner said I have 'a clear voice'. I've been walking around saying it to myself." },
+    reward:{ items:['pillows-stacked-blue','lamp-heidi-red'], bonus:['curtain-siri-darkbrown'] }, quirks:['jules_pair','jules_plant','jules_mix'] },
+
+  { id:'JULES_06', n:31, char:'jules', job:'Artist', title:'The Top Floor', property:'JULES_LOFT', change:'upstairs', edit:['living','bedroom','art'], allowance:112, minRenown:45,
+    story:"Three years after the attic, with a gallery wall of her own and a waiting list for her prints, Jules has been offered the top floor of the mill: a loft with a door that closes and a room just for painting. This time it isn't luck. She earned it.",
+    message:"The landlord offered me the top floor of the mill. THE TOP FLOOR. I said yes before he'd finished the sentence. It has an art room, a living room and a bedroom with a door that shuts. Give the art room ALL the colour. The bedroom should be soft. And please don't let the living room look like a reception area.",
     brief:[
       R('must','art','The art room: an easel and something on the walls',{role:'artroom',room:'art'},["The art room smells of future mess. Perfect."]),
       R('must','living','A living room to sit in',{role:'living',room:'living'},["The living room is lived-in already. Which is a polite way of saying messy."]),
       R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["I'm going to sleep in a bedroom. Away from the turpentine."]),
+      R('must','tech','A desk and a laptop in the art room, for the business side',{pair:[{kinds:['desk']},{kinds:['tech']}],room:'art'},["A corner for invoices. In the art room. The art room approves."]),
       R('like','color','The art room bursting with colour',{minDistinct:5,room:'art'},["The art room is a rainbow that has had too much coffee. 10/10."]),
       R('like','soft','A quieter, softer bedroom',{colors:['Beige','White','Grey','Pink','Rosa','Blush','Light Wood'],minShare:0.6,room:'bedroom'},["The bedroom is the first calm room I've ever owned."]),
+      R('like','prints','Plenty on the walls everywhere',{kinds:['wallart'],min:4},["Walls full of paintings. The gallery is jealous."]),
       R('avoid','reception','The living room is not a matching beige reception',{colors:['Beige','White'],maxShare:0.4,room:'living'},[null,"The living room looks suspiciously like a dentist's waiting room."])
     ],
-    reply:{ low:"It's a loft. It's mine. I'll make it messier myself.", mid:"A door with my name on it. Technically a sticker.", high:"I'm hosting the first-ever Jules Open Studio. Nobody will come. I will make cake." }
-  },
+    reply:{ low:"It's a loft. It's mine. I'll make it messier myself.", mid:"A door with my name on it. Technically a sticker.", high:"I'm hosting the first-ever Jules Open Studio on the top floor. Everyone will come. I will make cake." },
+    letter:{ hello:"GUESS WHAT,",
+      body:["The landlord offered me the top floor of the mill. THE TOP FLOOR. A live-work loft with three rooms and a door that closes. I said yes before he'd finished the sentence, then said yes again to be safe.",
+            "The art room needs ALL the colour: easel, things on every wall, a corner for the boring business side, because there is one now. The living room must not look like a dentist's waiting room. The bedroom should be soft and quiet. And everywhere, as many paintings as the walls can bear."],
+      bye:"Yours, no longer in an attic,", ps:"I've named the loft. It's called 'Gerald's Place'. He doesn't know." },
+    reward:{ items:['pillows-stacked-orange','rug-iris-pattern-orange'], bonus:['wall-lamp-octavia'] }, quirks:['jules_pair','jules_plant','jules_mix'] },
 
+  ],
+  [
   /* ======================== SAM ======================== */
-  { id:'SAM_01', char:'sam', title:'Dinner at Mine', property:'SAM_HOME_A', change:'new', edit:['kitchen'],
-    requires:['JULES_01'], day:24, allowance:42,
+  { id:'SAM_01', n:2, char:'sam', job:'Events producer', title:'Dinner at Mine', property:'SAM_HOME_A', change:'new', edit:['kitchen'], allowance:42,
     story:"Sam has moved for a better-paying job and has already invited his entire new team to dinner. The kitchen comes first. The oven is, as of this week, 'on its way'.",
     message:"The bedroom can wait. I want a kitchen I'm excited to cook in. Dark wood, red, plenty of metal. Spare no mixers! (The oven is on back-order. It's been on back-order for six weeks. We don't talk about it.)",
     brief:[
@@ -352,91 +532,233 @@ var Story = (function(){
       R('avoid','noflowers','No flowers',{kinds:['flowers'],max:0},[null,"Is that… a flower? In my kitchen? We'll talk."]),
       R('avoid','nolightwood','No light rustic wood',{colors:['Light Wood'],max:0},[null,"I spotted some light wood. It's very… farmhouse."])
     ],
-    reply:{ low:"It's a kitchen. I'll make dinner anyway — on the floor if needed.", mid:"This is a kitchen I'd happily burn something in.", high:"This is exactly the kitchen I wanted to invite people into. Dinner at mine. Bring wine." }
-  },
-  { id:'SAM_02', char:'sam', title:'Come Through to the Living Room', property:'SAM_HOME_A', change:'more', edit:['dining','living'],
-    requires:['SAM_01','NOOR_01'], minRenown:5, day:104, allowance:64,
-    story:"Dinner at Sam's has become a Thing. The kitchen is working overtime, and the guests now need somewhere lovely to eat and then to lie around dramatically.",
-    message:"The kitchen's getting plenty of use. Now: somewhere lovely to eat, and somewhere to collapse afterwards. Keep that dark wood. Leather would be wonderful. (Velvet is also on back-order. Don't ask.)",
+    reply:{ low:"It's a kitchen. I'll make dinner anyway — on the floor if needed.", mid:"This is a kitchen I'd happily burn something in.", high:"This is exactly the kitchen I wanted to invite people into. Dinner at mine. Bring wine." },
+    letter:{ hello:"Good evening, {you},",
+      body:["I've just moved for a better job and invited my whole team to dinner on Friday. Eleven people, a flat that seats four. It'll be wonderful.",
+            "The kitchen comes first: dark wood, red, plenty of chrome and steel, an island big enough to put a party on, and a fridge that hums reassuringly. (I once saw brass beside chrome and had to sit down.) And gadgets: three mixers at least. No flowers (they wilt when I look at them) and nothing light and rustic.",
+            "(The oven is on back-order. We don't discuss it.)"],
+      bye:"Warmly, and in need of a whisk,", ps:"Friday, seven o'clock. That's an invitation, not a request." },
+    reward:{ items:['recordplayer-darkwood','chrome-teecup'], bonus:['standmixer-smeggy-chrome'] }, quirks:['sam_metals'] },
+
+  { id:'SAM_02', n:8, char:'sam', job:'Events producer', title:'Seats for Everyone', property:'SAM_HOME_A', change:'more', edit:['dining'], allowance:40, minRenown:5,
+    story:"Dinner at Sam's has become a Thing. Eleven people ate in the kitchen last time, standing up, and the only casualty was a lemon. The dining room is the next step: a table, enough seats to pretend this was planned.",
+    message:"The kitchen is a triumph. Eleven people ate in it and the only casualty was a lemon. Now give them somewhere to sit. A proper table, plenty of seats, dark wood and red, and a light that makes everyone look interesting. Still no flowers. Still nothing pale.",
     brief:[
       R('must','dining','A dining table and seats for the guests',{role:'dining',room:'dining'},["Twelve seats! … Okay, it's five. But it's the thought."]),
+      R('must','seats','At least five seats around it',{kinds:['chair','stool','armchair'],min:5},["Five seats. A leap of faith. Guests will bring their own."]),
+      R('like','dark','Dark wood and red',{colors:['Dark Wood','Red','Brown'],min:3},["The kitchen's mood carries through. Chef's kiss."]),
+      R('like','light','A statement light over the table',{kinds:['lamp'],min:1},["A light that makes everyone look more interesting. That's the job."]),
+      R('like','orange','Orange accents',{colors:['Orange'],min:1},["That orange! Sunset in a room."]),
+      R('avoid','noflowers','No flowers',{kinds:['flowers'],max:0},[null,"Flowers again. I see what's happening."]),
+      R('avoid','nolightwood','No light rustic wood',{colors:['Light Wood'],max:0},[null,"A bit of light wood got in. It's like a cabin visited."])
+    ],
+    reply:{ low:"A table. People will sit. People are flexible.", mid:"I can already hear the clinking of glasses.", high:"People stayed until 2am and nobody wanted to leave the table. That's the review I wanted." },
+    letter:{ hello:"My friend,",
+      body:["The kitchen is a triumph. Eleven people ate in it and the only casualty was a lemon. A florist opened across the road; I have walked past it twice, on purpose.",
+            "A dining table with enough seats to pretend I planned this. Dark wood, red, a touch of orange, and something to light it all. Wood should behave: one tone, not a lumberyard. Still no flowers. Still nothing pale."],
+      bye:"Gratefully,", ps:"A guest called Robin did all the washing up. I have invited them back." },
+    reward:{ items:['chandelier-ana','chessboard-marble'], bonus:['couch-uwe-dark-leather'] }, quirks:['sam_metals','sam_woods'] },
+
+  { id:'SAM_03', n:14, char:'sam', job:'Events producer', title:'Somewhere to Collapse', property:'SAM_HOME_A', change:'more', edit:['living'], allowance:52, minRenown:12,
+    story:"Robin keeps coming back, and so does the washing up. After dinner, everyone wants somewhere to lie around dramatically. The living room needs to be that somewhere.",
+    message:"Dinner is going well. Too well. People stay until 2am, and they want somewhere to collapse afterwards. Leather, please. Keep the dark wood and the red, add some orange and a bit of chrome or black. (Robin says the room should feel 'lived in'. I said it already does. Robin said 'by a stage manager'.)",
+    brief:[
       R('must','living','A living room with a couch, a table and a lamp',{role:'living',room:'living'},["The 'collapse afterwards' room works."]),
+      R('must','seats','Room for six: at least three seats',{kinds:['couch','armchair','poof'],min:3},["Six people, one room, nobody standing. Triumph."]),
       R('like','leather','A leather couch or armchair',{materials:['Leather'],kinds:['couch','armchair'],min:1},["Leather. Smells expensive. Isn't. Perfect."]),
-      R('like','dark','Dark wood and red continued from the kitchen',{colors:['Dark Wood','Red','Brown'],min:4},["The kitchen's mood carries all the way through. Chef's kiss."]),
+      R('like','dark','Dark wood and red continued from the kitchen',{colors:['Dark Wood','Red','Brown'],min:4},["The kitchen's mood carries all the way through."]),
       R('like','orange','Orange accents',{colors:['Orange'],min:2},["That orange! Sunset in a room."]),
       R('like','chrome','A few chrome or black pieces for drama',{colors:['Chrome','Black'],min:3},["A little chrome, a little black. Seventies in the best way."]),
       R('avoid','noflowers','No flowers',{kinds:['flowers'],max:0},[null,"Flowers again. I see what's happening."]),
       R('avoid','nolightwood','No light rustic wood',{colors:['Light Wood'],max:0},[null,"A bit of light wood got in. It's like a cabin visited."])
     ],
-    reply:{ low:"A place to sit. People will sit. People are flexible.", mid:"I can already hear the clinking of glasses.", high:"People stayed until 2am and nobody wanted to leave the couch. That's the review I wanted." }
-  },
-  { id:'SAM_03', char:'sam', title:'A Key for Both of Us', property:'SAM_HOME_B', change:'move', edit:['kitchen','living','bedroom'],
-    requires:['SAM_02'], minRenown:15, day:238, allowance:104,
-    story:"Sam got promoted and he and Robin, a teacher, have bought their first home together. Robin loves Sam's taste but would like to sleep somewhere that doesn't feel like a stage.",
-    message:"I'd still put the kitchen first. Robin wants the bedroom lighter, which is fair. Can you make it feel like one home without making every room equally dramatic? (We now own a dish rack. It's the best day of my life.)",
+    reply:{ low:"A place to sit. People will sit. People are flexible.", mid:"I can already hear the clinking of glasses.", high:"People stayed until 2am and nobody wanted to leave the couch. That's the review I wanted." },
+    letter:{ hello:"Dear friend,",
+      body:["Dinner at mine has become a regular thing. A day-of-the-week thing. Robin brings dessert, which is usually more impressive than my main course, which I'm not going to discuss.",
+            "People stay until two in the morning and want somewhere to lie around dramatically afterwards. Leather, please. Keep the dark wood and red, add orange and a little chrome or black. Seats for six, at least. Wood should still behave: one tone. And still no flowers."],
+      bye:"Warmly, with a wine glass in my hand,", ps:"Robin has brought a toothbrush. I'm choosing not to notice. Loudly." },
+    reward:{ items:['kitchen-island-serena-steel','couch-uwe-light-leather'], bonus:['bust-art-dave-stone'] }, quirks:['sam_metals','sam_woods'] },
+
+  { id:'SAM_04', n:20, char:'sam', job:'Head of events', title:'Robin Stays', property:'SAM_HOME_A', change:'more', edit:['bedroom'], allowance:46, minRenown:22,
+    story:"Sam was promoted to head of events and Robin, who teaches at the primary school, has given up pretending the toothbrush is a coincidence. The bedroom has been a mattress and a lamp for two years. It's time.",
+    message:"I got promoted! And Robin, who teaches Year 3 and sleeps lightly, has moved in. The bedroom has been a mattress with ambitions since I arrived. I'd like it to be proper: a real bed, a wardrobe, bedside tables, something calm. Robin says no dark things. I said it's my bedroom. Robin said 'it's OUR bedroom'. I'm getting used to it.",
+    brief:[
+      R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["Robin tested the bed immediately. Good sign."]),
+      R('must','wardrobe','A wardrobe big enough for two people and one suit collection',{kinds:['wardrobe'],min:1},["A wardrobe that closes! I may have cried."]),
+      R('must','lamps','A bedside lamp on each side',{kinds:['lamp'],min:2},["Two lamps. Equality."]),
+      R('like','lightbed','A lighter bedroom: mostly beige, white and light wood',{colors:['Beige','White','Light Wood','Grey'],minShare:0.5},["Robin says it's the best room. I'm not offended. I'm a little offended."]),
+      R('like','red','One bit of red for me',{colors:['Red','Orange'],min:1},["A touch of red. I'll allow it to be a signature."]),
+      R('like','soft','Something soft underfoot',{kinds:['rug'],min:1},["A rug. Robin's feet have never been happier."]),
+      R('avoid','noflowers','No flowers',{kinds:['flowers'],max:0},[null,"I found a flower. I'm choosing to be calm."]),
+      R('avoid','notdarkbed','Bedroom not heavily dark',{colors:['Black','Dark Wood'],maxShare:0.3},[null,"The bedroom is a touch dramatic for sleeping."])
+    ],
+    reply:{ low:"It's a bed in a room. Robin says it's progress.", mid:"A bedroom that isn't a stage set. I might cry.", high:"Robin slept for nine hours. NINE. I took a photo. I did not show Robin the photo." },
+    letter:{ hello:"Dear friend,",
+      body:["I got promoted. Head of events, which means a bigger budget and a bigger headache, and Robin has moved in properly, toothbrush and all. After two years the bedroom is still a mattress with ambitions.",
+            "Make it proper. A real bed, a wardrobe that closes, a lamp on each side. Robin sleeps lightly, so nothing dark and dramatic; a lighter room, beige and white and light wood, with one bit of red so it still feels like me. And a soft rug. Still no flowers."],
+      bye:"Warmly, and slightly outnumbered,", ps:"Robin plays the violin. Quietly. In another room. Yes, I'm in love." },
+    reward:{ items:['lamp-sia-sblack','vase-otto-black'], bonus:['wall-lamp-muse'] }, quirks:['sam_metals','sam_woods','sam_robin'] },
+
+  { id:'SAM_05', n:26, char:'sam', job:'Founder, Sam & Co. Events', title:'Sam & Co.', property:'SAM_OFFICE', change:'second', edit:['office'], allowance:66, minRenown:35,
+    story:"Sam has done what every producer secretly dreams of: he quit. Sam & Co. Events has its first client, its first invoice and its first office: one room on Glass Row with a view of the quay. It needs to look like a company, and feel like Sam.",
+    message:"I QUIT. Properly, with a speech. Sam & Co. Events has a client, an invoice and an office on Glass Row. I need it to look serious and feel like me: a big desk, a good chair, a laptop, a table for clients to sit at and nod, a couch for when the nodding gets tired. Dark wood, red, metal. Nothing pale. No flowers.",
+    brief:[
+      R('must','office','A proper office: a desk, a chair, a computer or laptop and a lamp',{role:'office',room:'office'},["It looks like a company. A company with taste."]),
+      R('must','meeting','A table for meetings, with seats for four',{kinds:['dining'],min:1,room:'office'},["A table where deals get done. Or at least discussed."]),
+      R('must','clients','Somewhere for clients to wait: a couch or two armchairs',{kinds:['couch','armchair'],min:1},["Clients will wait here happily. Briefly. Because I'm quick."]),
+      R('like','dark','Dark wood and red',{colors:['Dark Wood','Red','Brown'],min:4},["Dark wood and red. The brand writes itself."]),
+      R('like','metal','Chrome and steel to catch the light',{colors:['Chrome','Steel','Silver'],min:2},["Gleaming. Like a very confident spoon."]),
+      R('like','art','Something on the wall: a painting or two',{kinds:['wallart'],min:2},["Art on the walls. Clients ask who it's by. I say 'a friend'."]),
+      R('avoid','noflowers','No flowers',{kinds:['flowers'],max:0},[null,"There's a flower in my office. Who sent a flower?"]),
+      R('avoid','nolightwood','No light rustic wood',{colors:['Light Wood'],max:0},[null,"A bit of light wood. In my office. It's a cabin again."])
+    ],
+    reply:{ low:"It's an office. I'll make it mine with time and a very large coffee machine.", mid:"A real office. I'm a real CEO. Please don't tell anyone I cried in the lift.", high:"The first client walked in, looked around, and said 'you've done this before'. I haven't. I just have taste." },
+    letter:{ hello:"Dear friend,",
+      body:["I QUIT. With a speech. There was a standing ovation, mostly from the people I'd been planning events for. Sam & Co. Events now has a client, an invoice and one small office on Glass Row, with a view of the quay.",
+            "It needs to look like a company and feel like me. A big desk, a good chair, a laptop. A table for meetings, with seats for four, and a couch for when the nodding gets tired. Dark wood, red, a bit of chrome, something on the walls. Wood still behaves: one tone. Still no flowers. Robin says I'm 'brave'. I think it was a compliment."],
+      bye:"With a fresh business card and a fresher mortgage,", ps:"Robin has already booked the first anniversary party. In my office. For the staff. Which is me." },
+    reward:{ items:['computer-divan','desk-ariana-darkwood-marble'], bonus:['deskchair-simonas-chrome'] }, quirks:['sam_metals','sam_woods'] },
+
+  { id:'SAM_06', n:32, char:'sam', job:'Founder, Sam & Co. Events', title:'A Key for Both of Us', property:'SAM_HOME_B', change:'move', edit:['kitchen','living'], allowance:104, minRenown:45,
+    story:"Sam & Co. has twelve clients and one waiting list. Robin has a permanent post at the school. Together they've bought a first-floor flat above the old market in Old Town: a big kitchen, a round-windowed living room and a violin that has been practising in silence for years.",
+    message:"We bought a place! Robin and I. Over the old market in Old Town, with a kitchen the size of my entire first flat. The kitchen comes first, obviously, with gadgets worth bragging about. Then the living room: dark wood, red and leather, and a corner for Robin's violin. A little drama is a seasoning, not a main course. And no flowers!",
     brief:[
       R('must','kitchen','A working kitchen',{role:'kitchen',room:'kitchen'},["The kitchen. THE kitchen."]),
       R('must','gadgets','At least 3 cooking gadgets',{kinds:['gadget'],min:3},["Mixers, kettles, glory."]),
       R('must','living','A living room',{role:'living',room:'living'},["The living room has presence."]),
-      R('must','bedroom','A bedroom with a bed and bedside table',{role:'bedroom',room:'bedroom'},["Robin tested the bed immediately. Good sign."]),
-      R('like','dark','Dark wood and red in the kitchen and living room',{colors:['Dark Wood','Red','Brown'],min:5,rooms:['kitchen','living']},["The public rooms say 'Sam'."]),
-      R('like','lightbed','A lighter bedroom: mostly beige and white',{colors:['Beige','White','Light Wood'],minShare:0.5,room:'bedroom'},["Robin says it's the best room. I'm not offended. I'm a little offended."]),
+      R('must','violin','A corner for Robin’s violin: an instrument and a chair beside it',{pair:[{kinds:['instrument']},{kinds:['chair','armchair','stool']}],room:'living'},["Robin picked up the violin and played for the first time in front of me. I did not say a word."]),
+      R('like','dark','Dark wood and red in the kitchen and living room',{colors:['Dark Wood','Red','Brown'],min:5},["The public rooms say 'Sam'."]),
       R('like','leather','Leather in the living room',{materials:['Leather'],kinds:['couch','armchair'],min:1,room:'living'},["Leather: it's practically a love language."]),
+      R('like','metal','Chrome and steel in the kitchen',{colors:['Chrome','Steel','Silver'],min:3,room:'kitchen'},["The kitchen gleams. It's a bit smug. Like me."]),
       R('avoid','noflowers','No flowers',{kinds:['flowers'],max:0},[null,"I found a flower. I'm choosing to be calm."]),
-      R('avoid','notdarkbed','Bedroom not heavily dark',{colors:['Black','Dark Wood'],maxShare:0.3,room:'bedroom'},[null,"The bedroom is a touch dramatic for sleeping."])
+      R('avoid','nolightwood','No light rustic wood',{colors:['Light Wood'],max:0},[null,"A bit of light wood got in. It's like a cabin visited."])
     ],
-    reply:{ low:"It's ours. That's the part that matters.", mid:"One home, many moods. I like it.", high:"Robin came home, put the kettle on and said 'ah'. I'm calling that five stars." }
-  },
+    reply:{ low:"It's ours. That's the part that matters.", mid:"One home, many moods. I like it.", high:"Robin came home, put the kettle on and said 'ah'. I'm calling that five stars." },
+    letter:{ hello:"Dear friend,",
+      body:["Robin and I have bought a place. Together. A first-floor flat over the old market in Old Town, with a round window in the living room and a kitchen the size of my first flat. We own a dish rack. It's the best day of my life, and I have organised a lot of days.",
+            "Kitchen first, obviously, with gadgets worth bragging about: mixers, kettles, a very large coffee machine. Then the living room: dark wood, red and leather, and in the corner a place for Robin's violin. A chair beside it, so the music has company. A little drama is a seasoning, not a main course. And no flowers."],
+      bye:"Yours, in a rare moment of restraint,", ps:"Robin says I'm not allowed a second mixer. We'll see." },
+    reward:{ items:['standmixer-lara-chrome','coffeemaschine-fika-grey'], bonus:['coffeemaschine-salana-chrome'] }, quirks:['sam_metals','sam_woods'] },
 
+  ],
+  [
   /* ======================== NOOR ======================== */
-  { id:'NOOR_01', char:'noor', title:'Somewhere to Switch Off', property:'NOOR_HOME_A', change:'new', edit:['bedroom'],
-    requires:['SAM_01'], day:38, allowance:32,
+  { id:'NOOR_01', n:3, char:'noor', job:'Architect', title:'Somewhere to Switch Off', property:'NOOR_HOME_A', change:'new', edit:['bedroom'], allowance:32,
     story:"Noor has moved within Pennywhistle Cove after a breakup, and has decided that is entirely her own business. She wants one calm room finished before looking at the rest.",
     message:"The bedroom first. White, blue, light wood. I look at plans all day; I don't want work following me to bed. Fewer things, chosen well.",
     brief:[
       R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["It's quiet. The good kind."]),
       R('like','palette','Mostly white, blue, grey and light wood',{colors:['White','Blue','Grey','Light Wood'],minShare:0.6},["The palette is… correct."]),
       R('like','blue','A little blue',{colors:['Blue'],min:1},["That blue is exactly the right amount."]),
-      R('like','storage','Somewhere to put things away',{kinds:['sideboard','storage'],min:1},["Closed storage. The room can breathe."]),
+      R('like','storage','Somewhere to put things away',{kinds:['sideboard','storage','wardrobe'],min:1},["Closed storage. The room can breathe."]),
       R('like','calm','Calm: no more than 12 pieces',{maxItems:12},["You left space. Do you know how rare that is?"]),
       R('avoid','nopattern','No busy patterns',{kinds:['patterned'],max:0},[null,"There's a pattern. It's shouting."])
     ],
-    reply:{ low:"It's a bedroom. I'll make it work.", mid:"Calm. Mostly. I could sleep here.", high:"It feels calm. You paid attention. Most people don't." }
-  },
-  { id:'NOOR_02', char:'noor', title:'You Understood Me', property:'NOOR_HOME_A', change:'more', edit:['living','kitchen'],
-    requires:['NOOR_01','THEO_01'], day:124, allowance:60,
-    story:"Noor liked the bedroom enough to say so. Out loud. In the office, within hearing of two colleagues. She'd like the living room and kitchen to follow it.",
-    message:"You listened. I'd like you to do the kitchen and living room too. The same restraint, but they don't have to look identical. Keep the blue.",
+    reply:{ low:"It's a bedroom. I'll make it work.", mid:"Calm. Mostly. I could sleep here.", high:"It feels calm. You paid attention. Most people don't." },
+    letter:{ hello:"Hello.",
+      body:["Sam passed on your details. He said you actually listen. I'll assume that's true.",
+            "I've moved. That's not up for discussion. I'd like one room finished: the bedroom. A bed, a bedside table, white, a little blue, light wood. Twelve things at most; I counted. Somewhere to put things away. No busy patterns, and matching grain matters to me."],
+      bye:"Regards,", ps:"If a shelf is two centimetres off, I'll know." },
+    reward:{ items:['standing-lamp-kai','painting-fog'], bonus:['wallshelf-vila'] }, quirks:['noor_wood'] },
+
+  { id:'NOOR_02', n:9, char:'noor', job:'Architect', title:'You Understood Me', property:'NOOR_HOME_A', change:'more', edit:['living'], allowance:40, minRenown:5,
+    story:"Noor liked the bedroom enough to say so. Out loud. In the office, within hearing of two colleagues. She'd like the living room to follow it.",
+    message:"You listened. The bedroom works. I'd like the living room to follow, with the same restraint but its own temperament. Light wood, white and blue, somewhere to sit that isn't a chair I'm tolerating. Keep the blue.",
     brief:[
       R('must','living','A living room',{role:'living',room:'living'},["The living room does exactly what it should."]),
-      R('must','kitchen','A working kitchen',{role:'kitchen',room:'kitchen'},["A kitchen I'd actually cook in."]),
       R('like','palette','White, blue, grey and light wood',{colors:['White','Blue','Grey','Light Wood'],minShare:0.6},["Same restraint. Different room. Well done."]),
-      R('like','wood','Light wood in the living room',{colors:['Light Wood'],min:2,room:'living'},["The wood in the living room is lovely."]),
-      R('like','metal','Steel, chrome or white in the kitchen',{colors:['Steel','Chrome','Silver','White','Grey'],minShare:0.5,room:'kitchen'},["The kitchen is clean and a little bit smug. Like me."]),
-      R('like','calm','No more than 14 pieces per room',{maxItems:14,rooms:['living','kitchen'],each:true},["You left things out. That's craftsmanship."]),
+      R('like','wood','Light wood',{colors:['Light Wood'],min:2},["The wood in the living room is lovely."]),
+      R('like','read','Somewhere to read: a good chair and a lamp',{kinds:['armchair'],min:1},["A chair worth sitting in. Rare."]),
+      R('like','calm','No more than 14 pieces',{maxItems:14},["You left things out. That's craftsmanship."]),
       R('avoid','nopattern','No busy patterns',{kinds:['patterned'],max:0},[null,"There's a pattern. I'm trying to ignore it."])
     ],
-    reply:{ low:"Functional. I can work with that.", mid:"It feels like one person lives here. That person is me.", high:"I invited my sister over. I didn't tidy first. That's how I know." }
-  },
-  { id:'NOOR_03', char:'noor', title:'A Place of My Own', property:'NOOR_HOME_B', change:'upstairs', edit:['living','bedroom','study'],
-    requires:['NOOR_02'], minRenown:15, day:270, allowance:96,
-    story:"Noor got promoted and bought the top floor of her own building: tall windows, a ceiling you could lose a kite in, and absolutely one rule: no desk. 'Desks are how work follows you home.'",
-    message:"I bought the top floor, so I intend to stay. I'd like the furniture to feel considered. A quiet bedroom, somewhere I actually want to sit at the end of the day, and a small room to think in. No desk. A chair, a shelf, a good lamp.",
+    reply:{ low:"Functional. I can work with that.", mid:"It feels like one person lives here. That person is me.", high:"I invited my sister over. I didn't tidy first. That's how I know." },
+    letter:{ hello:"Hello again.",
+      body:["The bedroom works. I said so out loud, in the office. One colleague dropped a stapler.",
+            "Now the living room: the same restraint, but its own temperament. Light wood, a little blue, white and grey. A chair I actually want to sit in, and a good lamp beside it. Fourteen pieces at most. No patterns. (Chrome next to brass is a family argument.)"],
+      bye:"Regards,", ps:"My sister asked who did the bedroom. I said ‘someone good’." },
+    reward:{ items:['bust-art-lisa-stone','couchtable-marble-elle-light'], bonus:['chandelier-kiki'] }, quirks:['noor_wood','noor_metal'] },
+
+  { id:'NOOR_03', n:15, char:'noor', job:'Architect', title:'A Room for Practice', property:'NOOR_HOME_A', change:'more', edit:['music'], allowance:44, minRenown:12,
+    story:"At the antiques shop on Church Hill, Noor walked in to measure a window and walked out with a plan to learn the piano at forty-one. The practice room is the little spare room, and it has two rules: neighbours must not hear, and nothing is allowed to look like a hobby.",
+    message:"I've decided to learn the piano. At forty-one. Don't comment. I need a small room for it: an instrument, a good chair, somewhere for sheet music, a lamp. And something soft on the floor or at the window; the neighbours have views. White, blue, light wood as ever. No more than ten things.",
+    brief:[
+      R('must','music','A music room: an instrument, somewhere to sit and a place for the sheet music',{role:'music',room:'music'},["I played one note. It was the right one. I'm calling it progress."]),
+      R('like','palette','White, blue, grey and light wood',{colors:['White','Blue','Grey','Light Wood'],minShare:0.6},["The room has the same tone as the rest. Calm."]),
+      R('like','lamp','One good lamp',{kinds:['lamp'],min:1},["A lamp that doesn't glare. Considered."]),
+      R('like','calm','Calm: no more than 10 pieces',{maxItems:10},["Ten things. I counted."]),
+      R('avoid','nopattern','No busy patterns',{kinds:['patterned'],max:0},[null,"There's a pattern. It's off-key."]),
+      R('avoid','nodrums','No drums. The neighbours have views.',{kinds:['drums'],max:0},[null,"Drums. The neighbours will have more than views."])
+    ],
+    reply:{ low:"It's a keyboard in a corner. I'll make it work.", mid:"I can practise here. That's all I wanted.", high:"I played the first eight bars of something. Nobody banged on the wall. I'll call that a concert." },
+    letter:{ hello:"Hello.",
+      body:["I'd like to say something and ask you not to comment. I have decided to learn the piano. I'm forty-one. I walked into the antiques shop to measure a window and walked out with a plan.",
+            "The little spare room will be the practice room: an instrument (a keyboard is acceptable; the piano is a long-term goal), a good chair, a place for the sheet music, and one good lamp. White, blue, grey, light wood. Something soft, a rug or a curtain, because the neighbours have views. Ten things, at most. No drums."],
+      bye:"Regards, with a very small ambition,", ps:"My sister has laughed twice. She's since apologised. Once." },
+    reward:{ items:['keyboard-jannis','chessboard-beige'], bonus:['curtain-lana-white'] }, quirks:['noor_wood','noor_metal','noor_soft'] },
+
+  { id:'NOOR_04', n:21, char:'noor', job:'Architect, partner', title:'A Place of My Own', property:'NOOR_HOME_B', change:'upstairs', edit:['living'], allowance:56, minRenown:22,
+    story:"Noor made partner and bought the top floor of her own building: tall windows, a ceiling you could lose a kite in, and absolutely one rule: no desk. 'Desks are how work follows you home.' The living room comes first.",
+    message:"I made partner. I bought the top floor of my own building, so I intend to stay. I'd like the living room to feel considered: a place to sit at the end of the day, a stone or marble piece, and as much air as possible. No desk. A chair, a shelf, a good lamp.",
     brief:[
       R('must','living','A living room',{role:'living',room:'living'},["I'll sit here at the end of every day."]),
-      R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["The bedroom is a respite."]),
-      R('must','study','The quiet room: a shelf or sideboard, a chair and a good lamp',{role:'study',room:'study'},["The quiet room. A chair, a shelf, a lamp. Perfect."]),
+      R('must','read','A shelf with books, within reach of the chair',{kinds:['books','bookshelf'],min:1},["A shelf and a chair. It's all I'll ever need."]),
       R('like','stone','One good stone or marble piece',{materials:['Marble','Stone'],min:1},["That marble piece: considered. I noticed."]),
       R('like','palette','White, blue, grey and light wood',{colors:['White','Blue','Grey','Light Wood','Travertine'],minShare:0.55},["Clean. Proportional. Quietly correct."]),
-      R('like','calm','No more than 12 pieces per room',{maxItems:12,rooms:['living','bedroom','study'],each:true},["Lots of air. Lots of calm."]),
+      R('like','calm','No more than 12 pieces',{maxItems:12},["Lots of air. Lots of calm."]),
+      R('avoid','nodesk','No desk',{kinds:['desk'],max:0},[null,"There's a desk in the living room. I'm choosing to not look."]),
       R('avoid','nopattern','No busy patterns',{kinds:['patterned'],max:0},[null,"A pattern. Of course."])
     ],
-    reply:{ low:"It's a start. I'll live with it.", mid:"Considered. That's the word I'd use.", high:"I came home from the site, took my shoes off, and nobody needed me. The flat agrees. Thank you." }
-  },
+    reply:{ low:"It's a start. I'll live with it.", mid:"Considered. That's the word I'd use.", high:"I came home from the site, took my shoes off, and nobody needed me. The flat agrees. Thank you." },
+    letter:{ hello:"Hello.",
+      body:["I made partner. The firm will have my name on the door. I celebrated by buying the top floor of my own building: tall windows, a ceiling you could lose a kite in. I intend to stay.",
+            "Living room first. A place to sit at the end of the day, a shelf within reach, one good stone or marble piece. White, blue, grey, light wood; twelve things at most; no patterns. And no desk. A chair, a shelf, a good lamp. Desks are how work follows you home."],
+      bye:"With some warmth, which I'm told is noticeable,", ps:"The windows are 3.4 metres tall. I measured twice." },
+    reward:{ items:['fireplace-marlo-marble-white','bedsidetable-moppy-marble'], bonus:['vase-otto-white'] }, quirks:['noor_wood','noor_metal'] },
 
+  { id:'NOOR_05', n:27, char:'noor', job:'Architect, partner', title:'Two Quiet Rooms', property:'NOOR_HOME_B', change:'more', edit:['bedroom','study'], allowance:74, minRenown:35,
+    story:"The living room is finished and Noor has started closing the door on the rest. Two rooms are left: a bedroom that should feel like a deep breath, and a small room to think in, where the lamp matters more than the furniture.",
+    message:"The living room works. Now the other two: the bedroom, quiet, with plenty of air. And the small room, which is for thinking: a chair, a shelf, one lamp. One. Not none, not three. No desk. I'll know if there is.",
+    brief:[
+      R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["The bedroom is a respite."]),
+      R('must','study','The quiet room: a shelf or sideboard, a chair and a good lamp',{role:'study',room:'study'},["The quiet room. A chair, a shelf, a lamp. Perfect."]),
+      R('like','palette','White, blue, grey and light wood',{colors:['White','Blue','Grey','Light Wood','Travertine'],minShare:0.55},["Clean. Proportional. Quietly correct."]),
+      R('like','soft','Something soft underfoot in the bedroom',{kinds:['rug'],min:1,room:'bedroom'},["A rug. My feet noticed first."]),
+      R('like','calm','No more than 12 pieces per room',{maxItems:12,rooms:['bedroom','study'],each:true},["Lots of air. Lots of calm."]),
+      R('avoid','nodesk','No desk',{kinds:['desk'],max:0},[null,"A desk in here. Of all places."]),
+      R('avoid','nopattern','No busy patterns',{kinds:['patterned'],max:0},[null,"A pattern. Of course."])
+    ],
+    reply:{ low:"Two rooms. I can live with that.", mid:"Considered. Both of them.", high:"I closed the door of the small room and thought one whole thought. Without a single email. Thank you." },
+    letter:{ hello:"Hello.",
+      body:["The living room works. I sit in it every evening. Now the others: the bedroom, quiet, with plenty of air, and the small room at the end, which is for thinking.",
+            "The small room needs a chair, a shelf and one lamp. One. Not none, not three. White, blue, grey, light wood, no more than twelve pieces a room, no patterns. And still no desk. I'd have mentioned it, but you already know."],
+      bye:"Regards,", ps:"I've started playing a piece with both hands. Very slowly. Don't tell my sister." },
+    reward:{ items:['wall-lamp-nati','rug-hadi-beige'], bonus:['curtain-maya-beige'] }, quirks:['noor_wood','noor_metal','noor_lamp'] },
+
+  { id:'NOOR_06', n:33, char:'noor', job:'Founder, Noor Architects', title:'Noor Architects', property:'NOOR_OFFICE', change:'second', edit:['office'], allowance:68, minRenown:45,
+    story:"Noor left the firm. Not dramatically. She handed in her resignation on a Tuesday, in a typed letter, with three copies. Noor Architects now has a client, a small office near the quay and a very strong opinion about desks. This is the one place she will have one.",
+    message:"I've left the firm. Not dramatically; I sent three copies of the letter. Noor Architects has an office near the quay, and I'd like it to be exactly right. A proper desk (the one place I'll allow it), a good chair, a laptop, a big table to lay drawings on. Light wood, white, grey, a little blue. Air. And a plant. One.",
+    brief:[
+      R('must','office','A proper office: a desk, a chair, a computer or laptop and a lamp',{role:'office',room:'office'},["A desk. Finally. In the right place."]),
+      R('must','table','A big table for laying out drawings',{kinds:['dining','desk'],min:2},["The drawings fit. Edge to edge. I measured."]),
+      R('must','shelf','A shelf for the model-making',{kinds:['bookshelf','sideboard','wallshelf'],min:1},["A shelf. For the models. They'll love it."]),
+      R('like','palette','White, grey, blue and light wood',{colors:['White','Blue','Grey','Light Wood','Travertine'],minShare:0.55},["Calm. The clients will relax and sign."]),
+      R('like','plant','One plant. Exactly one.',{kinds:['plant'],min:1,max:1},["One plant. It has a name now, and I won't tell you what."]),
+      R('like','calm','No more than 14 pieces',{maxItems:14},["Air. The architecture speaks for itself."]),
+      R('avoid','nopattern','No busy patterns',{kinds:['patterned'],max:0},[null,"A pattern. In the office. Of course."]),
+      R('avoid','nodark','Nothing dark or black',{colors:['Black','Dark Wood'],maxShare:0.15},[null,"Rather a lot of dark for a place with good light."])
+    ],
+    reply:{ low:"It's an office. It'll do until I make it better.", mid:"Considered. The first client said so, out loud.", high:"I stood in the doorway for a full minute. The room was exactly right. I didn't want to spoil it by going in." },
+    letter:{ hello:"Hello.",
+      body:["I've left the firm. Not dramatically; I handed in a typed letter, in triplicate, on a Tuesday. Noor Architects now has one client, a small office near the quay and a very strong opinion about desks.",
+            "This is the one place I will have one. A proper desk, a good chair, a laptop. A big table for drawings, a shelf for models, one lamp that doesn't glare. White, grey, a little blue, light wood; no patterns; air. And one plant. Exactly one. I'll know if there are two."],
+      bye:"With some warmth, which people keep noticing,", ps:"The piano piece is nearly finished. The neighbours have asked for an encore. I said no." },
+    reward:{ items:['standing-lamp-taria','desk-matthias-lightwood'], bonus:['deskchair-hinata-white'] }, quirks:['noor_wood','noor_metal'] },
+
+  ],
+  [
   /* ======================== THEO ======================== */
-  { id:'THEO_01', char:'theo', title:'Before the Baby Arrives', property:'THEO_HOME_A', change:'new', edit:['living'],
-    requires:['NOOR_01'], day:74, allowance:32,
+  { id:'THEO_01', n:4, char:'theo', job:'Baker', title:'Before the Baby Arrives', property:'THEO_HOME_A', change:'new', edit:['living'], allowance:32,
     starters:[ {room:'living', asset:'sideboard-akio-mediumwood', x:56, y:58, width:null} ],
     story:"Theo and Elena have found a little cabin on Lantern Lane, at the top of Orchard Rise, with just enough room for a growing family. Their belongings have arrived. The living room is a collection of temporary solutions.",
     message:"We want somewhere we can both sit and breathe for a minute. Elena likes white; I'd love some yellow or blue. It doesn't need to be fancy. Oh, and we kept the old sideboard. It might be useful.",
@@ -449,43 +771,115 @@ var Story = (function(){
       R('avoid','nowhitecouch','No white upholstery',{kinds:['couch','armchair'],colors:['White'],max:0},[null,"White upholstery and a baby on the way? Brave."]),
       R('avoid','novases','Nothing fragile: no vases',{kinds:['vase'],max:0},[null,"A vase! Which will be on the floor by Tuesday."])
     ],
-    reply:{ low:"It's a good start. We'll make it ours.", mid:"This feels like somewhere we can actually settle in.", high:"Elena cried a little and said it was 'hormones'. I think it was the sideboard." }
-  },
-  { id:'THEO_02', char:'theo', title:'A Room for Us, Too', property:'THEO_HOME_A', change:'more', edit:['bedroom'],
-    requires:['THEO_01','NOOR_03'], day:302, allowance:36,
+    reply:{ low:"It's a good start. We'll make it ours.", mid:"This feels like somewhere we can actually settle in.", high:"Elena cried a little and said it was 'hormones'. I think it was the sideboard." },
+    letter:{ hello:"Hi there!",
+      body:["Noor said you were good, and she doesn't say that about anyone. Elena and I have found a little cabin up on Lantern Lane. The baby's due in spring and the living room is full of ‘temporary solutions’. Elena calls blue and yellow ‘our colours’, like the shop sign.",
+            "We'd love somewhere to sit and breathe: white, a bit of yellow, some blue, solid wood. Nothing white to sit on (small person incoming) and nothing breakable. I once owned a vase. It's a sad story. We kept the old sideboard. It might be useful."],
+      bye:"Cheers!", ps:"If you ever need bread, I'm yours. I'm not great with words." },
+    reward:{ items:['rug-elena-yellow','globe'], bonus:['recordplayer-old-mediumwood'] }, quirks:['theo_colours'] },
+
+  { id:'THEO_02', n:10, char:'theo', job:'Baker', title:'A Room for Us, Too', property:'THEO_HOME_A', change:'more', edit:['bedroom'], allowance:36, minRenown:5,
     story:"The baby has arrived and so has a lot of laundry. Theo and Elena have spent their money on essentials and left their own bedroom for last. They'd love one room that's restful and adult.",
-    message:"The living room still makes us happy. Could you help with our bedroom now? Elena suggested green. I'd like to keep the wood and keep it simple. And somewhere to put clothes that isn't 'the chair'.",
+    message:"She's here! Wren, a few weeks old, very loud. The living room still makes us happy. Could you help with our bedroom now? Elena suggested green. I'd like to keep the wood and keep it simple. And somewhere to put clothes that isn't 'the chair'. Wren has started rolling around like a small sausage, so something soft on the floor.",
     brief:[
       R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["It's a real bedroom. With a bed we can find the floor around."]),
-      R('must','storage','Somewhere to put clothes: a sideboard or cabinet',{kinds:['sideboard'],min:1},["Storage that isn't a chair. Finally."]),
+      R('must','storage','Somewhere to put clothes: a sideboard, cabinet or wardrobe',{kinds:['sideboard','wardrobe'],min:1},["Storage that isn't a chair. Finally."]),
       R('like','green','Green and white',{colors:['Green','White','Beige'],minShare:0.5},["Green and white. Elena says it's 'calm in a fresh way'."]),
       R('like','wood','Sturdy wood',{colors:['Light Wood','Medium Wood'],min:2},["The wood keeps it grounded."]),
       R('avoid','nowhitebed','No white bed',{kinds:['bed'],colors:['White'],max:0},[null,"A white bed, with a baby in the house? Daring."]),
       R('avoid','novases','Nothing fragile',{kinds:['vase'],max:0},[null,"A vase. I'm sorry. Our history with vases is not good."])
     ],
-    reply:{ low:"It's somewhere to sleep. That's a lot, right now.", mid:"Restful. Adult. That's all we asked.", high:"We slept for six hours straight. The baby did too. Is this witchcraft?" }
-  },
-  { id:'THEO_03', char:'theo', title:'Enough Room for Everyone', property:'THEO_HOME_B', change:'move', edit:['living','dining','bedroom'],
-    requires:['THEO_02'], minRenown:15, day:360, allowance:86,
+    reply:{ low:"It's somewhere to sleep. That's a lot, right now.", mid:"Restful. Adult. That's all we asked.", high:"We slept for six hours straight. The baby did too. Is this witchcraft?" },
+    letter:{ hello:"Hi again!",
+      body:["She's here! Wren, a few weeks old, very loud, already stealing my heart and my socks. Elena sends a tired thank-you for the living room.",
+            "Wren has started rolling across rooms like a small sausage. Our bedroom is last on the list. Restful, please: green and white, sturdy wood, a bed that isn't white, a soft rug, and somewhere for clothes that isn't ‘the chair’. It has become load-bearing. Nothing fragile."],
+      bye:"Sleepily yours,", ps:"Rosa has offered to sew Wren a coat. I'm scared of her." },
+    reward:{ items:['curtain-siri-green','books-leaning-beige'], bonus:['lamp-hubby'] }, quirks:['theo_colours','theo_roll'] },
+
+  { id:'THEO_03', n:16, char:'theo', job:'Baker', title:'Where the Bread Begins', property:'THEO_HOME_A', change:'more', edit:['kitchen'], allowance:46, minRenown:12,
+    story:"The old baker at Crumb & Crown has offered Theo a share in the bakery. Theo wants to be ready: he's been baking test loaves at three in the morning, in a cabin kitchen that was not made for it. The kitchen needs to catch up with him.",
+    message:"The old baker offered me a share of the bakery! I said yes, then threw up in a bush. Before I start I want to practise at home, so the kitchen needs to work: counter, fridge, a mixer or two, a table where Elena can sit and taste. Stools at the counter, I'm always up and down. Warm colours: blue and yellow, our colours, and solid wood. Nothing fragile near the flour.",
+    brief:[
+      R('must','kitchen','A working kitchen: a counter or island, and a fridge',{role:'kitchen',room:'kitchen'},["It's a kitchen where bread can happen. Finally."]),
+      R('must','gadgets','At least 2 cooking gadgets: mixers and the like',{kinds:['gadget'],min:2},["Two mixers. I'll bake the whole street a loaf."]),
+      R('must','table','A table for Elena to sit and taste at',{kinds:['dining','sidetable'],min:1},["Elena sat down and tasted. She said 'more salt'. She's right."]),
+      R('like','palette','Blue, yellow, white and solid wood',{colors:['White','Beige','Blue','Yellow','Orange','Light Wood','Medium Wood'],minShare:0.6},["It's cheerful AND practical. A rare combo."]),
+      R('like','plant','A plant or herbs on the windowsill',{kinds:['plant'],min:1},["Herbs by the window. Elena says it's the cutest thing in the house."]),
+      R('avoid','novases','Nothing fragile near the flour',{kinds:['vase'],max:0},[null,"A vase. Near the flour. Our nemesis."]),
+      R('avoid','nochrome','Not too shiny and chrome',{colors:['Chrome'],max:2},[null,"A bit too much chrome for a cabin."])
+    ],
+    reply:{ low:"It's a kitchen. Loaves will be made. Possibly burnt.", mid:"A proper baker's kitchen at home. Elena says I'm unbearable.", high:"I baked my first perfect loaf here at four in the morning and cried a little into the flour. It was a good loaf." },
+    letter:{ hello:"Hey you,",
+      body:["Two bits of news. The old baker at Crumb & Crown has offered me a share of the bakery (I said yes, then threw up in a bush), and Wren has said her first word. It was 'Dada'. Elena says she was pointing at the bread.",
+            "Before I start I'd like to practise properly at home, so the cabin kitchen needs to work: counter, fridge, a mixer or two, a table where Elena can sit and taste. Stools at the counter; I'm always up and down. Blue, yellow, white and solid wood. A plant on the windowsill. Nothing fragile near the flour."],
+      bye:"Thank you, again and always,", ps:"Come by at six one morning. The first loaf is yours." },
+    reward:{ items:['standmixer-sina-white','kettle-bruno-beige'], bonus:['mixer-jochen-green'] }, quirks:['theo_colours','theo_stools'] },
+
+  { id:'THEO_04', n:22, char:'theo', job:'Baker, co-owner of Crumb & Crown', title:'The Corner Table', property:'THEO_BAKERY', change:'second', edit:['shop'], allowance:60, minRenown:22,
+    story:"The old baker has retired to a deckchair and left Crumb & Crown to Theo, who has never owned anything bigger than a sourdough starter. The shop has a corner no one has ever known what to do with. Theo thinks it should be a place to sit, eat a roll and not be rushed.",
+    message:"The old baker retired and left me the keys, and the cat. I'd like to turn the empty corner of the shop into a place to sit. Small tables, enough chairs, a plant or two, somewhere to put the cakes. It should feel like our kitchen at home, only with more flour. Blue and yellow, solid wood. Nothing fragile!",
+    brief:[
+      R('must','tables','At least two tables for customers',{kinds:['dining','coffeetable'],min:2},["Two tables. People already want the corner one."]),
+      R('must','seats','At least five seats',{kinds:['chair','stool','armchair'],min:5},["Seats! Customers can stay more than five minutes."]),
+      R('must','counter','A counter for the cakes',{kinds:['counter'],min:1},["The cakes finally have a stage."]),
+      R('like','palette','Blue, yellow, white and solid wood',{colors:['White','Beige','Blue','Yellow','Orange','Light Wood','Medium Wood'],minShare:0.6},["It's cheerful AND practical."]),
+      R('like','plants','A couple of plants',{kinds:['plant'],min:2},["Plants. The shop cat has already claimed one."]),
+      R('like','light','Warm lights over the tables',{kinds:['lamp'],min:2},["Warm light. It smells like bread even at night."]),
+      R('avoid','novases','Nothing fragile',{kinds:['vase'],max:0},[null,"A vase. In a bakery. Customers will find it."]),
+      R('avoid','nodark','Not too dark',{colors:['Black','Dark Wood'],maxShare:0.2},[null,"A bit dark for a place that opens at seven."])
+    ],
+    reply:{ low:"It's a corner with chairs. Customers will fill it.", mid:"A place to sit. Customers are already confused by how nice it is.", high:"Someone stayed an hour. At a bakery! Over a roll! I nearly cried into the till." },
+    letter:{ hello:"Hey you,",
+      body:["The old baker has retired to a deckchair and left me the keys. And the cat, who has opinions. Crumb & Crown is mine now, mostly. There's a corner at the back that nobody has ever known what to do with.",
+            "I want it to be a place to sit: small tables, enough chairs, a counter for the cakes, a plant or two and warm lights. It should feel like our kitchen at home, only with more flour. Blue and yellow, solid wood, nothing fragile."],
+      bye:"Flour on my nose and everywhere else,", ps:"The shop cat has claimed the best chair. I'm not going to argue." },
+    reward:{ items:['stacked-bowls-white','coffee-maker-filter-hannes'], bonus:['mocca-maker-fred-white'] }, quirks:['theo_colours'] },
+
+  { id:'THEO_05', n:28, char:'theo', job:'Baker, owner of Crumb & Crown', title:'Enough Room for Everyone', property:'THEO_HOME_B', change:'move', edit:['living','dining'], allowance:80, minRenown:35,
+    story:"Wren has discovered stairs, Elena has discovered a spare year of savings, and the cabin has discovered it has no more room. They've found a family flat on Orchard Rise with a proper dining room. They brought the sideboard. It followed them.",
+    message:"We've found a flat with a proper dining room! I'd love us all to sit down together when family visits. Grandad only trusts wood he can knock on, so a wooden table, please. Bring what still works from the cabin; we don't need to start from zero. (The sideboard is back. It followed us.)",
     starters:[ {room:'living', asset:'sideboard-akio-mediumwood', x:60, y:58, width:null} ],
-    story:"Theo is now a co-owner of the bakery and the family has moved to a bigger flat with a proper dining room. They can afford new furniture, but they brought the sideboard. It might be useful.",
-    message:"We've finally got a proper dining room! I'd love us all to sit down together when family visits. Bring what still works from the old place, we don't need to start from zero. (The sideboard is back. It followed us.)",
     brief:[
       R('must','living','A living room',{role:'living',room:'living'},["The living room is comfy and ready for naps."]),
       R('must','dining','A dining room with a table and seats',{role:'dining',room:'dining'},["A table. For everyone. I might cry into the soup."]),
-      R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["The bedroom is peaceful."]),
       R('like','palette','White, green, yellow and blue, with wood',{colors:['White','Beige','Green','Yellow','Orange','Blue','Light Wood','Medium Wood'],minShare:0.65},["It's cheerful AND practical. A rare combo."]),
       R('like','mustard','A touch of yellow',{colors:['Yellow','Orange'],min:1},["Yellow is back."]),
       R('like','wood','Sturdy wood in a few places',{colors:['Light Wood','Medium Wood'],min:3},["Plenty of good wood."]),
+      R('like','soft','Something soft on the floor in both rooms (Wren is walking)',{kinds:['rug'],min:1,rooms:['living','dining'],each:true},["Soft landings everywhere. Wren fell on three of them already."]),
       R('avoid','novases','Nothing fragile',{kinds:['vase'],max:0},[null,"A vase. Our nemesis."]),
       R('avoid','nowhite','No white upholstery',{kinds:['couch','armchair','bed'],colors:['White'],max:0},[null,"White upholstery. In THIS household."])
     ],
-    reply:{ low:"It's a home. We'll fill the rest with noise.", mid:"A proper family flat. We're delighted.", high:"Everyone sat at the table and nobody wanted to leave. Even the baby's grandad. That never happens." }
-  },
+    reply:{ low:"It's a home. We'll fill the rest with noise.", mid:"A proper family flat. We're delighted.", high:"Everyone sat at the table and nobody wanted to leave. Even Wren's grandad. That never happens." },
+    letter:{ hello:"Hey you,",
+      body:["Wren has discovered stairs and the cabin has discovered it has no more space. We've found a flat on Orchard Rise with a proper dining room. And the bakery's doing well enough that Elena says ‘yes, we can’, which is the first time in five years.",
+            "I'd love everyone round one table: grandad, aunts, the lot. (Grandad only trusts wood he can knock on.) A living room for naps, a dining room for noise, something soft on the floor because Wren is walking at full speed. Bring what still works from the cabin. The sideboard followed us. It does that. Same as before: white, green, yellow, blue, solid wood, nothing fragile."],
+      bye:"Thank you, again and always,", ps:"Come by at six one morning. The first loaf is still yours." },
+    reward:{ items:['fireplace-milo-stone-beige','couch-hennes-green-long'], bonus:['stacked-plates-beige'] }, quirks:['theo_colours','theo_knock'] },
 
+  { id:'THEO_06', n:34, char:'theo', job:'Baker, owner of Crumb & Crown', title:'A Big-Girl Room', property:'THEO_HOME_B', change:'more', edit:['wren'], allowance:52, minRenown:45,
+    story:"Wren is two and a bit, has opinions about socks and has outgrown the cot. Elena has also, very quietly, mentioned that there might be another small person on the way. Both are reasons to make a room that grows with them.",
+    message:"Wren is two and a bit and needs a room of her own. A bed (not white!), somewhere for toys and clothes, a soft rug, a few books, and enough colour to make it hers. Elena says there might be another one coming. We've told nobody. We're telling you. Nothing fragile, please. She throws things.",
+    brief:[
+      R('must','bed','A proper bed',{kinds:['bed'],min:1},["A big-girl bed. Wren climbed in and refused to get out."]),
+      R('must','storage','Somewhere for toys and clothes',{kinds:['wardrobe','sideboard','storage'],min:1},["A place for everything. For about a week."]),
+      R('must','rug','A soft rug',{kinds:['rug'],min:1},["Soft landings guaranteed."]),
+      R('like','books','A few books',{kinds:['books','bookshelf'],min:1},["Wren has already pulled all the books out. Happily."]),
+      R('like','color','Bright and cheerful: at least four colours',{minDistinct:4},["It's a rainbow with a bed. She loves it."]),
+      R('like','plant','A plant out of reach',{kinds:['plant'],min:1},["A plant. She's already named it. It's called 'Bread'."]),
+      R('avoid','novases','Nothing fragile',{kinds:['vase'],max:0},[null,"A vase. She throws things. We've talked about this."]),
+      R('avoid','nowhite','No white bed',{kinds:['bed'],colors:['White'],max:0},[null,"A white bed. Brave. Messy. Wren says hello."])
+    ],
+    reply:{ low:"It's a bed and a rug. She says it's a castle.", mid:"Her own room. She said 'mine'. It's her favourite word.", high:"She fell asleep in her own room without a fuss. Elena and I looked at each other like we'd won the lottery." },
+    letter:{ hello:"Hey you,",
+      body:["Wren is two and a bit, has opinions about socks and has outgrown the cot. She needs a room of her own: a bed that isn't white (we've learnt), a place for toys and clothes, a soft rug, a few books, and enough colour to make it hers.",
+            "And I'd like you to be the first to know that Elena says there might be another one on the way. We've told nobody. Not even grandad. Nothing fragile, please. She throws things."],
+      bye:"Thank you, again and always,", ps:"The bakery has a queue round the corner. A queue! Someone's brought a chair." },
+    reward:{ items:['pillow-willow-green','bockstack-02'], bonus:['cushion-lala-rosa'] }, quirks:['theo_colours','theo_rug'] },
+
+  ],
+  [
   /* ======================== ROSA ======================== */
-  { id:'ROSA_01', char:'rosa', title:'Finally, the Sitting Room', property:'ROSA_HOME_A', change:'new', edit:['sitting'],
-    requires:['THEO_01'], day:88, allowance:42,
+  { id:'ROSA_01', n:5, char:'rosa', job:'Retired costume maker', title:'Finally, the Sitting Room', property:'ROSA_HOME_A', change:'new', edit:['sitting'], allowance:42,
     starters:[ {room:'sitting', asset:'sideboard-nikola-darkwood', x:58, y:56, width:null} ],
     story:"Rosa retired from the theatre costume department last month and hasn't enjoyed a single beige thing since. She knows which belongings she loves and which she's tolerated for years. She wants someone who'll work with her taste, not erase it.",
     message:"I've hated that arrangement for years. The dark wood stays — I'm very attached to the sideboard. And I want proper colour: red, yellow, something with a pattern. Retirement is no reason to turn everything beige, darling.",
@@ -497,41 +891,119 @@ var Story = (function(){
       R('like','ochre','Some yellow or orange',{colors:['Yellow','Orange'],min:2},["That yellow warms the soul."]),
       R('avoid','noall','Not a pale room: little white or beige',{colors:['White','Beige'],maxShare:0.25},[null,"There's rather a lot of beige. One could faint."])
     ],
-    reply:{ low:"It's a start. I'll complain about it fondly.", mid:"Plenty of colour, and it still feels like my home. Good.", high:"I sat in it and wanted to hold a small dinner party immediately. That's a compliment, darling." }
-  },
-  { id:'ROSA_02', char:'rosa', title:'Stay for Tea', property:'ROSA_HOME_A', change:'more', edit:['dining','guest'],
-    requires:['ROSA_01','MIA_02'], day:146, allowance:68,
-    story:"Rosa has started teaching small sewing classes in the village hall. Friends stay for tea afterwards, and her daughter visits at weekends. The dining room needs attention, and the guest room is 'where I put things I haven't decided about'.",
-    message:"Everyone ends up staying longer now. The dining room needs some attention, and my daughter deserves better than the room where I put things I haven't decided about. Blue and green in her room, I think. Red and yellow for the table.",
+    reply:{ low:"It's a start. I'll complain about it fondly.", mid:"Plenty of colour, and it still feels like my home. Good.", high:"I sat in it and wanted to hold a small dinner party immediately. That's a compliment, darling." },
+    letter:{ hello:"My dear,",
+      body:["I have retired from thirty-one years in the costume department of the Playhouse and been told to ‘relax’. I have never been less relaxed. My sitting room has been wrong since 1998. (I hear an antiques shop is opening on Church Hill. I intend to be unbearable about it.)",
+            "The sideboard stays. Everything else must earn its place: two places to sit, a table, and a lamp with personality. I light a room like a stage: never from just one place. And colour, darling: red, yellow, dark wood and something patterned. What I will not have is a pale room. Not beige. Not ‘greige’."],
+      bye:"With great expectations,", ps:"Theo says you're good. He once tried to pay me in sourdough." },
+    reward:{ items:['candle-kiki-off','rug-malana-orange-pattern'], bonus:['lamp-sia-gold'] }, quirks:['rosa_lights'] },
+
+  { id:'ROSA_02', n:11, char:'rosa', job:'Retired costume maker', title:'Stay for Tea', property:'ROSA_HOME_A', change:'more', edit:['dining'], allowance:44, minRenown:5,
+    story:"Rosa has started teaching a little sewing class in the village hall, and everyone stays for tea afterwards. 'Everyone' is currently six people and one opinionated dachshund. The dining room needs to take them.",
+    message:"I've begun teaching sewing at the village hall and everyone stays for tea. ‘Everyone’ is six people and a dachshund. The dining room needs a proper table, seats for all, and the mood of a stage set before the curtain goes up: red, yellow, dark wood, a touch of gold. And please, one pattern, darling. Not a choir.",
     brief:[
       R('must','dining','A dining table with seats',{role:'dining',room:'dining'},["Tea for six, and a debate. Perfect."]),
-      R('must','guest','A guest bedroom: a bed and a bedside table',{role:'bedroom',room:'guest'},["My daughter will feel adored. And a bit spoilt."]),
-      R('like','dining','Red, yellow and dark wood in the dining room',{colors:['Red','Orange','Yellow','Dark Wood','Brown'],minShare:0.4,room:'dining'},["The dining room is a stage set for conversation."]),
-      R('like','guest','Green and blue in the guest room',{colors:['Green','Blue','Beige','White'],minShare:0.5,room:'guest'},["The guest room is so peaceful. Almost suspicious."]),
+      R('must','seats','At least six seats',{kinds:['chair','stool','armchair'],min:6},["Six seats. And the dachshund has chosen the seventh."]),
+      R('like','dining','Red, yellow and dark wood',{colors:['Red','Orange','Yellow','Dark Wood','Brown'],minShare:0.4},["The dining room is a stage set for conversation."]),
       R('like','brass','A touch of brass or gold',{colors:['Brass','Gold'],min:1},["A bit of gold. One should always have a bit of gold."]),
-      R('like','dark','Dark wood in the dining room',{colors:['Dark Wood'],min:2,room:'dining'},["The wood is substantial. I approve."]),
+      R('like','dark','Dark wood',{colors:['Dark Wood'],min:2},["The wood is substantial. I approve."]),
+      R('like','lights','Light from more than one place',{kinds:['lamp'],min:2},["Two lights at different heights. Now it has a stage."]),
       R('avoid','nowhite','Not white and pale everywhere',{colors:['White'],maxShare:0.25},[null,"Too much white. It's a hospital, not a home."])
     ],
-    reply:{ low:"A fine beginning. One expects improvements.", mid:"Lovely. Now everyone will stay even longer. Good.", high:"Four people stayed until midnight. I've found the room's 'one more cup' effect. Marvellous." }
-  },
-  { id:'ROSA_03', char:'rosa', title:'The Little House on Lantern Lane', property:'ROSA_CABIN_A', change:'second', edit:['living','kitchen','bedroom'],
-    requires:['ROSA_02'], minRenown:15, day:330, allowance:110,
-    story:"With long-held savings and an inheritance, Rosa has bought a little cabin on Lantern Lane, with the bay glinting through the trees. She keeps her city flat. The cabin is small and bright, and calls for a lighter, breezier version of her taste.",
-    message:"I want to know I'm near the water when I open the windows. I don't need little ducks on the cushions. Lighter wood, some green and blue — but don't make it anonymous, darling. A little yellow. I do have a reputation.",
+    reply:{ low:"A fine beginning. One expects improvements.", mid:"Lovely. Now everyone will stay even longer. Good.", high:"Six people stayed until midnight. I've found the room's 'one more cup' effect. Marvellous." },
+    letter:{ hello:"Darling,",
+      body:["I've begun teaching sewing at the village hall, and everyone stays for tea afterwards. ‘Everyone’ is currently six people and one opinionated dachshund.",
+            "Pattern is a soloist, not a choir. The dining room needs a proper table, seats for all, and the mood of a stage set before the curtain goes up: red, yellow, dark wood, a touch of gold, light from more than one place. And no white. It's a home, not a hospital."],
+      bye:"Fondly, and with a flourish,", ps:"Mia's dahlias have the whole village talking." },
+    reward:{ items:['bust-art-alena-stone','couch-henry-red'], bonus:['chandelier-irina'] }, quirks:['rosa_lights','rosa_solo'] },
+
+  { id:'ROSA_03', n:17, char:'rosa', job:'Sewing teacher', title:'The Sewing Room', property:'ROSA_HOME_A', change:'more', edit:['spare'], allowance:54, minRenown:12,
+    story:"The class has grown to twelve, with a waiting list and a very slow-moving dachshund. The 'room where I put things I haven't decided about' has to decide. It needs to be a proper workroom, with enough light to see the colour of thread, and a corner for her daughter's weekend bed.",
+    message:"The class has twelve people and a waiting list. The spare room has to become a proper sewing room: a table big enough to cut cloth on, seats for the class, shelves for the fabric, good light from more than one place, and no curtains, darling. One must see colour in daylight. And a daybed in the corner for my daughter at weekends.",
+    brief:[
+      R('must','sewing','A sewing room: a big table to cut on, a chair and good light',{role:'sewing',room:'spare'},["A table to cut on! One feels like a professional again."]),
+      R('must','seats','Seats for the class: at least four',{kinds:['chair','stool','armchair'],min:4},["Four seats. The class has doubled; the seats must follow."]),
+      R('must','shelf','Shelves or a sideboard for the fabric',{kinds:['sideboard','bookshelf','wallshelf','wardrobe'],min:1},["Fabric has a home. I could weep."]),
+      R('like','colour','Red, yellow, blue and green: colour to match the thread',{colors:['Red','Yellow','Blue','Green','Orange'],min:3},["It looks like a box of embroidery thread. Heaven."]),
+      R('like','bed','A daybed or couch for my daughter',{kinds:['couch','bed'],min:1},["A corner for my daughter. She'll complain, then stay a week."]),
+      R('like','lights','Light from more than one place',{kinds:['lamp'],min:2},["Good light. Now one can see what one has done wrong."]),
+      R('avoid','nocurtains','No curtains: one must see colour in daylight',{kinds:['curtain'],max:0},[null,"Curtains, darling? In a sewing room? One can't see colour through lace."]),
+      R('avoid','nowhite','Not white and pale everywhere',{colors:['White'],maxShare:0.25},[null,"Too much white. It's an operating theatre."])
+    ],
+    reply:{ low:"It's a room with a table. The thread will do the rest.", mid:"The class has taken over the whole flat. Gloriously.", high:"Twelve people stitched till dusk and nobody checked a phone. That's my review." },
+    letter:{ hello:"Darling,",
+      body:["The class has twelve people and a waiting list. The village hall has asked, politely, to have its radiator back. And the room where I keep the things I haven't decided about… has to decide.",
+            "A sewing room: a table big enough to cut cloth on, seats for the class, a place for the fabric, good light from more than one place, and no curtains. One must see the colour of thread in daylight. A daybed for my daughter at weekends. And colour, darling: red, yellow, blue, green. It should look like a box of embroidery thread."],
+      bye:"Fondly, and with a pin in my mouth,", ps:"The dachshund has been appointed class mascot. He sits on the pattern." },
+    reward:{ items:['pillows-stacked-beige-pattern','vase-amora-black'], bonus:['pillow-willow-rosa'] }, quirks:['rosa_lights','rosa_solo','rosa_daylight'] },
+
+  { id:'ROSA_04', n:23, char:'rosa', job:'Sewing teacher', title:'The Little House on Lantern Lane', property:'ROSA_CABIN_A', change:'second', edit:['living','kitchen'], allowance:84, minRenown:22,
+    story:"With long-held savings and a small inheritance, Rosa has bought a cabin on Lantern Lane, with the bay glinting through the trees. She keeps her flat in town. The cabin is small and bright and calls for a lighter, breezier version of her taste, starting with the living room and the kitchen.",
+    message:"I have done something impulsive. I've bought a cabin on Lantern Lane, and I'm keeping the flat; I'm not a monster. I want to know I'm near the water when I open the windows. A living room for a book and the view, a kitchen with a table for toast with dignity. Lighter wood, some green and blue, but don't make it anonymous, darling. A little yellow. I do have a reputation.",
     brief:[
       R('must','living','A living room',{role:'living',room:'living'},["I could read here for weeks."]),
       R('must','kitchen','A kitchen, with a counter and a fridge',{role:'kitchen',room:'kitchen'},["Tea, toast. A kitchen of dignity."]),
-      R('must','bedroom','A bedroom with a bed and a bedside table',{role:'bedroom',room:'bedroom'},["The bedroom will let me sleep to the sound of the water."]),
       R('like','palette','Green, blue, beige and light wood',{colors:['Green','Blue','Beige','White','Light Wood'],minShare:0.6},["It's the bay in a room. Not literal. Wonderful."]),
       R('like','ochre','Small warm accents: yellow, orange or gold',{colors:['Yellow','Orange','Gold','Brass'],min:1},["That bit of yellow is me, in tiny form."]),
       R('like','wood','Light wood in a few places',{colors:['Light Wood'],min:3},["Light, lovely wood."]),
       R('like','table','A table in the kitchen to eat at',{kinds:['dining'],min:1,room:'kitchen'},["A kitchen table. Bliss."]),
       R('avoid','nodark','Not an all-dark-wood interior',{colors:['Dark Wood'],maxShare:0.2},[null,"Rather a lot of dark wood for a little cabin, darling."])
     ],
-    reply:{ low:"It's a house with a view of the bay. One forgives a great deal.", mid:"It's light and it's mine. Lovely.", high:"I opened the window, heard the ducks, and decided to stay till autumn. You've ruined my city flat for me." }
-  }
+    reply:{ low:"It's a house with a view of the bay. One forgives a great deal.", mid:"It's light and it's mine. Lovely.", high:"I opened the window, heard the ducks, and decided to stay till autumn. You've ruined my city flat for me." },
+    letter:{ hello:"Darling,",
+      body:["I have done something impulsive. I have bought a little house up on Lantern Lane. Small, bright, slightly crooked, with a kitchen window that looks straight down to the bay. I'm keeping the flat in town; I'm not a monster.",
+            "It needs a lighter version of me: a living room for a book and the view, and a kitchen with a table for toast with dignity (that window is the whole show, so no curtains on it). Green, blue and beige, light wood, a small touch of yellow. No ducks on the cushions. And not too much dark wood. It's a cabin, not a library in a thriller."],
+      bye:"With wet boots already,", ps:"Come for tea when it's done. I've warned the ducks." },
+    reward:{ items:['fireplace-marco-marble-beige','rug-persian-rosa'], bonus:['vase-blue-china'] }, quirks:['rosa_lights','rosa_solo','rosa_window'] },
 
-  ];
+  { id:'ROSA_05', n:29, char:'rosa', job:'Sewing teacher', title:'Sleep to the Sound of the Water', property:'ROSA_CABIN_A', change:'more', edit:['bedroom'], allowance:50, minRenown:35,
+    story:"After a summer at the cabin Rosa sleeps there more often than not. The bedroom is still the room she hasn't decided about. She wants it as peaceful as the kitchen is lively: a bed to sleep to the sound of the water in.",
+    message:"I've been sleeping at the cabin more often than in town, and the bedroom is still a mattress and an opinion. I want to sleep to the sound of the water. A proper bed, a wardrobe for the costumes I can't bear to give up, something soft underfoot, light from more than one place. Greens and blues, a touch of gold, and a little pattern, just one. Nothing too dark.",
+    brief:[
+      R('must','bedroom','A bed and a bedside table',{role:'bedroom',room:'bedroom'},["The bedroom will let me sleep to the sound of the water."]),
+      R('must','wardrobe','A wardrobe for the costumes',{kinds:['wardrobe'],min:1},["The costumes have a home. They'd like to be introduced."]),
+      R('like','palette','Green, blue, beige and light wood, with a little gold',{colors:['Green','Blue','Beige','White','Light Wood','Gold','Brass'],minShare:0.6},["It's the bay in a bedroom. I could weep."]),
+      R('like','soft','Something soft underfoot',{kinds:['rug'],min:1},["A rug. My feet may never leave."]),
+      R('like','lights','A lamp on each side of the bed',{kinds:['lamp'],min:2},["A lamp on each side. A little stage for reading."]),
+      R('like','pattern','One lovely pattern',{kinds:['patterned'],min:1},["One pattern, beautifully placed. A soloist."]),
+      R('avoid','nodark','Not dark',{colors:['Dark Wood','Black'],maxShare:0.2},[null,"Rather a lot of dark for a bedroom with a window like that."])
+    ],
+    reply:{ low:"It's a bedroom with a view of the water. One forgives a great deal.", mid:"I slept ten hours and woke to ducks. Lovely.", high:"I woke up, opened the window, and a kingfisher looked at me. It's the best review I can give." },
+    letter:{ hello:"Darling,",
+      body:["I've spent the whole summer at the cabin. The flat has been told it's very much loved and very much empty. The bedroom is still a mattress and an opinion.",
+            "I want to sleep to the sound of the water. A proper bed, a wardrobe for the costumes I can't bear to give up, something soft underfoot, a lamp on each side. Greens and blues, a touch of gold, and one pattern, just the one. Nothing too dark; the window is the whole show."],
+      bye:"Fondly, and nearly asleep,", ps:"The veil is nearly finished. It's in the wardrobe. Do not look. I know where you live." },
+    reward:{ items:['wall-lamp-olivia','rug-melanie-beige'], bonus:['curtain-maya'] }, quirks:['rosa_lights','rosa_solo'] },
+
+  { id:'ROSA_06', n:35, char:'rosa', job:'Costume maker, the Cove\'s own', title:'The Costume Cupboard', property:'ROSA_ATELIER', change:'second', edit:['shop'], allowance:72, minRenown:45,
+    story:"The wedding veil got more applause than the cake. Suddenly everybody in the Cove wants costumes for the lantern children, the regatta, the school play. Rosa has rented a small shop front in Old Town and called it The Costume Cupboard. The sign is already crooked, on purpose.",
+    message:"The veil got more applause than the cake. Now everyone wants costumes. I've rented a tiny shop in Old Town, The Costume Cupboard. I need a big table to cut on, rails and wardrobes for the finished things, somewhere for the customers to sit while I pin them, a lamp that flatters, and colour, darling. All of it. One pattern per corner. No white.",
+    brief:[
+      R('must','sewing','A workroom: a big table to cut on, a chair and good light',{role:'sewing',room:'shop'},["A cutting table! One feels like a professional again."]),
+      R('must','wardrobes','At least two wardrobes for the finished costumes',{kinds:['wardrobe'],min:2},["Two wardrobes full of costumes. There's room for one more soul."]),
+      R('must','seats','Seats for customers to wait on',{kinds:['couch','armchair','chair','stool'],min:3},["Customers are already staying too long. How wonderful."]),
+      R('like','colour','Red, yellow, blue and green',{colors:['Red','Yellow','Blue','Green','Orange','Gold'],min:5},["It looks like a theatre wardrobe that's had a very good night."]),
+      R('like','gold','A bit of gold or brass',{colors:['Gold','Brass'],min:1},["A bit of gold. One should always have a bit of gold."]),
+      R('like','lights','Light from more than one place',{kinds:['lamp'],min:3},["Light from all sides. Flattering and fair."]),
+      R('like','pattern','A lovely pattern or two',{kinds:['patterned'],min:2},["Two soloists. A duet."]),
+      R('avoid','nowhite','Not white and pale everywhere',{colors:['White'],maxShare:0.2},[null,"Too much white. It's a hospital again."])
+    ],
+    reply:{ low:"A cupboard. A small one. It'll fill up.", mid:"Rather magnificent. The mannequins approve.", high:"The first customer walked in, gasped, and ordered a whole pirate ship. I have never been happier." },
+    letter:{ hello:"Darling,",
+      body:["The veil got more applause than the cake. I'm told this is unprecedented. Suddenly everybody in the Cove wants costumes: the lantern children, the regatta crew, the school play, one gentleman who would like to be a wolf.",
+            "I've rented a tiny shop in Old Town and called it The Costume Cupboard. A big table to cut on, wardrobes for the finished things, somewhere for customers to sit while I pin them, lamps that flatter. And colour, darling. All of it. Red, yellow, blue, green, a flash of gold. A little pattern, but not a choir. And no white."],
+      bye:"With a pin in my mouth and a crown on my head,", ps:"I'm sewing something for you. I won't say what. It involves a great deal of red." },
+    reward:{ items:['vase-amora-whiteblack','lamp-heidi-creme'], bonus:['curtain-lana'] }, quirks:['rosa_lights','rosa_solo'] },
+
+  ]
+  ).sort(function(a, b){ return a.n - b.n; });
+  // One job a month. n = which month of the three years (0 = June 2025), so the calendar,
+  // the seasons and the happenings all line up. Each neighbour's jobs follow one another.
+  QUESTS.forEach(function(q){ q.day = D(q.n); });
+  (function(){
+    var last = {};
+    QUESTS.forEach(function(q){ q.requires = last[q.char] ? [last[q.char]] : []; last[q.char] = q.id; });
+  })();
 
   /* ------------------------------------------------------------------ voices */
   // How each neighbour writes and talks. `paper` picks the stationery and
@@ -546,7 +1018,7 @@ var Story = (function(){
                    "Mia is arranging flowers she definitely did not need to buy."] },
     jules: { paper:'jules', sign:'Jules', hi:'OKAY.',    replyBye:'Yours in turpentine, J.',
              ask:"WAIT. Before you go. I was kind of counting on…",
-             idle:["Jules is leaning out of a window with paint on their nose.",
+             idle:["Jules is leaning out of a window with paint on her nose.",
                    "Jules waves with a brush. Something drips.",
                    "Jules is drawing a pigeon. The pigeon is posing."] },
     sam:   { paper:'sam',   sign:'Sam',   hi:'Well,',    replyBye:'Warmly, Sam',
@@ -562,8 +1034,8 @@ var Story = (function(){
     theo:  { paper:'theo',  sign:'Theo',  hi:'Hey!',     replyBye:'Cheers, Theo (and Elena)',
              ask:"Ah — quick one — I think we were hoping for…",
              idle:["Theo is carrying a tray of rolls and singing badly.",
-                   "Theo waves a spanner like a flag.",
-                   "Theo is pushing a very small, very serious pram."] },
+                   "Theo waves a rolling pin like a flag.",
+                   "Theo is assembling something small with far too many screws."] },
     rosa:  { paper:'rosa',  sign:'Rosa',  hi:'Darling,', replyBye:'Fondly, Rosa',
              ask:"One moment, darling. One had rather hoped for…",
              idle:["Rosa is on her balcony, wearing something magnificent.",
@@ -572,122 +1044,18 @@ var Story = (function(){
   };
   Object.keys(VOICES).forEach(function(k){ CHARACTERS[k].voice = VOICES[k]; });
 
-  /* ---------------------------------------------------------------- letters */
-  // The brief, written as a real letter. `body` paragraphs are read top to
-  // bottom; the structured list (must / love / avoid) lives on the note that
-  // is clipped to the letter and pinned up while you decorate.
-  var LETTERS = {
-    MIA_01: { hello:"Hello {you}!",
-      body:["I have a key now. My own key! I keep checking my pocket. You were always the one who knew what I'd like before I did, so I'm asking the best person I know.",
-            "I can only afford to make one room nice: the living room. Somewhere comfy, a little table, a lamp. Green, beige and light wood. And flowers! (A florist is about to open on my street and I'm already emotionally invested.) My toes are always cold, so something soft for the floor?",
-            "No black furniture or shiny chrome, please. Shiny things make me nervous."],
-      bye:"Thank you so much,", ps:"There will be cookies." },
-    MIA_02: { hello:"Hello again!",
-      body:["I passed my probation! I buy dahlias at Fennel & Fern every Friday (the shop cat waits for me), and every evening I still end up in the living room you made, like a cat in the only sunny spot. My room at Mum's had a black table on a dark rug, and it felt like a cave.",
-            "Could you do the other two rooms? A soft pink bedroom, and the little room as a reading corner, green like a tiny garden. Flowers in both, please, and nothing too dark."],
-      bye:"Thank you again,", ps:"A friend called Alex carried my bookcase up the stairs. I'm saying nothing." },
-    MIA_03: { hello:"Dear {you},",
-      body:["Alex and I are moving in together! A real flat with a real dining table. (Alex's grandmother's wooden one survived three house moves and a rave. We want one like it.)",
-            "Alex likes blue and clean shapes; I like green and anything that smells of baking. Could you find the middle? A living room, a dining room and a bedroom. Flowers on the table (Fennel & Fern, obviously), a few blue pieces for Alex, and nothing too dark. We're cosy people, not moody ones."],
-      bye:"Gratefully (and sticky),", ps:"There's a lemon loaf waiting. In my head, but still." },
-
-    JULES_01: { hello:"HELLO!!",
-      body:["Mia gave me your name and a cookie. I have one suitcase and ELEVEN boxes of paint. The paint is unpacked. The bed is… somewhere?",
-            "One room that does everything. The EASEL first, then somewhere to sleep, then somewhere to sit and stare at the ceiling. Blue and orange, the only couple I believe in, plus lots of colours that don't match. Matching is how they get you.",
-            "Please don't make it beige. BEIGE IS HOW THEY GET YOU."],
-      bye:"Yours in turpentine,", ps:"I drew you on the back. You look like a potato in a nice jumper." },
-    JULES_02: { hello:"OKAY SO,",
-      body:["SOMEONE PAID ME. For a drawing of a heron in a raincoat. I've read the email eleven times. (I spent half of it at the flea market, on a clock.)",
-            "Keep the easel and the blue, bring in three or four new things, and could we try pink? Also: I've named my fern Gerald and he needs a friend. The Carla couch comes in pink and I've been staring at it for days. And less beige. I can feel it creeping back."],
-      bye:"Gratefully chaotic,", ps:"The heron is going on a mug." },
-    JULES_03: { hello:"GUESS WHAT,",
-      body:["I GRADUATED. The mill's landlord offered me the whole top floor: a live-work loft with a DOOR THAT CLOSES. AND the Paper Moth Gallery has asked for six of my prints!!",
-            "The art room needs ALL the colour: easel, things on the walls, a rainbow that had too much coffee. The bedroom should be soft and quiet. And please don't let the living room look like a dentist's waiting room."],
-      bye:"Yours, slightly overwhelmed,", ps:"I'm planning an Open Studio. I will make cake. (I can't bake.)" },
-
-    SAM_01: { hello:"Good evening, {you},",
-      body:["I've just moved for a better job and invited my whole team to dinner on Friday. Eleven people, a flat that seats four. It'll be wonderful.",
-            "The kitchen comes first: dark wood, red, plenty of chrome and steel, an island big enough to put a party on, and a fridge that hums reassuringly. (I once saw brass beside chrome and had to sit down.) And gadgets: three mixers at least. No flowers (they wilt when I look at them) and nothing light and rustic.",
-            "(The oven is on back-order. We don't discuss it.)"],
-      bye:"Warmly, and in need of a whisk,", ps:"Friday, seven o'clock. That's an invitation, not a request." },
-    SAM_02: { hello:"My friend,",
-      body:["The kitchen is a triumph. Eleven people ate in it and the only casualty was a lemon. A florist opened across the road; I have walked past it twice, on purpose.",
-            "A dining table with enough seats to pretend I planned this, and a room next door to collapse in. Leather, please. Keep the dark wood and red, add orange and a little chrome or black. Wood should behave: one tone, not a lumberyard. Still no flowers. Still nothing pale."],
-      bye:"Gratefully,", ps:"A guest called Robin did all the washing up. I have invited them back." },
-    SAM_03: { hello:"Dear friend,",
-      body:["I got promoted. And Robin and I have bought a place, together. We own a dish rack. Best day of my life.",
-            "Kitchen first, obviously, with gadgets worth bragging about. Dark wood, red and leather in the living room. The bedroom lighter, beige and white, because Robin would like to sleep somewhere that isn't a stage set. A little drama is a seasoning, not a main course. And no flowers!"],
-      bye:"Yours, in a rare moment of restraint,", ps:"Robin says I'm not allowed a second mixer. We'll see." },
-
-    NOOR_01: { hello:"Hello.",
-      body:["Sam passed on your details. He said you actually listen. I'll assume that's true.",
-            "I've moved. That's not up for discussion. I'd like one room finished: the bedroom. A bed, a bedside table, white, a little blue, light wood. Twelve things at most; I counted. Somewhere to put things away. No busy patterns, and matching grain matters to me."],
-      bye:"Regards,", ps:"If a shelf is two centimetres off, I'll know." },
-    NOOR_02: { hello:"Hello again.",
-      body:["The bedroom works. I said so out loud, in the office. One colleague dropped a stapler.",
-            "Now the living room and the kitchen: the same restraint, but each with its own temperament. Light wood in the living room; steel, chrome or white in the kitchen. Keep the blue. Fourteen pieces a room at most. No patterns. (Chrome next to brass is a family argument.)"],
-      bye:"Regards,", ps:"My sister asked who did the bedroom. I said ‘someone good’." },
-    NOOR_03: { hello:"Hello.",
-      body:["I have bought the top floor of my building: tall windows, a ceiling you could lose a kite in. I intend to stay.",
-            "A living room I want to sit in at the end of the day, a quiet bedroom, and a small room to think in: a chair, a shelf, one good lamp. One. No desk. One good piece of stone or marble. White, blue, grey, light wood; twelve pieces a room at most; no patterns."],
-      bye:"With some warmth, which I'm told is noticeable,", ps:"The windows are 3.4 metres tall. I measured twice." },
-
-    THEO_01: { hello:"Hi there!",
-      body:["Noor said you were good, and she doesn't say that about anyone. Elena and I have found a little cabin up on Lantern Lane. The baby's due in spring and the living room is full of ‘temporary solutions’. Elena calls blue and yellow ‘our colours’, like the shop sign.",
-            "We'd love somewhere to sit and breathe: white, a bit of yellow, some blue, solid wood. Nothing white to sit on (small person incoming) and nothing breakable. I once owned a vase. It's a sad story. We kept the old sideboard. It might be useful."],
-      bye:"Cheers!", ps:"If you ever need bread, I'm yours. I'm not great with words." },
-    THEO_02: { hello:"Hi again!",
-      body:["She's here! Wren, six weeks old, very loud, already stealing my heart and my socks. Elena sends a tired thank-you for the living room.",
-            "Wren has started rolling across rooms like a small sausage. Our bedroom is last on the list. Restful, please: green and white, sturdy wood, a bed that isn't white, and somewhere for clothes that isn't ‘the chair’. It has become load-bearing. Nothing fragile."],
-      bye:"Sleepily yours,", ps:"Rosa has offered to sew Wren a coat. I'm scared of her." },
-    THEO_03: { hello:"Hey you,",
-      body:["Two bits of news. I'm now co-owner of the bakery (the old owner cried, I cried, the shop cat cried). And we've found a flat with a proper dining room!",
-            "I'd love everyone round one table: grandad, aunts, the lot. (Grandad only trusts wood he can knock on.) Living room for naps, dining room for noise, bedroom for six hours of sleep. Bring what still works from the old place. The sideboard followed us. It does that. Same as before: white, green, yellow, blue, solid wood, nothing fragile."],
-      bye:"Thank you, again and always,", ps:"Come by at six one morning. The first loaf is yours." },
-
-    ROSA_01: { hello:"My dear,",
-      body:["I have retired from thirty-one years in the costume department of the Playhouse and been told to ‘relax’. I have never been less relaxed. My sitting room has been wrong since 1998. (I hear an antiques shop is opening on Church Hill. I intend to be unbearable about it.)",
-            "The sideboard stays. Everything else must earn its place: two places to sit, a table, and a lamp with personality. I light a room like a stage: never from just one place. And colour, darling: red, yellow, dark wood and something patterned. What I will not have is a pale room. Not beige. Not ‘greige’."],
-      bye:"With great expectations,", ps:"Theo says you're good. He once tried to pay me in sourdough." },
-    ROSA_02: { hello:"Darling,",
-      body:["I've begun teaching sewing at the village hall, and everyone stays for tea afterwards. ‘Everyone’ is currently six people and one opinionated dachshund.",
-            "Pattern is a soloist, not a choir. The dining room needs a proper table, seats for all, and the mood of a stage set before the curtain goes up: red, yellow, dark wood, a touch of gold. My daughter visits at weekends and deserves a proper guest room: a bed, a bedside table, and greens and blues with beige. And no white. It's a home, not a hospital."],
-      bye:"Fondly, and with a flourish,", ps:"Mia's dahlias have the whole village talking." },
-    ROSA_03: { hello:"Darling,",
-      body:["I have done something impulsive. I have bought a little house up on Lantern Lane. Small, bright, slightly crooked, with a kitchen window that looks straight down to the bay. I'm keeping the flat in town; I'm not a monster.",
-            "It needs a lighter version of me: a living room for a book and the view, a kitchen with a table for toast with dignity (that window is the whole show), and a bedroom to be rocked to sleep in. Green, blue and beige, light wood, a small touch of yellow. No ducks on the cushions. And not too much dark wood. It's a cabin, not a library in a thriller."],
-      bye:"With wet boots already,", ps:"Come for tea when it's done. I've warned the ducks." }
-  };
-  QUESTS.forEach(function(q){ q.letter = LETTERS[q.id]; });
+  // (The letters are written inside each job above: q.letter.)
 
   /* ---------------------------------------------------------------- rewards */
   // Every job leaves a thank-you gift: pieces that stay locked in story mode
   // until the neighbour gives them to you. Hand in your best work (all 5
   // hearts) and they tuck an extra one into the envelope.
-  var REWARDS = {
-    MIA_01:   { items:['candle-joerg-off','flowers-sia-white'],                    bonus:['vase-victoria'] },
-    MIA_02:   { items:['blanket-basket','painting-flowers-pink'],                  bonus:['lamp-kay-blush'] },
-    MIA_03:   { items:['painting-turner-blue','lamp-kay-blue'],                    bonus:['rug-persian-blue'] },
-    JULES_01: { items:['paintbrushes-incup-beige','painting-maja'],                bonus:['magazines-stacked-orange'] },
-    JULES_02: { items:['lamp-kay-red','cowhide-carrie-cheetah'],                   bonus:['painting-horses-pink'] },
-    JULES_03: { items:['vase-lisa-orange','pillows-stacked-orange'],               bonus:['cowhide-carrie-rosa'] },
-    SAM_01:   { items:['recordplayer-darkwood','chrome-teecup'],                   bonus:['standmixer-smeggy-chrome'] },
-    SAM_02:   { items:['chandelier-ana','chessboard-marble'],                      bonus:['couch-uwe-dark-leather'] },
-    SAM_03:   { items:['kitchen-island-serena-steel','couch-uwe-light-leather'],   bonus:['bust-art-dave-stone'] },
-    NOOR_01:  { items:['standing-lamp-kai','painting-fog'],                        bonus:['wallshelf-vila'] },
-    NOOR_02:  { items:['bust-art-lisa-stone','couchtable-marble-elle-light'],      bonus:['chandelier-kiki'] },
-    NOOR_03:  { items:['fireplace-marlo-marble-white','bedsidetable-moppy-marble'],bonus:['chessboard-beige'] },
-    THEO_01:  { items:['rug-elena-yellow','globe'],                                bonus:['recordplayer-old-mediumwood'] },
-    THEO_02:  { items:['curtain-siri-green','books-leaning-beige'],                bonus:['lamp-hubby'] },
-    THEO_03:  { items:['fireplace-milo-stone-beige','couch-hennes-green-long'],    bonus:['fruit-bowl-oranges'] },
-    ROSA_01:  { items:['candle-kiki-off','rug-malana-orange-pattern'],             bonus:['lamp-sia-gold'] },
-    ROSA_02:  { items:['bust-art-alena-stone','couch-henry-red'],                  bonus:['chandelier-irina'] },
-    ROSA_03:  { items:['fireplace-marco-marble-beige','rug-persian-rosa'],         bonus:['vase-blue-china'] }
-  };
+  var REWARDS = {};   // quest id -> { items, bonus }, filled from each job's `reward`
   var GIFT_OWNER = {};   // item id -> { quest, bonus }
   QUESTS.forEach(function(q){
-    var r = REWARDS[q.id]; q.reward = r;
+    var r = q.reward;
     if (!r) return;
+    REWARDS[q.id] = r;
     r.items.forEach(function(id){ GIFT_OWNER[id] = { quest:q.id, bonus:false }; });
     r.bonus.forEach(function(id){ GIFT_OWNER[id] = { quest:q.id, bonus:true }; });
   });
@@ -751,17 +1119,22 @@ var Story = (function(){
     rosa_solo:  Qk('rosa_solo','rosa','Only one pattern per room (a soloist, not a choir)',{kinds:['patterned'],max:1,each:true},
                    ["One pattern, beautifully placed. A soloist.","Two patterns in one room is a choir with no conductor."]),
     rosa_window:Qk('rosa_window','rosa','Nothing in front of the cabin window (no curtains in the kitchen)',{kinds:['curtain'],max:0,room:'kitchen'},
-                   ["The window gets to be the show. Bravo.","I wanted the window left bare. It's the whole show."])
+                   ["The window gets to be the show. Bravo.","I wanted the window left bare. It's the whole show."]),
+    mia_sun:    Qk('mia_sun','mia','No curtains in the green room (the plants need all the light)',{kinds:['curtain'],max:0,room:'green'},
+                   ["The window is bare and the plants are sunbathing. Thank you.","The curtains are keeping the sun off my seedlings."]),
+    mia_blooms: Qk('mia_blooms','mia','Flowers by the bed, picked from the garden',{kinds:['flowers'],min:1},
+                   ["Flowers by the bed. You know me too well.","No flowers by the bed. I'll have to pick some myself."]),
+    noor_soft:  Qk('noor_soft','noor','Something soft to quiet the room: a rug or curtains',{kinds:['rug','curtain'],min:1},
+                   ["Soft things. I played a wrong note and nobody heard it.","A hard room is a loud room. The neighbours would have heard."]),
+    theo_stools:Qk('theo_stools','theo','Two stools at the counter (he is always up and down)',{kinds:['stool'],min:2,room:'kitchen'},
+                   ["Two stools. Elena sat on one and I sat on the other and we both ate toast. Perfect.","No stools at the counter. I'm always up and down."]),
+    theo_rug:   Qk('theo_rug','theo','A soft rug (she runs everywhere now, in socks)',{kinds:['rug'],min:1},
+                   ["A soft rug. She slid across it three times and cheered.","Wren does her running in socks. A soft rug would have helped."]),
+    rosa_daylight:Qk('rosa_daylight','rosa','No curtains in the sewing room (one must see the colour of thread in daylight)',{kinds:['curtain'],max:0,room:'spare'},
+                   ["Bare windows. One can see the true colour of everything.","Curtains in a sewing room. One can't match thread through lace."])
   };
-  var QUEST_QUIRKS = {
-    MIA_01:['mia_rug'], MIA_02:['mia_rug','mia_cave'], MIA_03:['mia_rug','mia_cave','mia_table'],
-    JULES_01:['jules_pair'], JULES_02:['jules_pair','jules_plant'], JULES_03:['jules_pair','jules_plant','jules_mix'],
-    SAM_01:['sam_metals'], SAM_02:['sam_metals','sam_woods'], SAM_03:['sam_metals','sam_woods','sam_robin'],
-    NOOR_01:['noor_wood'], NOOR_02:['noor_wood','noor_metal'], NOOR_03:['noor_wood','noor_metal','noor_lamp'],
-    THEO_01:['theo_colours'], THEO_02:['theo_colours','theo_roll'], THEO_03:['theo_colours','theo_roll','theo_knock'],
-    ROSA_01:['rosa_lights'], ROSA_02:['rosa_lights','rosa_solo'], ROSA_03:['rosa_lights','rosa_solo','rosa_window']
-  };
-  QUESTS.forEach(function(q){ q.quirks = (QUEST_QUIRKS[q.id] || []).map(function(id){ return QUIRKS[id]; }); });
+  // each job lists the quirks it knows about (ids); here they become the real thing
+  QUESTS.forEach(function(q){ q.quirks = (q.quirks || []).map(function(id){ return QUIRKS[id]; }); });
 
   /* ---- indexing & unlock rules ---- */
   var QUEST_BY_ID = {};
@@ -800,15 +1173,6 @@ var Story = (function(){
     var d = dateOf(day), part = d.d <= 10 ? 'Early' : (d.d <= 20 ? 'Mid' : 'Late');
     return { m:d.m, y:d.y, name:d.monthName, part:part, label:part + ' ' + d.monthName, short:d.monthName.slice(0, 3), year:d.y, key:d.y * 12 + d.m };
   }
-  // One job = one month. The jobs are spread over the calendar in story order, the 2nd of each
-  // month, so the seasons turn with every job you finish (the order is the order they were
-  // written in: by their old day, then by position).
-  (function(){
-    var order = QUESTS.map(function(q, i){ return { q:q, k:q.day * 1000 + i }; }).sort(function(a, b){ return a.k - b.k; });
-    var c = TOWN.calendar, start = Date.UTC(c.year, c.month, c.day);
-    order.forEach(function(o, i){ o.q.day = Math.round((Date.UTC(c.year, c.month + i, c.day) - start) / 86400000); });
-  })();
-
   // the day of the story that was reached by the jobs finished so far
   function todayOf(doneMap, renownPts){
     var t = 0;
@@ -821,55 +1185,111 @@ var Story = (function(){
     return t;
   }
 
+  /* ---------------------------------------------------------- lives moving on */
+  // What a neighbour is "now": their age (birthdays fall on the 1st of a month), their job
+  // and a line about them that moves on with each job you finish.
+  function ageOf(cid, day){
+    var c = CHARACTERS[cid], d = dateOf(day || 0), t = TOWN.calendar;
+    var b = c.bday == null ? 0 : c.bday;
+    return c.age + (d.y - t.year) + (d.m >= b ? 1 : 0) - (t.month >= b ? 1 : 0);
+  }
+  function jobAtDay(cid, day){
+    var job = CHARACTERS[cid].job;
+    questsOf(cid).forEach(function(q){ if (q.day <= day && q.job) job = q.job; });
+    return job;
+  }
+  function jobOf(cid, doneMap){
+    var job = CHARACTERS[cid].job;
+    questsOf(cid).forEach(function(q){ if (doneMap && doneMap[q.id] && q.job) job = q.job; });
+    return job;
+  }
+  var BLURBS = {
+    MIA_01:"Has her own keys, a living room, and a florist on her street.",
+    MIA_02:"The whole flat is hers now, with a standing Friday order of dahlias.",
+    MIA_03:"Has taken up gardening. The little green room is a seed nursery.",
+    MIA_04:"Alex has moved in. There are board games in the hall and a bike in the bedroom.",
+    MIA_05:"A garden with a crooked apple tree, a table for six, and a stall by the gate.",
+    MIA_06:"Engaged! Grows her own flowers and is happier than anyone has seen her.",
+    JULES_01:"The attic is unpacked. The paint, naturally, first.",
+    JULES_02:"Has been paid for a book jacket and is not over it.",
+    JULES_03:"Graduated in a hat that didn't fit. Has clients, deadlines and a laptop.",
+    JULES_04:"Has prints at the Paper Moth and a flat of her own at the Mills.",
+    JULES_05:"Sold all six. The gallery wants twelve more, and she sleeps in a bed now.",
+    JULES_06:"The top floor of the mill is hers. The Paper Moth keeps a waiting list.",
+    SAM_01:"Cooks for eleven in a kitchen with ambitions. Still waiting for an oven.",
+    SAM_02:"Dinner for twelve is a regular thing now.",
+    SAM_03:"Guests stay until 2am, which Sam considers a triumph.",
+    SAM_04:"Head of events. Robin has moved in and sleeps lightly.",
+    SAM_05:"Quit with a speech. Sam & Co. Events has a client, an invoice and an office.",
+    SAM_06:"Sam & Robin bought their first place together, over the old market.",
+    NOOR_01:"The bedroom is quiet. She has not said thank you. She has nodded.",
+    NOOR_02:"Said ‘you understood me’ out loud, within hearing of two colleagues.",
+    NOOR_03:"Is learning the piano. Do not mention it.",
+    NOOR_04:"Made partner and bought the top floor of her own building.",
+    NOOR_05:"Two quiet rooms and exactly one lamp.",
+    NOOR_06:"Left the firm, politely. Noor Architects has one desk and she says it is enough.",
+    THEO_01:"Settling into a cabin on Lantern Lane. Baby due in spring.",
+    THEO_02:"Wren is here. So is a great deal of laundry.",
+    THEO_03:"Practising at home for something much bigger than home.",
+    THEO_04:"Co-owner of Crumb & Crown. The shop cat came with it.",
+    THEO_05:"A family flat on Orchard Rise, with a dining room for grandad.",
+    THEO_06:"Owner of Crumb & Crown and dad to a two-year-old with opinions.",
+    ROSA_01:"Has opinions about beige. They are not favourable.",
+    ROSA_02:"Teaches sewing at the village hall. Everyone stays for tea.",
+    ROSA_03:"Twelve pupils and a waiting list. She says this is the correct number.",
+    ROSA_04:"Bought a cabin on Lantern Lane and kept the flat. ‘I am not a monster.’",
+    ROSA_05:"Sleeps to the sound of the water more often than not.",
+    ROSA_06:"Runs The Costume Cupboard in Old Town. Retired in name only."
+  };
+  function blurbOf(cid, doneMap){
+    var b = CHARACTERS[cid].blurb;
+    questsOf(cid).forEach(function(q){ if (doneMap && doneMap[q.id] && BLURBS[q.id]) b = BLURBS[q.id]; });
+    return b;
+  }
+
   /* ----------------------------------------------------------- places & happenings */
   // Little places that appear on the map as the story goes on. Shops stay for
   // good. Happenings are on for `len` days from `day`. There is no money in the
   // Cove: shops set pieces aside by reputation (see SHOP_STOCK) and happenings
   // have little things to do (see EVENT_PLAY).
   var SPOTS = [
-    { id:'flowers',  kind:'shop', icon:'flower',  name:'Fennel & Fern',          x:54.3, y:54.3, day:58,
+    { id:'flowers',  kind:'shop', icon:'flower',  name:'Fennel & Fern',          x:54.3, y:54.3, day:D(1),
       blurb:"A striped awning, buckets of dahlias and a very serious cat called Parsley.", soon:"Ask Parsley nicely: the best bunches get set aside for people the town knows." },
-    { id:'antiques', kind:'shop', icon:'urn',     name:'Marigold & Moss Antiques', x:26.3, y:69.5, day:106,
-      blurb:"In the pink house with the porch, where the old Church Hill families send their attics. Chairs with stories, lamps with opinions, most of it very heavy.", soon:"Marigold keeps her best pieces back for people the town trusts." },
-    { id:'books',    kind:'shop', icon:'book',    name:'The Dog-Eared Bookshop',   x:27.0, y:22.0, day:236,
-      blurb:"A crooked little shop on Orchard Rise with a ladder on rails, a sleeping dog and a very good children's corner.", soon:"The good shelves are kept for people who have earned a bit of a name." },
-    { id:'gallery',  kind:'shop', icon:'frame',   name:'The Paper Moth Gallery',   x:95.2, y:40.5, day:322,
-      blurb:"Small prints, big frames, and a free glass of something fizzy on opening night.", soon:"The best prints are hung for people the town speaks well of." },
-    { id:'bakery',   kind:'shop', icon:'loaf',    name:'Crumb & Crown Bakery',     x:41.5, y:56.5, day:140,
+    { id:'bakery',   kind:'shop', icon:'loaf',    name:'Crumb & Crown Bakery',     x:41.5, y:56.5, day:D(4),
       blurb:"Open at seven, sold out by eleven. The old baker is handing Theo every recipe he owns, one loaf at a time. A shop cat supervises.", soon:"The baker puts the best cakes aside for people the town knows." },
+    { id:'antiques', kind:'shop', icon:'urn',     name:'Marigold & Moss Antiques', x:26.3, y:69.5, day:D(7),
+      blurb:"In the pink house with the porch, where the old Church Hill families send their attics. Chairs with stories, lamps with opinions, most of it very heavy.", soon:"Marigold keeps her best pieces back for people the town trusts." },
+    { id:'books',    kind:'shop', icon:'book',    name:'The Dog-Eared Bookshop',   x:27.0, y:22.0, day:D(11),
+      blurb:"A crooked little shop on Orchard Rise with a ladder on rails, a sleeping dog and a very good children's corner.", soon:"The good shelves are kept for people who have earned a bit of a name." },
+    { id:'gallery',  kind:'shop', icon:'frame',   name:'The Paper Moth Gallery',   x:95.2, y:40.5, day:D(14),
+      blurb:"Small prints, big frames, and a free glass of something fizzy on opening night.", soon:"The best prints are hung for people the town speaks well of." },
+    { id:'miagarden', kind:'shop', icon:'flower', name:"Mia's Garden Gate",        x:24.4, y:62.0, day:D(25), needs:'MIA_05',
+      blurb:"A trestle by the garden gate with buckets of whatever bloomed this morning, a jar for the money nobody uses, and a hand-written sign: “Friends pay less.”", soon:"Mia keeps the best bunches back for friends of the street." },
 
-    { id:'fleamarket', kind:'happening', icon:'flag', name:'Flea Market on Orchard Green', x:46.0, y:19.5, day:40, len:8,
+    { id:'fleamarket', kind:'happening', icon:'flag', name:'Flea Market on Orchard Green', x:46.0, y:19.5, day:D(2), len:28,
       blurb:"Tables of teapots, brass bells and one suspiciously large clock. Bring a bag." },
-    { id:'regatta',  kind:'happening', icon:'sail',   name:'Summer Regatta',   x:61.5, y:87.0, day:52, len:9,
-      blurb:"Sails, bunting and a prize for the most dramatic wobble." },
-    { id:'lantern',  kind:'happening', icon:'lantern', name:'Lantern Night',       x:47.0, y:26.0, day:90, len:8,
-      blurb:"Paper lanterns along the lane, hot chocolate, and a lane-side neighbour who ‘didn't plan any of this’." },
-    { id:'harvest',  kind:'happening', icon:'flag',   name:'Harvest Market',      x:49.0, y:56.0, day:118, len:10,
+    { id:'harvest',  kind:'happening', icon:'flag',   name:'Harvest Market',      x:49.0, y:56.0, day:D(5), len:28,
       blurb:"Pumpkins, chutneys and a jam stall with a queue. Old Town smells of cinnamon." },
-    { id:'lights',   kind:'happening', icon:'lantern', name:'Winter Lights',       x:30.0, y:63.0, day:200, len:16,
+    { id:'lights',   kind:'happening', icon:'lantern', name:'Winter Lights',       x:30.0, y:63.0, day:D(6), len:28,
       blurb:"Every window on Church Hill gets a candle. The steeple gets a star." },
-    { id:'streetparty', kind:'happening', icon:'flag', name:'Canal Row Street Party', x:61.0, y:70.0, day:8, len:5,
-      blurb:"Trestle tables across the cobbles, one very loud speaker and a neighbour who brought a whole ham." },
-    { id:'bonfire',  kind:'happening', icon:'lantern', name:'Midsummer Bonfire',   x:5.5, y:88.5, day:19, len:4,
-      blurb:"On the beach below Church Hill. Marshmallows, guitar, and someone's grandad telling the same story." },
-    { id:'kites',    kind:'happening', icon:'sail',   name:'Kite Day on Glimmer Bay', x:85.5, y:25.0, day:82, len:6,
-      blurb:"Kites over the water from the Glass Row quay. Three are still stuck in the clock tower." },
-    { id:'appleday', kind:'happening', icon:'flag',   name:'Apple Day on Orchard Green', x:46.0, y:19.5, day:98, len:6,
-      blurb:"Every garden brings its one stubborn apple tree's apples. There is a competition. There is always a competition." },
-    { id:'bakesale', kind:'happening', icon:'bell',   name:'Bake Sale at the White Church', x:31.5, y:55.5, day:136, len:5,
-      blurb:"Lemon loaf, cinnamon buns and a queue that goes round the steeple." },
-    { id:'openstudio', kind:'happening', icon:'frame', name:'Open Studio at the Mills', x:85.0, y:62.0, day:226, len:6,
-      blurb:"Doors open all along the loft stairwells. Paint, prints, tea and a cake that was definitely baked by someone else." },
-    { id:'tulips',   kind:'happening', icon:'flower', name:'Tulip Day at Fennel & Fern', x:54.3, y:52.0, day:285, len:6,
+    { id:'tulips',   kind:'happening', icon:'flower', name:'Tulip Day at Fennel & Fern', x:54.3, y:52.0, day:D(10), len:28,
       blurb:"A bucket of tulips outside for everyone, free. Parsley supervises the queue." },
-    { id:'eggs',     kind:'happening', icon:'flag',   name:'Egg Hunt on Orchard Green', x:46.0, y:19.5, day:314, len:4,
-      blurb:"Chocolate eggs in the hedges and one very suspicious dachshund." },
-    { id:'soupswap', kind:'happening', icon:'bell', name:'Soup Swap on Church Hill', x:29.5, y:60.0, day:165, len:5,
+    { id:'regatta',  kind:'happening', icon:'sail',   name:'Summer Regatta',   x:61.5, y:87.0, day:D(13), len:28,
+      blurb:"Sails, bunting and a prize for the most dramatic wobble." },
+    { id:'appleday', kind:'happening', icon:'flag',   name:'Apple Day on Orchard Green', x:46.0, y:19.5, day:D(16), len:28,
+      blurb:"Every garden brings its one stubborn apple tree's apples. There is a competition. There is always a competition." },
+    { id:'soupswap', kind:'happening', icon:'bell', name:'Soup Swap on Church Hill', x:29.5, y:60.0, day:D(18), len:28,
       blurb:"Bring a pot, leave with a different pot. Forty ladles and a very opinionated dachshund." },
-    { id:'wedding',  kind:'happening', icon:'bell',   name:"Priya & Dev's Wedding", x:33.0, y:54.0, day:296, len:33,
-      blurb:"Saturday 25 April, two o'clock, at the white church. The whole street is invited." },
-    { id:'springmarket', kind:'happening', icon:'flag', name:'Spring Flea Market', x:46.0, y:19.5, day:334, len:9,
-      blurb:"Back by popular demand. Seedlings, bunting and the large clock, still unsold." }
+    { id:'eggs',     kind:'happening', icon:'flag',   name:'Egg Hunt on Orchard Green', x:46.0, y:19.5, day:D(22), len:28,
+      blurb:"Chocolate eggs in the hedges and one very suspicious dachshund." },
+    { id:'bonfire',  kind:'happening', icon:'lantern', name:'Summer’s End Bonfire',   x:5.5, y:88.5, day:D(26), len:28,
+      blurb:"On the beach below Church Hill. Marshmallows, guitar, and someone's grandad telling the same story." },
+    { id:'openstudio', kind:'happening', icon:'frame', name:'Open Studio at the Mills', x:85.0, y:62.0, day:D(27), len:28,
+      blurb:"Doors open all along the loft stairwells. Paint, prints, tea and a cake that was definitely baked by someone else." },
+    { id:'lantern',  kind:'happening', icon:'lantern', name:'Lantern Night on Lantern Lane', x:47.0, y:26.0, day:D(30), len:28,
+      blurb:"Paper lanterns along the lane, hot chocolate, and a neighbour who ‘didn't plan any of this’." },
+    { id:'wedding',  kind:'happening', icon:'bell',   name:"Mia & Alex's Wedding", x:33.0, y:54.0, day:D(33), len:55,
+      blurb:"Saturday 22 April, two o'clock, at the white church. The whole street is invited." }
   ];
   var SPOT_BY_ID = {};
   SPOTS.forEach(function(s){ SPOT_BY_ID[s.id] = s; s.district = (districtAt(s.x, s.y) || {}).id || null; });
@@ -890,66 +1310,68 @@ var Story = (function(){
   // Event cards pop up when the story reaches their day (or when a job is done).
   // kinds: shop | happening | invite | birth | home
   var EVENTS = [
-    { id:'e_street', react:[['mia',"Right outside my window. I'm bringing a tray of cookies, obviously."],['jules',"I'll draw the whole street. Please hold still."]], day:8, kind:'happening', spot:'streetparty', title:'Street Party on Canal Row',
-      lines:["Trestle tables across the cobbles, bunting from window to window and one very loud speaker.","Bring a chair. Bring a dish. Do not bring the ham; someone already has."], tease:"Street party on Canal Row" },
-    { id:'e_bonfire', react:[['jules',"Sparks and charcoal. I may sketch with a burnt stick."],['mia',"Marshmallows. Maybe I'll even stay past nine."],['sam',"I brought the sausages. I'm not saying I organised it."]], day:19, kind:'happening', spot:'bonfire', title:'Midsummer Bonfire on the Beach',
-      lines:["The longest day ends with a fire on the sand below Church Hill.","Marshmallows, a guitar and somebody's grandad telling the same story."], tease:"Midsummer bonfire on the beach" },
-    { id:'e_kites', react:[['jules',"A kite in blue and orange. Obviously."],['theo',"I built three frames. Don't tell Elena."],['sam',"I'm not flying a kite. I'm supervising one."]], day:82, kind:'happening', spot:'kites', title:'Kite Day on Glimmer Bay',
-      lines:["Kites from the Glass Row quay, high over the water, and the bay glittering below them.","Three kites are, as of Sunday, in the clock tower."], tease:"Kite Day on Glimmer Bay" },
-    { id:'e_apple', react:[['mia',"An apple tart. Perhaps three. For the competition, obviously."],['rosa',"Autumn. At last, a season with proper colours."],['theo',"Our tree's apples are tiny. I'm entering them anyway."]], day:98, kind:'happening', spot:'appleday', title:'Apple Day on Orchard Green',
-      lines:["Every garden on the Rise brings the apples of its one stubborn tree. There is a competition.","There is always a competition."], tease:"Apple Day on Orchard Green" },
-    { id:'e_bake', react:[['mia',"I'm baking two lemon loaves. One for the sale, one for emergencies."],['rosa',"I'll judge the buns. Gently. Mostly."],['noor',"I'll buy a loaf. And measure the queue."]], day:136, kind:'happening', spot:'bakesale', title:'Bake Sale at the White Church',
-      lines:["Lemon loaf, cinnamon buns and a queue that goes round the steeple.","The money goes to the new church roof. The buns go to everyone."], tease:"Bake sale at the white church" },
-    { id:'e_studio', react:[['mia',"I baked the cake. Jules asked very nicely. Several times."],['noor',"I'll come. I'll admire. I'll say nothing about the staircase."],['rosa',"I'll bring a shawl, in case someone needs a costume."]], day:226, kind:'happening', spot:'openstudio', title:'Open Studio at the Mills',
-      lines:["Doors open all along the loft stairwells: paint, prints, tea and a very large dog.","The cake was definitely baked by someone else."], tease:"Open Studio at the Mills" },
-    { id:'e_tulips', react:[['mia',"Tulips! For the bedroom, the table, and possibly my hair."],['jules',"Yellow ones. For the easel. Obviously."],['sam',"I walked past. Twice. I didn't take one. (I took one.)"]], day:285, kind:'happening', spot:'tulips', title:'Tulip Day at Fennel & Fern',
-      lines:["A bucket of tulips outside the shop for anyone who wants one, free.","Parsley supervises the queue and judges your choice."], tease:"Tulip Day at Fennel & Fern" },
-    { id:'e_eggs', react:[['theo',"Wren is too small for eggs. I'm hiding them anyway."],['mia',"I'll bake an egg-shaped cake. Don't judge me."],['rosa',"Costumes for the little ones: bunny ears, whiskers, the lot."]], day:314, kind:'happening', spot:'eggs', title:'Egg Hunt on Orchard Green',
-      lines:["Chocolate eggs in the hedges and one very suspicious dachshund.","Under-sevens first, then everybody."], tease:"Egg hunt on Orchard Green" },
-    { id:'e_books', react:[['noor',"A ladder on rails. I'd like the exact measurements, please."],['mia',"Fantasy shelf: thirty minutes. Cosy mysteries: the rest of my life."],['rosa',"Costume history on the second shelf, I hope. I'll check."],['jules',"Picture books! I'm going to be a nuisance in the children's corner."]], day:236, kind:'shop', spot:'books', title:'A bookshop on Orchard Rise',
-      lines:["The Dog-Eared Bookshop has opened in the crooked house on the lane: a ladder on rails, a sleeping dog and a very good children's corner.","The dog is not for sale. People have asked."] },
-    { id:'e_flowers', react:[['mia',"Dahlias on my street! Parsley already knows my name."],['jules',"Orange ones, for the easel. Obviously."],['sam',"Flowers. How lovely. I'll walk the long way round."]], day:58, kind:'shop', spot:'flowers', title:'A florist has opened on Canal Row',
+    // shops open
+    { id:'e_flowers', react:[['mia',"Dahlias on my street! Parsley already knows my name."],['jules',"Orange ones, for the easel. Obviously."]], day:D(1), kind:'shop', spot:'flowers', title:'A florist has opened on Canal Row',
       lines:["Fennel & Fern has put out its striped awning and a hundred buckets of dahlias.","Parsley the shop cat is in charge of the till. Mia was seen outside before it opened. Obviously."] },
-    { id:'e_flea', react:[['jules',"A teapot, a clock and nothing I needed. Perfect."],['mia',"I'm bringing a tin of lemon cookies. For research."],['sam',"Fourteen stalls and not one with a proper sign. I'm only offering to help."]], day:40, kind:'happening', spot:'fleamarket', title:'Flea Market on Orchard Green',
-      lines:["Saturday morning, long tables, hand-painted signs: teapots, brass bells, a very large clock.","Bring a bag. Haggle politely."], tease:"Flea market on Orchard Green" },
-    { id:'e_regatta', react:[['sam',"A prize for the most dramatic wobble? I've entered myself."],['theo',"Lovely boats. I'd have put gears on them."],['mia',"I'll wave from the harbour wall. And bake for the winners."]], day:52, kind:'happening', spot:'regatta', title:'Summer Regatta at the Harbour',
-      lines:["Bunting on every mast and a prize for the most dramatic wobble.","The harbour master has been practising his ‘ahoy’."], tease:"Summer Regatta at the Harbour" },
-    { id:'e_antiques', react:[['rosa',"Chairs with stories! At last, a shop that talks my language."],['noor',"I admire a chair from the doorway. It is two centimetres too wide."],['theo',"‘One of a kind’? Elena says I may look, not buy."],['jules',"A whole shop of things to draw. Send snacks."]], day:106, kind:'shop', spot:'antiques', title:'Antiques on Church Hill',
-      lines:["Marigold & Moss has opened in the pink house with the porch on Church Hill, where the old families send their attics.","Everything is ‘one of a kind’. Most of it is very heavy."] },
-    { id:'e_lantern', react:[['theo',"Hot chocolate at our cabin. Elena says we're hosting. News to me."],['mia',"I'm baking for the whole lane. Possibly twice."],['rosa',"Candlelight in the trees. I shall wear the green shawl."]], day:90, kind:'happening', spot:'lantern', title:'Lantern Night on Lantern Lane',
-      lines:["Paper lanterns line the lane at dusk and little candle boats are set afloat in the bay. Hot chocolate by the cabins.","Bring a jumper; the evenings get cold fast."], tease:"Lantern Night on Lantern Lane" },
-    { id:'e_harvest', react:[['rosa',"Yellow everywhere. Autumn finally agrees with me."],['mia',"I'm entering the pumpkin loaf. Quietly."],['sam',"I'm not catering. I'm advising. Loudly."]], day:118, kind:'happening', spot:'harvest', title:'Harvest Market in Old Town',
-      lines:["Pumpkins, chutneys and a jam stall with an actual queue.","The first red leaf landed on the clock tower on Tuesday. The market is its reward."], tease:"Harvest Market in Old Town" },
-    { id:'e_gallery', react:[['jules',"A GALLERY. I've already measured the wall. Just in case."],['noor',"Red brick, green door. The proportions are correct."],['rosa',"Someone will finally hang something with courage."],['mia',"Small prints for the bedroom. Yes, please."]], day:322, kind:'shop', spot:'gallery', title:'A gallery on the Far Shore',
-      lines:["The Paper Moth has opened in the red-brick house across the water: small prints, big frames, a very quiet owner.","Opening night: a free glass of something fizzy."] },
-    { id:'e_bakery', react:[['theo',"I have flour on the ceiling. Elena says it suits me."],['mia',"A real bakery on the corner! I may have to stop baking. (I won't.)"],['sam',"Bread for the flat, finally. I'm there at seven."],['noor',"I will come at eight, when the queue is orderly."]], day:140, kind:'shop', spot:'bakery', title:'A bakery has opened in Old Town',
+    { id:'e_bakery', react:[['theo',"I have flour on the ceiling. Elena says it suits me."],['mia',"A real bakery on the corner! I may have to stop baking. (I won't.)"],['sam',"Bread for the flat, finally. I'm there at seven."],['noor',"I will come at eight, when the queue is orderly."]], day:D(4), kind:'shop', spot:'bakery', title:'A bakery has opened in Old Town',
       lines:["Crumb & Crown has lit its ovens on the corner by the clock tower. Open at seven, sold out by eleven.","The old baker is teaching Theo the recipes. The shop cat supervises both of them."] },
-    { id:'e_soup', react:[['mia',"Pumpkin and lemon soup. Don't ask. Do taste."],['rosa',"I'll bring a ladle and an opinion."],['noor',"A pot with a lid that fits. I check."]], day:165, kind:'happening', spot:'soupswap', title:'Soup Swap on Church Hill',
-      lines:["Bring a pot of something hot, leave with someone else's pot of something hot.","Forty ladles, six leeks and a very opinionated dachshund."], tease:"Soup swap on Church Hill" },
-    { id:'e_lights', react:[['sam',"I may have helped with the star. Only a little. Robin held the ladder."],['rosa',"I'm sewing little cloaks for the lantern children."],['mia',"Soup. I'm bringing soup. And bread."]], day:200, kind:'happening', spot:'lights', title:'Winter Lights on Church Hill',
+    { id:'e_antiques', react:[['noor',"I admire a chair from the doorway. It is two centimetres too wide."],['theo',"‘One of a kind’? Elena says I may look, not buy."],['jules',"A whole shop of things to draw. Send snacks."],['rosa',"Chairs with stories! At last, a shop that talks my language."]], day:D(7), kind:'shop', spot:'antiques', title:'Antiques on Church Hill',
+      lines:["Marigold & Moss has opened in the pink house with the porch on Church Hill, where the old families send their attics.","Everything is ‘one of a kind’. Most of it is very heavy."] },
+    { id:'e_books', react:[['noor',"A ladder on rails. I'd like the exact measurements, please."],['mia',"Fantasy shelf: thirty minutes. Cosy mysteries: the rest of my life."],['rosa',"Costume history on the second shelf, I hope. I'll check."],['jules',"Picture books! And they might need someone two days a week. Hint."]], day:D(11), kind:'shop', spot:'books', title:'A bookshop on Orchard Rise',
+      lines:["The Dog-Eared Bookshop has opened in the crooked house on the lane: a ladder on rails, a sleeping dog and a very good children's corner.","The dog is not for sale. People have asked."] },
+    { id:'e_gallery', react:[['jules',"A GALLERY. I've already measured the wall. Just in case."],['noor',"Red brick, green door. The proportions are correct."],['rosa',"Someone will finally hang something with courage."],['mia',"Small prints for the bedroom. Yes, please."]], day:D(14), kind:'shop', spot:'gallery', title:'A gallery on the Far Shore',
+      lines:["The Paper Moth has opened in the red-brick house across the water: small prints, big frames, a very quiet owner.","Opening night: a free glass of something fizzy."] },
+    { id:'e_miastall', react:[['jules',"A bunch of ranunculus, for the easel. At a friend's price."],['rosa',"Locally grown, locally gossiped. I approve."],['theo',"I'll swap a loaf for a bucket. Don't tell Elena."],['sam',"Flowers. How lovely. I'll look at them from across the street."]], day:D(25), kind:'shop', spot:'miagarden', title:"Mia's garden gate is open",
+      lines:["A trestle table by the gate of the garden flat on Church Hill, buckets of whatever bloomed this morning, and a sign: “Friends pay less.”","Parsley has been to inspect it. Parsley has opinions about the dahlias."] },
+
+    // one happening in every season
+    { id:'e_flea', react:[['jules',"A teapot, a clock and nothing I needed. Perfect."],['mia',"I'm bringing a tin of lemon cookies. For research."],['sam',"Fourteen stalls and not one with a proper sign. I'm only offering to help."]], day:D(2), kind:'happening', spot:'fleamarket', title:'Flea Market on Orchard Green',
+      lines:["Saturday morning, long tables, hand-painted signs: teapots, brass bells, a very large clock.","Bring a bag. Haggle politely."], tease:"Flea market on Orchard Green" },
+    { id:'e_harvest', react:[['rosa',"Yellow everywhere. Autumn finally agrees with me."],['mia',"I'm entering the pumpkin loaf. Quietly."],['sam',"I'm not catering. I'm advising. Loudly."]], day:D(5), kind:'happening', spot:'harvest', title:'Harvest Market in Old Town',
+      lines:["Pumpkins, chutneys and a jam stall with an actual queue.","The first red leaf landed on the clock tower on Tuesday. The market is its reward."], tease:"Harvest Market in Old Town" },
+    { id:'e_lights', react:[['sam',"I may have helped with the star. Only a little. Someone held the ladder."],['rosa',"I'm sewing little cloaks for the lantern children."],['mia',"Soup. I'm bringing soup. And bread."]], day:D(6), kind:'happening', spot:'lights', title:'Winter Lights on Church Hill',
       lines:["Every window gets a candle. The steeple gets a star.","Neighbours bring soup, and a surprising amount of tinsel."], tease:"Winter Lights on Church Hill" },
-    { id:'e_birth', react:[['rosa',"Coat measured, cut and basted. She won't escape it."],['mia',"A lemon loaf is on its way. And no vases."],['jules',"I drew her a tiny heron in a tiny raincoat."]], day:258, kind:'birth', from:'theo', title:'Wren has arrived!',
+    { id:'e_tulips', react:[['mia',"Tulips! For the bedroom, the table, and possibly my hair."],['jules',"Yellow ones. For the easel. Obviously."],['sam',"I walked past. Twice. I didn't take one. (I took one.)"]], day:D(10), kind:'happening', spot:'tulips', title:'Tulip Day at Fennel & Fern',
+      lines:["A bucket of tulips outside the shop for anyone who wants one, free.","Parsley supervises the queue and judges your choice."], tease:"Tulip Day at Fennel & Fern" },
+    { id:'e_regatta', react:[['sam',"A prize for the most dramatic wobble? I've entered myself."],['theo',"Lovely boats. I'd have put gears on them."],['mia',"I'll wave from the harbour wall. And bake for the winners."]], day:D(13), kind:'happening', spot:'regatta', title:'Summer Regatta at the Harbour',
+      lines:["Bunting on every mast and a prize for the most dramatic wobble.","The harbour master has been practising his ‘ahoy’."], tease:"Summer Regatta at the Harbour" },
+    { id:'e_apple', react:[['mia',"An apple tart. Perhaps three. For the competition, obviously."],['rosa',"Autumn. At last, a season with proper colours."],['theo',"Our tree's apples are tiny. I'm entering them anyway."]], day:D(16), kind:'happening', spot:'appleday', title:'Apple Day on Orchard Green',
+      lines:["Every garden on the Rise brings the apples of its one stubborn tree. There is a competition.","There is always a competition."], tease:"Apple Day on Orchard Green" },
+    { id:'e_soup', react:[['mia',"Pumpkin and lemon soup. Don't ask. Do taste."],['rosa',"I'll bring a ladle and an opinion."],['noor',"A pot with a lid that fits. I check."]], day:D(18), kind:'happening', spot:'soupswap', title:'Soup Swap on Church Hill',
+      lines:["Bring a pot of something hot, leave with someone else's pot of something hot.","Forty ladles, six leeks and a very opinionated dachshund."], tease:"Soup swap on Church Hill" },
+    { id:'e_eggs', react:[['theo',"Wren is too small to hunt, so she supervises from a pram."],['mia',"I'll bake an egg-shaped cake. Don't judge me."],['rosa',"Costumes for the little ones: bunny ears, whiskers, the lot."]], day:D(22), kind:'happening', spot:'eggs', title:'Egg Hunt on Orchard Green',
+      lines:["Chocolate eggs in the hedges and one very suspicious dachshund.","Under-sevens first, then everybody."], tease:"Egg hunt on Orchard Green" },
+    { id:'e_bonfire', react:[['jules',"Sparks and charcoal. I may sketch with a burnt stick."],['mia',"Marshmallows. Maybe I'll even stay past nine."],['sam',"I brought the sausages. I'm not saying I organised it."]], day:D(26), kind:'happening', spot:'bonfire', title:'Summer’s End Bonfire on the Beach',
+      lines:["The last warm evening ends with a fire on the sand below Church Hill.","Marshmallows, a guitar and somebody's grandad telling the same story."], tease:"Bonfire on the beach" },
+    { id:'e_studio', react:[['mia',"I baked the cake. Jules asked very nicely. Several times."],['noor',"I'll come. I'll admire. I'll say nothing about the staircase."],['rosa',"I'll bring a shawl, in case someone needs a costume."]], day:D(27), kind:'happening', spot:'openstudio', title:'Open Studio at the Mills',
+      lines:["Doors open all along the loft stairwells: paint, prints, tea and a very large dog.","The cake was definitely baked by someone else."], tease:"Open Studio at the Mills" },
+    { id:'e_lantern', react:[['theo',"Hot chocolate for the lane. Elena says I'm in charge of the mugs."],['mia',"I'm baking for the whole lane. Possibly twice."],['rosa',"Candlelight in the trees, right outside my own door. I shall wear the green shawl."]], day:D(30), kind:'happening', spot:'lantern', title:'Lantern Night on Lantern Lane',
+      lines:["Paper lanterns line the lane at dusk and little candle boats are set afloat in the bay. Hot chocolate by the cabins.","Bring a jumper; the evenings get cold fast."], tease:"Lantern Night on Lantern Lane" },
+    { id:'e_wedding', react:[['rosa',"I'm making the veil. Don't tell Mia."],['sam',"I offered to produce it. I've been told to stand quietly."],['noor',"I'll bring a gift and an opinion on the pews."]], day:D(33), kind:'invite', spot:'wedding', from:'mia', title:'You are invited',
+      names:'Mia & Alex', lines:["are getting married.","Saturday 22 April · Two o'clock · The white church on Church Hill","Cake to follow. Tea to follow cake. Dancing to follow tea."],
+      sign:'Please say yes. There is a lemon loaf.', tease:"Mia & Alex's wedding" },
+
+    // a birth
+    { id:'e_birth', react:[['rosa',"Coat measured, cut and basted. She won't escape it."],['mia',"A lemon loaf is on its way. And no vases."],['jules',"I drew her a tiny heron in a tiny raincoat."]], day:D(9), kind:'birth', from:'theo', title:'Wren has arrived!',
       lines:["Wren, born on a very rainy morning, a few weeks before she was due. Loud, tiny, and already in charge.","Theo and Elena say thank you for the living room, and ask for no vases."], sign:'Theo, Elena & Wren' },
-    { id:'e_wedding', react:[['rosa',"I'm making the veil. Don't tell Priya."],['sam',"I offered to produce it. I've been told to stand quietly."],['noor',"I'll bring a gift and an opinion on the pews."]], day:296, kind:'invite', spot:'wedding', from:'mia', title:'You are invited',
-      names:'Priya & Dev', lines:["are getting married.","Saturday 25 April · Two o'clock · The white church on Church Hill","Cake to follow. Tea to follow cake. Dancing to follow tea."],
-      sign:'Please say yes. There is a lemon loaf.', tease:"Priya & Dev's wedding" },
-    { id:'e_spring', react:[['theo',"Bread for the kids' stall. The shop cat will supervise."],['jules',"I'm selling prints. Next to the clock. Nobody buy the clock."],['mia',"Seedlings for the windowsill! Mine are already named."]], day:334, kind:'happening', spot:'springmarket', title:'The flea market is back',
-      lines:["Seedlings, bunting and the very large clock, still unsold.","Spring on Orchard Green."], tease:"Spring Flea Market" },
 
     // moves: these arrive when the matching job is finished
-    { id:'h_mia', react:[['rosa',"A tablecloth, darling. She's grown up."],['jules',"I'm bringing a painting. Don't say no."],['sam',"A table that seats six? I can work with that."]], after:'MIA_03', kind:'home', who:'mia', home:'MIA_HOME_B', title:'Mia & Alex have moved in!',
-      lines:["Keys in, boxes unpacked (mostly), a dining table with an actual tablecloth.","Mia's first flat on Canal Row is quiet now. The new place is on Church Hill."] },
-    { id:'h_jules', react:[['mia',"Cake is in the oven. It's lemon. It's always lemon."],['noor',"I looked at the staircase. It is four millimetres off. I love it."],['rosa',"A door that closes. Finally, an artist with sense."]], after:'JULES_03', kind:'home', who:'jules', home:'JULES_HOME_B', title:'Jules has moved upstairs',
-      lines:["Same mill, one staircase higher: a loft with a door that closes and a room just for paint.","The Open Studio is next Saturday. There will be cake. (Mia is baking it.)"] },
-    { id:'h_sam', react:[['noor',"A dish rack and a big kitchen. A good start."],['mia',"I'll bring bread. Sam will bring opinions."],['rosa',"Red and leather? He listens, that one."]], after:'SAM_03', kind:'home', who:'sam', home:'SAM_HOME_B', title:'Sam & Robin bought a home',
-      lines:["Their first place together, in Old Town, with a dish rack and a very big kitchen.","The oven is, we are told, ‘on its way’."] },
-    { id:'h_noor', react:[['sam',"A ceiling for a kite! I'll bring a ladder. And wine."],['jules',"I'm making her a very small, very square drawing."],['theo',"Up that many stairs? I'll bring the bread. Warm."]], after:'NOOR_03', kind:'home', who:'noor', home:'NOOR_HOME_B', title:'Noor bought the top floor',
+    { id:'h_jules', react:[['mia',"Cake is in the oven. It's lemon. It's always lemon."],['noor',"I looked at the staircase. It is four millimetres off. I love it."],['rosa',"Six prints on a gallery wall. I'll buy one. I'll haggle."]], after:'JULES_04', kind:'home', who:'jules', home:'JULES_HOME_B', title:'Jules has moved flats',
+      lines:["Same mill, one staircase along: two rooms, one for painting and one, eventually, for living.","The gallery has taken six prints. Jules has not stopped smiling since."] },
+    { id:'h_noor', react:[['sam',"A ceiling for a kite! I'll bring a ladder. And wine."],['jules',"I'm making her a very small, very square drawing."],['theo',"Up that many stairs? I'll bring the bread. Warm."]], after:'NOOR_04', kind:'home', who:'noor', home:'NOOR_HOME_B', title:'Noor bought the top floor',
       lines:["Same tower, a few floors higher: tall windows, a ceiling you could lose a kite in.","No desk. She was very clear."] },
-    { id:'h_theo', react:[['rosa',"A dining room for grandad and the aunts. Wonderful."],['mia',"I'm baking for the housewarming. Obviously."],['noor',"A sideboard that follows them. I respect that."]], after:'THEO_03', kind:'home', who:'theo', home:'THEO_HOME_B', title:'Theo & Elena have a family flat',
-      lines:["A proper dining room on Orchard Rise, with space for grandad, the aunts and the sideboard.","Theo is now co-owner of Crumb & Crown, too."] },
-    { id:'h_rosa', react:[['theo',"A neighbour up the lane! I'll bring bread. And Wren."],['mia',"Tea with a view of the bay. I'm bringing the lemon loaf."],['jules',"Ducks on the cushions? I can draw some. Don't tell her."]], after:'ROSA_03', kind:'home', who:'rosa', home:'ROSA_CABIN_A', second:true, title:'Rosa has bought a cabin',
-      lines:["A little house on Lantern Lane, with a kitchen window that looks straight down to the bay.","She is keeping her flat in town. ‘I am not a monster, darling.’"] }
+    { id:'h_rosa', react:[['theo',"A neighbour up the lane! I'll bring bread. And Wren."],['mia',"Tea with a view of the bay. I'm bringing the lemon loaf."],['jules',"Ducks on the cushions? I can draw some. Don't tell her."]], after:'ROSA_04', kind:'home', who:'rosa', home:'ROSA_CABIN_A', second:true, title:'Rosa has bought a cabin',
+      lines:["A little house on Lantern Lane, with a kitchen window that looks straight down to the bay.","She is keeping her flat in town. ‘I am not a monster, darling.’"] },
+    { id:'h_mia', react:[['rosa',"A tablecloth, darling. She's grown up."],['jules',"I'm bringing a painting. Don't say no."],['sam',"A table that seats six? I can work with that."]], after:'MIA_05', kind:'home', who:'mia', home:'MIA_HOME_B', title:'Mia & Alex have a garden',
+      lines:["Keys in, boxes unpacked (mostly), a dining table with an actual tablecloth and a crooked apple tree out the back.","Mia's first flat on Canal Row is quiet now. The new place is on Church Hill."] },
+    { id:'h_theo', react:[['rosa',"A dining room for grandad and the aunts. Wonderful."],['mia',"I'm baking for the housewarming. Obviously."],['noor',"A sideboard that follows them. I respect that."]], after:'THEO_05', kind:'home', who:'theo', home:'THEO_HOME_B', title:'Theo & Elena have a family flat',
+      lines:["A proper dining room on Orchard Rise, with space for grandad, the aunts and the sideboard.","The cabin on Lantern Lane is quiet now. Wren has already named the new stairs."] },
+    { id:'h_jules2', react:[['mia',"Cake. Don't ask. It's lemon."],['noor',"A door that closes. Finally, an artist with sense."],['sam',"I'm planning the Open Studio. Jules says I'm not. I'm planning it."]], after:'JULES_06', kind:'home', who:'jules', home:'JULES_LOFT', title:'Jules has moved to the top floor',
+      lines:["Same mill, the top floor: a loft with a door that closes and a room just for paint.","The Paper Moth has a waiting list for the next prints. Three years ago it was one suitcase and eleven boxes of paint."] },
+    { id:'h_sam', react:[['noor',"A dish rack and a big kitchen. A good start."],['mia',"I'll bring bread. Sam will bring opinions."],['rosa',"Red and leather? He listens, that one."]], after:'SAM_06', kind:'home', who:'sam', home:'SAM_HOME_B', title:'Sam & Robin bought a home',
+      lines:["Their first place together, in Old Town, with a dish rack and a very big kitchen.","The oven is, we are told, ‘on its way’."] }
   ];
+
   /* ------------------------------------------------------------------ shops
      No money in the Cove, so the shops go by reputation instead: a shopkeeper
      sets pieces aside for people the town trusts. Each shelf has a renown level
@@ -997,6 +1419,15 @@ var Story = (function(){
       ],
       have: ['book-collection-big','book-collection-small','book-collection-orange','book-stack-standing','bockstack-02','books-blank-stack-white']
     },
+    miagarden: {
+      stock: [
+        ['plant-kiko',0,'spring'], ['zuzu-plant',1,'spring'], ['plant-aria',2,'spring'],
+        ['banana-leaf',0,'summer'], ['pothos-potted',1,'summer'], ['fiddle-leaf-medium',2,'summer'],
+        ['snake-plant',0,'autumn'], ['ficus-elastica',1,'autumn'], ['rubber-tree-alix',2,'autumn'],
+        ['faux-fern',0,'winter'], ['plant-svenja',1,'winter'], ['snake-plant-tall',2,'winter']
+      ],
+      have: ['hangingplant-sulie','plant-zilotta','plant-kiki','fiddle-leaf-tall']
+    },
     gallery: {
       stock: [
         ['painting-field-beige',1,'spring'], ['painting-shadow-fern-pink',3,'spring'], ['painting-green-mist',1,'summer'],
@@ -1021,6 +1452,7 @@ var Story = (function(){
     flowers:  { one:"Thanks for stopping by! It will be wrapped up and sent over to you. Take good care of it!", many:"Thanks for stopping by! The plants will be packed up and sent over to you. Take good care of them!" },
     antiques: { one:"A fine choice. Marigold will wrap it in old newspaper and have it sent over. Mind the weight!", many:"A fine haul. Marigold will wrap everything in old newspaper and have it sent over. Mind the weight!" },
     books:    { one:"Thanks for stopping by! It will be wrapped in brown paper and sent over. Happy reading!", many:"Thanks for stopping by! They will be wrapped in brown paper and sent over. Happy reading!" },
+    miagarden:{ one:"“Friends pay less,” says Mia, and wraps it in yesterday's newspaper. It will be sent over, roots and all.", many:"“Friends pay less,” says Mia, and wraps everything in yesterday's newspaper. It will all be sent over, roots and all." },
     gallery:  { one:"Lovely choice. It will be wrapped with care and sent over to you.", many:"Lovely choices. Everything will be wrapped with care and sent over to you." }
   };
   var SHOP_OWNER = {};   // item id -> { spot, level (shop tier), season|null }
@@ -1037,20 +1469,6 @@ var Story = (function(){
      the id for a new seasonal piece whenever it exists. A wrong answer only
      earns a funny line, and you can always try again. */
   var EVENT_PLAY = {
-    e_street: { prize:'food-fruitbasket-miriam', prizeSay:"A basket of fruit nobody can remember bringing.", st:[
-      { who:'Sam', c:'sam', role:'Events producer', say:"The speaker is rattling the plates and everyone is shouting over it. Your call?", o:[
-        ["Turn it to face the street, away from the tables.", "Sam, quietly moved: “Angles. Nobody ever thinks about angles.”"],
-        ["Turn it down a notch.", "“Safe. Safe is… fine.” He doesn't look happy about safe."],
-        ["Turn it up. They'll adapt.", "Sam looks at you the way he looks at a double-booked hall."] ] },
-      { who:'Mia', c:'mia', role:'Vet receptionist', say:"I made two dozen lemon cookies and I'm hiding behind the tray. How do I get through an afternoon of strangers?", o:[
-        ["Hand the tray round. Everybody talks to the cookie person.", "“Oh. Oh, that's cheating. That's wonderful.”"],
-        ["Stay by the tray. People will come to you.", "“That worked once. In 2021. For about four minutes.”"],
-        ["Eat them all, quickly, in a doorway.", "“Tempting. No. Yes. Maybe a few.”"] ] },
-      { who:'Dennis', c:null, role:'Ham owner, No. 9', say:"I've brought a whole ham and there's a dog. Where does it go?", o:[
-        ["Dead centre of the tallest table.", "Dennis nods slowly. “The dog will be heartbroken. Excellent.”"],
-        ["On a chair, under a tea towel.", "“A chair. Under a towel. It'll look like a very small guest.”"],
-        ["Ask the dog politely to leave it.", "The dog looks at you. The ham looks at you. Neither is reassured."] ] }
-    ]},
     e_bonfire: { prize:'cowhide-carrie-darkbrown', prizeSay:"Something warm to sit on, still smelling faintly of woodsmoke.", st:[
       { who:'Sam', c:'sam', role:'Events producer', say:"Fire's built, sausages are ready. Where does everybody sit?", o:[
         ["In a wide circle, facing the sea.", "“A view and a fire. See? Production.”"],
@@ -1065,22 +1483,8 @@ var Story = (function(){
         ["Borrow somebody's pen.", "“Fine, but pens don't smudge. I need smudge.”"],
         ["Hold the pencil in the fire for effect.", "“Now I have a pencil stub and a legend.”"] ] }
     ]},
-    e_kites: { prize:'deco-knot', prizeSay:"A tangled-string keepsake from the quay.", st:[
-      { who:'Theo', c:'theo', role:'Baker', say:"I built three kite frames. Elena says I'm not allowed to help. Which one flies?", o:[
-        ["The lightest one, with the longest tail.", "“Longest tail. Of course. Elena owes me a coffee.”"],
-        ["The strongest frame.", "“Strong, yes. Flies like a bread board, sadly.”"],
-        ["The one with the gears.", "“I did put gears on it. It was heavy. It's still the best.”"] ] },
-      { who:'Pip', c:null, role:'Kite owner, age 7', say:"My string is in a knot as big as my head!", o:[
-        ["Hold it loosely and work the knot out from the end.", "Pip pulls the last loop free. “You're a WIZARD.”"],
-        ["Cut it. Start again.", "“But it was my favourite string!” (it's a bit shorter now)"],
-        ["Pull harder.", "The knot is now the size of Pip's head AND a fist."] ] },
-      { who:'Sam', c:'sam', role:'Events producer', say:"Three kites are stuck in the clock tower. I'm supervising. What do I tell the council?", o:[
-        ["Ask the clock keeper for the key on Monday.", "“A key. A real key. I'm putting it on the list.”"],
-        ["Leave them. They look festive.", "“Festive. The council will adore that.”"],
-        ["Throw another kite at them.", "Four kites in the clock tower. Sam sits down."] ] }
-    ]},
     e_apple: { prize:'plant-hector', prizeSay:"A little apple tree in a pot, tiny apples and all.", st:[
-      { who:'Judge Hollis', c:null, role:'Apple Day judge', say:"A shiny giant, a lumpy one with a lovely smell, or Theo's tiny one that's won before. Which takes the ribbon?", o:[
+      { who:'Judge Hollis', c:null, role:'Apple Day judge', say:"A shiny giant, a lumpy one with a lovely smell, or Theo's tiny one off the cabin tree. Which takes the ribbon?", o:[
         ["Theo's tiny one. It has the best story.", "“Same as last year. The town expects it.”"],
         ["The shiny giant.", "“Handsome. Wooden inside, I'd wager.”"],
         ["All of them, baked in one pie.", "“Disqualified for being delicious.”"] ] },
@@ -1092,20 +1496,6 @@ var Story = (function(){
         ["The mustard coat. It matches the leaves.", "“Matching the season is simply good manners.”"],
         ["The green shawl.", "“Lovely, darling, but it argues with the trees.”"],
         ["Her old rain mac.", "“I am not dressing as a bin bag.”"] ] }
-    ]},
-    e_bake: { prize:'stacked-plates-rosa', prizeSay:"A pile of cake plates, retired from the church hall.", st:[
-      { who:'Mia', c:'mia', role:'Vet receptionist', say:"I'm baking two lemon loaves. One for the sale, and one for…?", o:[
-        ["Emergencies.", "“EMERGENCIES. You know me.”"],
-        ["Yourself.", "“Tempting. But then who handles emergencies?”"],
-        ["The dog.", "“The dog is not allowed lemon. The dog has no taste.”"] ] },
-      { who:'Noor', c:'noor', role:'Architect', say:"The queue goes right round the steeple. How do I shorten it?", o:[
-        ["A serving table at each end.", "“Two ends. Parallel service. A tidy solution.”"],
-        ["Ask everybody to hurry.", "“Hurry does not shorten a queue. It only makes it grumpier.”"],
-        ["Add a second queue for the dog.", "The dog queue is very short and very hopeful."] ] },
-      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"I'm judging the buns. Gently. Mostly. What's my verdict style?", o:[
-        ["Kind, with one honest line.", "“Kindness with a spine. Exactly my style.”"],
-        ["Everyone wins.", "“Everyone wins. Which means no one remembers.”"],
-        ["Strictly by weight.", "“By weight. I shall bring the scales and my reading glasses.”"] ] }
     ]},
     e_studio: { prize:'standig-lamp-jens', prizeSay:"A tall studio lamp that someone left behind on the stairs.", st:[
       { who:'Jules', c:'jules', role:'Illustration student', say:"Someone asked the price of the print by the door and I panicked. What do I say?", o:[
@@ -1178,7 +1568,7 @@ var Story = (function(){
         ["“Hello”.", "“The boats don't understand ‘hello’. Not yet.”"] ] }
     ]},
     e_lantern: { prize:'paper-lamp', prizeSay:"A paper lantern, still warm from the candle.", st:[
-      { who:'Theo', c:'theo', role:'Baker', say:"Hot chocolate for the whole lane, and Elena says we're hosting. How many mugs?", o:[
+      { who:'Theo', c:'theo', role:'Baker', say:"Hot chocolate for the whole lane, and Elena says I'm in charge of the mugs. How many?", o:[
         ["More than you think. The evening gets cold.", "“More than I think. That's most things in my life.”"],
         ["Twelve.", "“Twelve. Wren will use three. Wren will use none.”"],
         ["One, shared.", "“One mug. Shared. By forty people. Hmm.”"] ] },
@@ -1220,7 +1610,7 @@ var Story = (function(){
         ["Neither. Just stand there.", "“I do that well, too. But no.”"] ] }
     ]},
     e_lights: { prize:'standig-paper-lamp', prizeSay:"A tall paper light that glowed in a Church Hill window.", st:[
-      { who:'Sam', c:'sam', role:'Events producer', say:"The steeple star! Robin is holding the ladder. What do I check first?", o:[
+      { who:'Sam', c:'sam', role:'Events producer', say:"The steeple star! Somebody is holding the ladder. What do I check first?", o:[
         ["That the ladder's feet are steady.", "“The feet. Yes. I'll remember the feet.”"],
         ["That the star is straight.", "“Straight, yes. Not so useful if I fall.”"],
         ["That the neighbours are watching.", "“Always. That's the whole job.”"] ] },
@@ -1233,22 +1623,8 @@ var Story = (function(){
         ["Bread on the bottom, soup on top.", "“Soup on bread? A soggy tragedy.”"],
         ["Carry the soup in my coat.", "“My coat is not a pot. It will be, soon.”"] ] }
     ]},
-    e_spring: { prize:'mini-plant', prizeSay:"A seedling in a mug, already named.", st:[
-      { who:'Theo', c:'theo', role:'Baker', say:"Bread for the kids' stall. What's the safest roll to hand a seven-year-old?", o:[
-        ["A plain soft roll.", "“Soft. Plain. Smeared. A small one, then.”"],
-        ["A sourdough with seeds.", "“Seeds everywhere. Even the dog's ears.”"],
-        ["A baguette, used as a sword.", "“…Wren isn't allowed a baguette. Yet.”"] ] },
-      { who:'Jules', c:'jules', role:'Illustration student', say:"I'm selling prints next to the large clock. Nobody buy the clock. Where do I stand?", o:[
-        ["Right beside the clock, so people see the prints.", "“Beside the clock. It's a landmark. I'm a landmark.”"],
-        ["As far from the clock as possible.", "“Far from the clock. No one will find me. That's the dream.”"],
-        ["In front of the prints, blocking them.", "“Everyone sees me. No one sees the prints.”"] ] },
-      { who:'Mia', c:'mia', role:'Vet receptionist', say:"My seedlings are already named. Which do I sell first?", o:[
-        ["The one I've named least.", "“The least-named one. Oh, that hurts. Yes.”"],
-        ["The biggest.", "“The biggest is Gerald the Second. He's staying.”"],
-        ["None. They're family.", "“Family. But the stall is… empty. Hm.”"] ] }
-    ]},
     e_wedding: { prize:'vase-amora-white', prizeSay:"A white vase left over from the church flowers.", st:[
-      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"I'm making Priya's veil and I mustn't tell her. Where do I hide it?", o:[
+      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"I'm making Mia's veil and I mustn't tell her. Where do I hide it?", o:[
         ["In a hatbox at the back of the church.", "“A hatbox. The one place a bride never looks.”"],
         ["In the wardrobe.", "“That's where she keeps her dress. She'd see it.”"],
         ["On a hat stand in the window.", "“In the WINDOW? Darling, the whole street would see.”"] ] },
@@ -1262,6 +1638,14 @@ var Story = (function(){
         ["Rebuild them overnight.", "“I've thought about it. I won't.”"] ] }
     ]}
   };
+  // the job a neighbour has on a given day of the story, so a station reads "Jules, gallery
+  // artist" in the third year and "Jules, illustration student" in the first
+  Object.keys(EVENT_PLAY).forEach(function(eid){
+    var ev = null;
+    EVENTS.forEach(function(e){ if (e.id === eid) ev = e; });
+    if (!ev) return;
+    EVENT_PLAY[eid].st.forEach(function(st){ if (st.c) st.role = jobAtDay(st.c, ev.day); });
+  });
   var EVENT_PRIZE = {};   // item id -> { event }
   Object.keys(EVENT_PLAY).forEach(function(eid){ EVENT_PRIZE[EVENT_PLAY[eid].prize] = { event:eid }; });
   function prizeOf(itemId){ return EVENT_PRIZE[itemId] || null; }
@@ -1295,44 +1679,118 @@ var Story = (function(){
   /* ------------------------------------------------------------- newspaper */
   // "The Cove Courier": an issue appears once the story reaches its day.
   var NEWS = [
-    { day:0, lead:{ h:"Pennywhistle Cove Wakes Up Slowly", t:"The first ferry leaves at seven, the clock tower runs four minutes fast, and nobody minds. New neighbours are arriving all week, say the removal vans." },
-      items:[ {h:"Pigeon census", t:"Up by twelve. The council blames the ferry café."}, {h:"Lost", t:"One blue umbrella. Reward: a lemon cookie."} ],
+    // ---------------------------------------------------------------- Year one
+    { day:D(0), lead:{ h:"Pennywhistle Cove Wakes Up Slowly", t:"The first ferry leaves at seven, the clock tower runs four minutes fast, and nobody minds. New neighbours are arriving all week, say the removal vans." },
+      items:[ {h:"Pigeon census", t:"Up by twelve. The council blames the ferry café."}, {h:"Canal Row", t:"A new tenant has been seen carrying a houseplant, a bread knife and a key she keeps looking at."} ],
       notice:"WANTED: someone who is good with rooms. Apply anywhere in the Cove." },
-    { day:29, lead:{ h:"Midsummer Bonfire Lit on Time", t:"The bonfire on the beach below Church Hill was lit exactly on time and put out slightly late. The marshmallow shortage is being investigated.", spot:'bonfire' },
-      items:[ {h:"Street party", t:"Canal Row ate for six hours. The ham has still not been identified."}, {h:"Dinner parties", t:"A flat in Glass Row now seats eleven. The neighbours are ‘delighted, mostly’."} ],
-      notice:"WANTED: a second oven, gently used. Ask at the harbour café." },
-    { day:60, lead:{ h:"A Florist for Canal Row", t:"Fennel & Fern has put up its striped awning with a hundred buckets of dahlias and one cat. Early customers described the queue as ‘polite but hungry for tulips’.", spot:'flowers' },
-      items:[ {h:"Flea Market", t:"By ten o'clock on Saturday there wasn't a teapot left on Orchard Green. One shopper went home with a grandfather clock and no plan."}, {h:"Regatta results", t:"First place: the boat that stayed upright. Second: a very wobbly one."} ],
-      notice:"OPEN MIC Thursday at the harbour café. Bring a song, or a snack." },
-    { day:91, lead:{ h:"Kites Over Glimmer Bay", t:"The bay was full of kites on Sunday, launched from the Glass Row quay. Three are still in the clock tower. The Courier has asked, politely, for them back.", spot:'kites' },
-      items:[ {h:"Lantern Night", t:"Paper lanterns, hot chocolate, and a lane-side neighbour who ‘didn't plan any of this’."}, {h:"Weather", t:"Hottest week on record. The canal ducks are reported to be ‘sulking’."} ],
+    { day:D(1), lead:{ h:"A Florist for Canal Row", t:"Fennel & Fern has put up its striped awning with a hundred buckets of dahlias and one cat. Early customers described the queue as ‘polite but hungry for tulips’.", spot:'flowers' },
+      items:[ {h:"Up at the Mills", t:"Someone has moved into the attic with eleven boxes of paint and no curtains. Passers-by report an easel in the window."}, {h:"Ferry", t:"Late again, with feeling."} ],
       notice:"LOST: one cat, answers to ‘Parsley’. Does not answer." },
-    { day:121, lead:{ h:"Antiques Arrive on Church Hill", t:"Marigold & Moss has opened in the pink porch house on Church Hill. Every item is ‘one of a kind’ and most are extremely heavy. Browsers are advised to bring a friend.", spot:'antiques' },
-      items:[ {h:"Autumn arrives, tidily", t:"The first red leaf landed on the clock tower on Tuesday. The Courier asks the others to follow in an orderly fashion."}, {h:"Apple Day", t:"The competition was won, as usual, by a very small apple and a very large opinion."} ],
-      notice:"SOUP SWAP in November, Church Hill. Bring a ladle." },
-    { day:152, lead:{ h:"Fresh Bread on the Corner", t:"Crumb & Crown has lit its ovens by the clock tower. It opens at seven and sells out by eleven. The old baker is teaching his young apprentice everything, and the shop cat supervises both.", spot:'bakery' },
-      items:[ {h:"Harvest Market", t:"The jam stall queue stretched all the way to the clock tower on Saturday. A new record, and a very sticky one."}, {h:"Bake sale", t:"The church roof is two buns away from a new tile."} ],
+    { day:D(2), lead:{ h:"Teapots, Bells and One Large Clock", t:"By ten o'clock on Saturday there wasn't a teapot left on Orchard Green. One shopper went home with a grandfather clock and no plan.", spot:'fleamarket' },
+      items:[ {h:"Dinner parties", t:"A flat on Glass Row is said to have a ‘kitchen with ambitions’. The guests are optimistic."}, {h:"Pigeons", t:"Still up. Nobody is surprised."} ],
+      notice:"OPEN MIC Thursday at the harbour café. Bring a song, or a snack." },
+    { day:D(3), lead:{ h:"Back to Work, Gently", t:"September brings the school bell, the harbour wind and a small queue of people looking for a second sofa. The ferry café has put out its autumn menu: soup, soup and a daring soup." },
+      items:[ {h:"Glass Row", t:"A calm new tenant has moved in. Neighbours describe the flat as ‘very tidy’ and the tenant as ‘audibly measuring’."}, {h:"Cat watch", t:"Parsley was seen in the bakery window. The bakery is not open yet. We suspect inside information."} ],
       notice:"EXTRA FERRY on Saturdays. It will be late, as always." },
-    { day:182, lead:{ h:"Forty Ladles on Church Hill", t:"The Soup Swap went ahead in a light drizzle: forty ladles, six leeks and one very opinionated dachshund. Nobody went home with their own pot.", spot:'soupswap' },
-      items:[ {h:"Sewing classes", t:"Full. The waiting list is now one dachshund."}, {h:"First frost", t:"The canal has a thin glass lid. The ducks are unbothered."} ],
+    { day:D(4), lead:{ h:"Fresh Bread on the Corner", t:"Crumb & Crown has lit its ovens by the clock tower. It opens at seven and sells out by eleven. The old baker is teaching his young apprentice everything, and the shop cat supervises both.", spot:'bakery' },
+      items:[ {h:"Lantern Lane", t:"A young couple has taken a cabin up the lane. Smoke from the chimney, sunflowers in the window, a very large crib in the hall."}, {h:"First leaf", t:"A red one landed on the clock tower on Tuesday. The Courier asks the others to follow in an orderly fashion."} ],
+      notice:"WANTED: a second oven, gently used. Ask at the harbour café." },
+    { day:D(5), lead:{ h:"Jam Stall Queue Reaches Clock Tower", t:"The Harvest Market filled Old Town with pumpkins, chutneys and cinnamon. The jam stall queue set a new record, and a very sticky one.", spot:'harvest' },
+      items:[ {h:"Sewing classes", t:"A retired costume maker has begun teaching at the village hall. Six people and a dachshund have signed up."}, {h:"First frost", t:"The canal has a thin glass lid. The ducks are unbothered."} ],
       notice:"LOST: one mitten, red. Possibly on the clock tower." },
-    { day:213, lead:{ h:"The Year in Review", t:"Looking back: a florist, an antiques shop, a bakery, two markets and a great many casseroles. The Cove has had a busy seven months, and a very good season for cake.", },
-      items:[ {h:"Winter Lights", t:"Every window on Church Hill had a candle and the steeple had a star. Soup was provided by anyone with a pot."}, {h:"New Year's swim", t:"Cancelled due to common sense."}, {h:"Resolutions", t:"The bakery reports a 300% rise in ‘just one more’."} ],
+    { day:D(6), lead:{ h:"Every Window Gets a Candle", t:"Church Hill turned its lights on at dusk on Friday, and the steeple got a star. Soup was provided by anyone with a pot.", spot:'lights' },
+      items:[ {h:"Mulled things", t:"The harbour café now serves hot apple, hot cider and, on request, hot hot chocolate."}, {h:"Skates", t:"The canal is not yet frozen. The ducks have asked everyone to stop asking."} ],
       notice:"THANK YOU to whoever left soup on the clock tower steps." },
-    { day:244, lead:{ h:"A Bookshop on the Rise", t:"The Dog-Eared Bookshop has opened on Orchard Rise with a ladder on rails and a dog on the doormat. The dog has been asked to sign copies.", spot:'books' },
-      items:[ {h:"Snow day", t:"School is closed, the bakery is open, and the ducks are furious. Chimneys all over town are smoking happily, the cabins on Lantern Lane most of all."}, {h:"Open Studio", t:"Half the Mills opened their doors, and the stairwells hummed. The cake was Mia's."}, {h:"Sledges", t:"The hill behind the church is officially ‘fast’. Crumb & Crown sold hot buns from the top of it."} ],
+    { day:D(7), lead:{ h:"Marigold & Moss Opens on Church Hill", t:"The pink porch house has opened its doors to antiques. Every item is ‘one of a kind’ and most are extremely heavy. Browsers are advised to bring a friend.", spot:'antiques' },
+      items:[ {h:"Resolutions", t:"The bakery reports a 300% rise in ‘just one more’."}, {h:"A first cheque", t:"An illustrator at the Mills has been paid for a book jacket. She has asked that nobody mentions the colour pink. Everybody has."} ],
+      notice:"NEW YEAR'S SWIM cancelled due to common sense." },
+    { day:D(8), lead:{ h:"Snow Day", t:"School is closed, the bakery is open, and the ducks are furious. Chimneys all over town are smoking happily, the cabins on Lantern Lane most of all." },
+      items:[ {h:"Sledges", t:"The hill behind the church is officially ‘fast’. Crumb & Crown sold hot buns from the top of it."}, {h:"Glass Row", t:"A flat now seats ten. The neighbours are ‘delighted, mostly’."} ],
       notice:"FOUND: one sledge. Not yours. Very good sledge." },
-    { day:272, lead:{ h:"Thaw!", t:"The first crocus appeared on Orchard Rise this morning, to cheers from a cat. The canal has un-frozen. The ducks have forgiven everyone.", },
-      items:[ {h:"A new arrival", t:"Wren, 3.1 kilos, a little early and entirely loud. Mother, father and the shop cat are doing well."}, {h:"Ferry", t:"Back on schedule. Almost."} ],
-      notice:"SEEDLINGS free outside Fennel & Fern, Saturday." },
-    { day:303, lead:{ h:"A Wedding Invitation Goes Round Town", t:"Priya (of the vet practice) and Dev will marry at the white church on Saturday 25 April, and the whole street is invited. The bakery has been warned about the cake.", spot:'wedding' },
-      items:[ {h:"Tulip Day", t:"Parsley judged every bucket. Six people left with tulips and a smaller ego."}, {h:"Egg hunt", t:"Orchard Green, soon. Under-sevens first, dachshund last."} ],
+    { day:D(9), lead:{ h:"Wren Has Arrived", t:"Born on a very rainy morning, a little early and entirely loud. Mother, father and the shop cat are doing well. The cabin on Lantern Lane has been asked to keep the lamp on." },
+      items:[ {h:"Thaw", t:"The first crocus appeared on Orchard Rise to cheers from a cat. The canal has un-frozen and the ducks have forgiven everyone."}, {h:"Ferry", t:"Back on schedule. Almost."} ],
+      notice:"CASSEROLES for the Lantern Lane cabin: please leave them at the door, not the baby." },
+    { day:D(10), lead:{ h:"Tulips for Everyone", t:"A bucket outside Fennel & Fern, free for anyone who wanted one. Parsley judged every pick. Six people left with tulips and a smaller ego.", spot:'tulips' },
+      items:[ {h:"A new smell on Canal Row", t:"Someone is growing basil on a windowsill, for the second year running. It has become a landmark."}, {h:"Ferry", t:"Cancelled for rain, resumed for pride."} ],
+      notice:"SEEDLINGS wanted. And gardening gloves, medium." },
+    { day:D(11), lead:{ h:"A Bookshop on the Rise", t:"The Dog-Eared Bookshop has opened on Orchard Rise with a ladder on rails and a dog on the doormat. The dog has been asked to sign copies.", spot:'books' },
+      items:[ {h:"Village hall", t:"The sewing class has a waiting list. The tea is the main reason."}, {h:"Marmalade", t:"The harbour café has run out. Both of them."} ],
+      notice:"WANTED: someone to pick up the village hall chairs. Bring a trolley." },
+
+    // --------------------------------------------------------------- Year two
+    { day:D(12), lead:{ h:"Caps Thrown on the Mills Green", t:"The art school's graduates threw their hats, and one of them did not land. A young illustrator took her certificate and a very large portfolio and went home to put the kettle on." },
+      items:[ {h:"A new hobby on Canal Row", t:"A vet receptionist has turned her spare room into a nursery for seedlings. The shop cat approves."}, {h:"Midsummer", t:"The Courier reminds everybody that the evenings are long and the ferry is not."} ],
+      notice:"LOST: one graduation cap. Last seen near the canal." },
+    { day:D(13), lead:{ h:"A Prize for the Most Dramatic Wobble", t:"The Summer Regatta filled the harbour with bunting and bad steering. The winner stayed upright. The runner-up did not, and was cheered more loudly.", spot:'regatta' },
+      items:[ {h:"Freelance", t:"An illustrator at the Mills now has ‘actual clients’ and says she intends to continue."}, {h:"Heatwave", t:"The canal ducks are reported to be ‘sulking’."} ],
+      notice:"LOST: one sailor's hat. Answers to nothing." },
+    { day:D(14), lead:{ h:"Art Across the Water", t:"The Paper Moth Gallery has opened on the Far Shore, in the red-brick house with the green door. Prints are small, frames are big, and the owner is shy.", spot:'gallery' },
+      items:[ {h:"Opening night", t:"A free glass of something fizzy and a very polite queue. One visitor asked if the walls were for sale."}, {h:"Ferry", t:"Now stops at the Far Shore. On request. Mostly."} ],
+      notice:"WANTED: wall space, any size. Ask at the gallery." },
+    { day:D(15), lead:{ h:"Back to School, Back to Scales", t:"The Cove's autumn calendar begins with a new piano in the glass tower on Glass Row. Passers-by report one note repeated, then silence, then the same note again. They approve." },
+      items:[ {h:"Ferry café", t:"Autumn menu launched: soup, soup and a bold new soup."}, {h:"Conkers", t:"The council has asked for them back."} ],
+      notice:"PIANO LESSONS: ask discreetly. No names." },
+    { day:D(16), lead:{ h:"The Smallest Apple Wins Again", t:"The Apple Day competition was won, as usual, by a very small apple and a very large opinion. Every garden on the Rise brought its one stubborn tree.", spot:'appleday' },
+      items:[ {h:"Crumb & Crown", t:"The old baker has offered his apprentice a share in the shop. The apprentice is reported to have been briefly unwell in a bush."}, {h:"Nights", t:"Drawing in. The bakery lights go on at five."} ],
+      notice:"APPLES wanted for chutney. Bring a bag." },
+    { day:D(17), lead:{ h:"Twelve in the Sewing Class", t:"The village hall sewing class now has twelve pupils, a waiting list and a very good kettle. The teacher says this is ‘the correct number’." },
+      items:[ {h:"Frost", t:"The first, early and bright. The ducks have been told."}, {h:"Bake sale", t:"The church roof is two buns away from a new tile."} ],
+      notice:"LOST: one thimble, silver. The teacher is not angry. She is merely very quiet." },
+    { day:D(18), lead:{ h:"Forty Ladles on Church Hill", t:"The Soup Swap went ahead in a light drizzle: forty ladles, six leeks and one very opinionated dachshund. Nobody went home with their own pot.", spot:'soupswap' },
+      items:[ {h:"Canal Row", t:"A garden-loving receptionist now shares her flat with someone who owns a bicycle. The hall has been informed."}, {h:"First snow", t:"Brief. Sincere."} ],
+      notice:"THANK YOU to whoever left a pot on the clock tower steps." },
+    { day:D(19), lead:{ h:"The Paper Moth Hangs Six", t:"Six small prints by a Mills illustrator went up on the gallery wall on Monday. By Friday there were six red dots. The artist is said to have sat down on the pavement." },
+      items:[ {h:"January", t:"Fewer lights. More tea. The Courier recommends both."}, {h:"Ferry", t:"Operating normally, which is to say, with feeling."} ],
+      notice:"WANTED: a frame shop. Prints are outgrowing the wall." },
+    { day:D(20), lead:{ h:"Dinner for Twelve, No Chairs Left", t:"A promoted events producer in the glass tower hosted dinner for twelve and borrowed chairs from six neighbours. The chairs have since been returned. Mostly." },
+      items:[ {h:"Glass Row", t:"A teacher has moved in, which the building describes as ‘an improvement in the noise levels’."}, {h:"Valentine's", t:"The bakery sold out of heart-shaped cookies by half past seven. Early."} ],
+      notice:"WANTED: a very large pot. Ask at Glass Row." },
+    { day:D(21), lead:{ h:"A Partner at the Firm", t:"A familiar architect on Glass Row made partner and bought the top floor of her own building. ‘I intend to stay,’ she is reported to have said, and then measured the stairs." },
+      items:[ {h:"Thaw", t:"The first crocus. The cat on Orchard Rise was unimpressed."}, {h:"Crumb & Crown", t:"New sourdough on Saturdays. Queue before seven."} ],
+      notice:"EGG HUNT April, Orchard Green. Under-sevens first." },
+    { day:D(22), lead:{ h:"Chocolate Eggs in the Hedges", t:"The Egg Hunt filled Orchard Green with hedges, hunters and one very suspicious dachshund. Under-sevens went first. Everybody else went second, with dignity.", spot:'eggs' },
+      items:[ {h:"Old baker retires", t:"The old baker has left Crumb & Crown. He gave the keys to his apprentice and the cat to nobody in particular."}, {h:"A new sign", t:"A tiny shop in Old Town has painted ‘coming soon’ on its window. Nobody knows what for."} ],
+      notice:"THANK YOU to the baker who gave us forty years of bread." },
+    { day:D(23), lead:{ h:"A Cabin on Lantern Lane", t:"A retired costume maker has bought a cabin on Lantern Lane and kept her flat in town. ‘I am not a monster, darling,’ she told the Courier." },
+      items:[ {h:"May", t:"Window boxes everywhere. The town smells of lilac and toast."}, {h:"Tulips", t:"Still going. Fennel & Fern is out of buckets."} ],
+      notice:"WANTED: ducks to live elsewhere. Just for a weekend." },
+
+    // ------------------------------------------------------------- Year three
+    { day:D(24), lead:{ h:"A Garden with a Crooked Apple Tree", t:"A Canal Row receptionist and her partner have moved up to Church Hill: a flat with a gate, an apple tree and what she calls ‘room to grow things’. The neighbours are watching the hedge." },
+      items:[ {h:"Midsummer", t:"Long light, late ferries and a very good smell from the bakery."}, {h:"Seedlings", t:"On offer at the gate, free to anyone who can carry them."} ],
+      notice:"WANTED: spades. And the confidence to dig." },
+    { day:D(25), lead:{ h:"Friends Pay Less", t:"A trestle table has appeared by the garden gate on Church Hill, with buckets of whatever bloomed this morning. The sign reads: ‘Friends pay less.’ The money jar remains largely unused.", spot:'miagarden' },
+      items:[ {h:"Gallery", t:"The Paper Moth's six prints have been joined by twelve. A queue forms outside on Saturdays."}, {h:"Regatta rehearsals", t:"The harbour master has been practising his ‘ahoy’ at the geese."} ],
+      notice:"BUCKETS needed. Return Sunday, with flowers." },
+    { day:D(26), lead:{ h:"Summer's End on the Beach", t:"The last warm evening ended with a fire on the sand below Church Hill: marshmallows, a guitar and somebody's grandad telling the same story. It improved.", spot:'bonfire' },
+      items:[ {h:"Glass Row", t:"An events producer has resigned from a very large firm in a very small speech. A sign has gone up on a door nearby."}, {h:"Evenings", t:"Cooler. Jumpers recommended."} ],
+      notice:"LOST: one sausage, last seen on a stick." },
+    { day:D(27), lead:{ h:"Doors Open at the Mills", t:"Half the Mills opened their doors, and the stairwells hummed with paint and kettles. Visitors were told the cake was baked by someone else. It was.", spot:'openstudio' },
+      items:[ {h:"Piano, two quiet rooms", t:"Glass Row is reported to have a second silent room. Passers-by suspect something is being practised."}, {h:"Harvest", t:"Pumpkins everywhere. The bakery has begun to use them in everything."} ],
+      notice:"THANK YOU to the neighbours who stayed to wash up." },
+    { day:D(28), lead:{ h:"Rooms for Everyone", t:"A baker on Orchard Rise has found a flat with a proper dining room. ‘Grandad only trusts wood he can knock on,’ he told the Courier. The table has been chosen accordingly." },
+      items:[ {h:"First frost", t:"Early. The ducks have moved to the side with the sun."}, {h:"Crumb & Crown", t:"Opens at seven. Sells out by half past ten. The queue is a landmark."} ],
+      notice:"WANTED: a very sturdy table. Knock before you buy." },
+    { day:D(29), lead:{ h:"Falling Leaves, Rising Costumes", t:"Everyone in the Cove wants a costume for the lantern children, the school play and the regatta. A retired costume maker has taken on a small shop front in Old Town and will name it soon." },
+      items:[ {h:"Soup season", t:"Church Hill is already practising for the Soup Swap. Nobody is admitting it."}, {h:"Canal", t:"The ducks have a new bridge. They are suspicious."} ],
+      notice:"LOST: one measuring tape, soft. Expect a stern letter." },
+    { day:D(30), lead:{ h:"Lantern Night on Lantern Lane", t:"Paper lanterns along the lane at dusk, little candle boats on the bay, and hot chocolate by the cabins. A neighbour said she ‘didn't plan any of this’. Everybody knew she had.", spot:'lantern' },
+      items:[ {h:"A question on the allotment", t:"A flower grower from Church Hill was asked something between the dahlias and the compost heap. She said yes before it was finished."}, {h:"Winter", t:"Arrived. Politely."} ],
+      notice:"CONGRATULATIONS to two people, privately. We know. We're not telling." },
+    { day:D(31), lead:{ h:"The Top Floor at the Mills", t:"The landlord offered the top floor of the mill to the illustrator who once rented the attic. ‘I said yes before he finished the sentence,’ she told the Courier. The gallery has a waiting list." },
+      items:[ {h:"New Year", t:"The bakery reports a 300% rise in ‘just one more’. Again."}, {h:"Ferry", t:"On time on Tuesday. Everyone is still shaken."} ],
+      notice:"WANTED: paint, in every colour. Ask at the Mills." },
+    { day:D(32), lead:{ h:"A Key for Two in Old Town", t:"An events founder and a Year 3 teacher have bought a flat above the old market with a kitchen ‘the size of my entire first flat’. The oven, we are told, is on its way." },
+      items:[ {h:"February", t:"Snow, then more snow. The ducks have issued a statement."}, {h:"Valentine's", t:"The bakery sold out of heart cookies by seven. A new record."} ],
+      notice:"BREAD: reserve early. The queue starts at six." },
+    { day:D(33), lead:{ h:"Wedding Invitation Goes Round Town", t:"Mia and Alex will marry at the white church on Saturday 22 April, and the whole street is invited. The bakery has been warned about the cake. A veil is rumoured to be in the making.", spot:'wedding' },
+      items:[ {h:"Noor Architects", t:"A well-known partner has left a well-known firm, politely, with three copies of the letter. Her new office has a desk. She says it is the only one."}, {h:"March", t:"Crocuses, mud and one very optimistic sun hat."} ],
       notice:"CONFETTI: biodegradable, please." },
-    { day:333, lead:{ h:"Wedding Bells (and One Dropped Cake)", t:"The church was full, the sun came out for the vows, and the three-tier lemon cake survived all but one corner. The veil, sewn by retired costume-maker Rosa, got more applause than the cake. Priya and Dev left in a rowing boat hung with tin cans.", },
-      items:[ {h:"Art across the water", t:"The Paper Moth Gallery has opened on the Far Shore, in the red-brick house with the green door. Prints are small, frames are big, the owner is shy.", spot:'gallery'}, {h:"Dancing", t:"Went on until the ducks complained."}, {h:"Flowers", t:"The church smelled of peonies. Fennel & Fern sold out."} ],
+    { day:D(34), lead:{ h:"Wedding Bells (and One Dropped Cake)", t:"The church was full, the sun came out for the vows, and the three-tier lemon cake survived all but one corner. The veil, sewn by costume-maker Rosa, got more applause than the cake. The couple left in a rowing boat hung with tin cans." },
+      items:[ {h:"Dancing", t:"Went on until the ducks complained."}, {h:"A big-girl room", t:"A baker's daughter, just two, has asked for a bed of her own. She was heard to say ‘mine’ very clearly."} ],
       notice:"THANK YOU to everyone who stayed to wash up." },
-    { day:364, lead:{ h:"A Whole Year in the Cove", t:"A year ago the removal vans started arriving. Today the clock tower is still four minutes fast, the harbour is full of sails, and the neighbours know whose umbrella is whose.", },
-      items:[ {h:"Midsummer", t:"The bonfire is back on the calendar. Please bring your own marshmallows."}, {h:"Lantern Lane", t:"Cabin windows are open again. The ducks on the bay have been told."} ],
+    { day:D(35), lead:{ h:"Three Years in the Cove", t:"Three years ago the removal vans started arriving. Today a costume cupboard has opened in Old Town, a baker has a bakery, a florist has a gate and an illustrator has a top floor. The clock tower is still four minutes fast." },
+      items:[ {h:"The Costume Cupboard", t:"Rosa's workroom is open on Fridays. Queues of children, a very patient dachshund."}, {h:"Midsummer", t:"The bonfire is back on the calendar. Please bring your own marshmallows."} ],
       notice:"WANTED (again): someone who is good with rooms. You know who you are." }
   ];
   function issuesAt(today){
@@ -1632,6 +2090,6 @@ var Story = (function(){
     questById: questById, questsOf: questsOf, isUnlocked: isUnlocked,
     QUIRKS: QUIRKS, giftsEarned: giftsEarned, giftOwner: giftOwner, SHOP_STOCK: SHOP_STOCK, shopOf: shopOf, SHOP_TIERS: SHOP_TIERS, shopTier: shopTier, SHOP_SAY: SHOP_SAY, EVENT_PLAY: EVENT_PLAY, eventPlay: eventPlay, prizeOf: prizeOf, EVENT_NEED: EVENT_NEED, REWARDS: REWARDS, VOICES: VOICES,
     starsFor: starsFor, isKind: isKind,
-    evaluate: evaluate, quality: quality, qualityDetail: qualityDetail, analyze: analyze, districtAt: districtAt, dateOf: dateOf, monthOf: monthOf, seasonOf: seasonOf, todayOf: todayOf, SPOTS: SPOTS, spotById: function(id){ return SPOT_BY_ID[id] || null; }, spotsAt: spotsAt, EVENTS: EVENTS, eventById: function(id){ return EVENT_BY_ID[id] || null; }, eventsDue: eventsDue, upcoming: upcoming, pastEvents: pastEvents, NEWS: NEWS, issuesAt: issuesAt, heartsFor: heartsFor, buildReply: buildReply
+    evaluate: evaluate, quality: quality, qualityDetail: qualityDetail, analyze: analyze, districtAt: districtAt, dateOf: dateOf, monthOf: monthOf, seasonOf: seasonOf, todayOf: todayOf, ageOf: ageOf, jobOf: jobOf, jobAtDay: jobAtDay, blurbOf: blurbOf, D: D, SPOTS: SPOTS, spotById: function(id){ return SPOT_BY_ID[id] || null; }, spotsAt: spotsAt, EVENTS: EVENTS, eventById: function(id){ return EVENT_BY_ID[id] || null; }, eventsDue: eventsDue, upcoming: upcoming, pastEvents: pastEvents, NEWS: NEWS, issuesAt: issuesAt, heartsFor: heartsFor, buildReply: buildReply
   };
 })();

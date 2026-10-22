@@ -2607,6 +2607,9 @@
   .pl-av.big{ width:72px; height:72px; font-size:32px; }
   .pl-mark{ position:absolute; top:10px; right:12px; width:28px; height:28px; border-radius:50%; background:#3d2a33; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; }
   .pl-st.ok .pl-mark{ background:#6f9a78; }
+  .pl-st.miss{ background:rgba(255,255,255,.45); }
+  .pl-st.miss .pl-mark{ background:#b9a98e; }
+  .pl-st.miss .pl-av{ filter:saturate(.55); }
   .pl-prize{ display:flex; align-items:center; justify-content:center; gap:14px; margin:20px auto 6px; padding:8px 20px 8px 12px; width:fit-content; max-width:100%; border-radius:99px; background:rgba(255,255,255,.55); border:2px dashed rgba(60,40,20,.25); text-align:left; }
   .pl-prize img{ width:52px; height:46px; object-fit:contain; flex:none; }
   .pl-prize img.locked{ filter:brightness(0) opacity(.25); }
@@ -2735,7 +2738,7 @@
   <div class="title-scrim"></div>
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
-    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.12.0 &middot; Slow Seasons</div>
+    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.13.0 &middot; Three Years in the Cove</div>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
     <button class="title-fresh-link title-newstory-link" id="titleNewStoryBtn" type="button" style="display:none;">Or begin a brand new story</button>
@@ -3022,8 +3025,8 @@
   </div>
 </div>
 
-<script src="data.js?v=0.12.0"></script>
-<script src="story.js?v=0.12.0"></script>
+<script src="data.js?v=0.13.0"></script>
+<script src="story.js?v=0.13.0"></script>
 <script>
 (function(){
   "use strict";
@@ -4629,7 +4632,7 @@
     return ok && d.entries.indexOf(entry) !== -1;
   }
   function diaryRemove(id){ var d = diaryLoad(); d.entries = d.entries.filter(function(e){ return e.id !== id; }); diarySave(); }
-  function diaryClearStory(){ var d = diaryLoad(); d.entries = d.entries.filter(function(e){ return e.kind !== 'story'; }); diarySave(); }
+  function diaryClearStory(){ var d = diaryLoad(); d.entries = d.entries.filter(function(e){ return e.kind !== 'story' || e.old; }); diarySave(); }
   function diaryHas(key){ return diaryLoad().entries.some(function(e){ return e.key === key; }); }
 
   function addPiece(item, xPct, yPct, roomId, opts){
@@ -6258,17 +6261,29 @@
      Free play is never touched: while story mode owns the editor, autosave
      goes to the story save instead (see saveGame).
   ===================================================================== */
-  var STORY_KEY = 'roomstories_story_v1';
+  var STORY_KEY = 'roomstories_story_v2', STORY_KEY_OLD = 'roomstories_story_v1', storyHadOld = false;
+  // The story grew into three years (v0.13), so it starts afresh under a new key. The first story is
+  // left where it was; only its diary photos are tucked away so they cannot be mistaken for new ones.
+  function storyMigrateOld(){
+    try{
+      if (localStorage.getItem(STORY_KEY) || !localStorage.getItem(STORY_KEY_OLD)) return;
+      storyHadOld = true;
+      var d = diaryLoad(), n = 0;
+      d.entries.forEach(function(e){ if (e.kind === 'story' && !e.old){ e.old = true; e.key = 'old:' + (e.key || e.id); e.day = null; n++; } });
+      if (n) diarySave();
+    }catch(err){}
+  }
   var storyAvailable = (typeof Story !== 'undefined');
   var story = { inStory:false, active:null, data:null, hudCollapsed:false, hudAway:false, lastSig:'', selectedPin:null, selectedSpot:null, newsIdx:null, announce:[], earned:{}, earnedSig:'', idle:{} };
 
-  function storyDefaultData(){ return { version:1, quests:{}, homes:{}, drafts:{}, discovered:[], seenPrologue:false, seenLetters:[], seenEvents:[], seenNews:[], learned:{}, playerName:'', lastDraft:null, shopTaken:{}, play:{} }; }
+  function storyDefaultData(){ return { version:2, quests:{}, homes:{}, drafts:{}, discovered:[], seenPrologue:false, seenLetters:[], seenEvents:[], seenNews:[], learned:{}, playerName:'', lastDraft:null, shopTaken:{}, play:{} }; }
   function storyLoadData(){
+    storyMigrateOld();
     try{
       var raw = localStorage.getItem(STORY_KEY);
       if (raw){
         var d = JSON.parse(raw);
-        if (d && d.version === 1){
+        if (d && d.version === 2){
           d.quests = d.quests || {}; d.homes = d.homes || {}; d.drafts = d.drafts || {}; d.discovered = d.discovered || []; d.seenLetters = d.seenLetters || []; d.seenEvents = d.seenEvents || []; d.seenNews = d.seenNews || []; d.learned = d.learned || {}; d.playerName = d.playerName || ''; d.lastDraft = d.lastDraft || null; d.shopTaken = d.shopTaken || {}; d.play = d.play || {};
           return d;
         }
@@ -6333,7 +6348,7 @@
     if (pz){
       if (story.data.play && story.data.play[pz.event] && story.data.play[pz.event].won) return null;
       var ev = Story.eventById(pz.event);
-      return { kind:'event', chip:'event', text:"A keepsake from \u201c" + ev.title + "\u201d. Join in when it comes round." };
+      return { kind:'event', chip:'event', text:"A keepsake from \u201c" + ev.title + "\u201d. Join in while it is on. It comes round with the seasons." };
     }
     return null;
   }
@@ -7079,15 +7094,19 @@
   function storyTownEntries(){
     var done = storyDoneMap(), open = storyOpenIds(), entries = {};
     Object.keys(Story.CHARACTERS).forEach(function(cid){
-      var chain = Story.questsOf(cid), cur = null, last = null;
+      var chain = Story.questsOf(cid), cur = null, lastHome = null, lastWork = null;
       chain.forEach(function(q){ if (!cur && !done[q.id]) cur = q; });
-      chain.forEach(function(q){ if (done[q.id]) last = q; });
-      var letter = (cur && open[cur.id]) ? cur : null, where;
-      if (last) where = last.property; else if (letter) where = cur.property; else return;   // hasn't been met yet
-      entries[where] = { pid:where, resident:cid, letter:letter, busy:!!cur && !letter, past:false };
+      chain.forEach(function(q){ if (done[q.id]){ if (Story.PROPERTIES[q.property].work) lastWork = q; else lastHome = q; } });
+      var letter = (cur && open[cur.id]) ? cur : null;
+      var curWork = !!cur && !!Story.PROPERTIES[cur.property].work;
+      // home: where they live now. Work (an office, a bakery, a workroom) gets a pin of its own.
+      var homePid = lastHome ? lastHome.property : ((letter && !curWork) ? cur.property : null);
+      if (homePid) entries[homePid] = { pid:homePid, resident:cid, letter:(letter && !curWork) ? letter : null, busy:!!cur && !letter, past:false };
+      var workPid = lastWork ? lastWork.property : ((letter && curWork) ? cur.property : null);
+      if (workPid) entries[workPid] = { pid:workPid, resident:cid, letter:(letter && curWork) ? letter : null, busy:false, past:false, work:true };
     });
     var now = {};
-    Object.keys(entries).forEach(function(pid){ now[entries[pid].resident] = pid; });
+    Object.keys(entries).forEach(function(pid){ if (!entries[pid].work) now[entries[pid].resident] = pid; });
     Object.keys(story.data.homes).forEach(function(pid){
       if (!Story.PROPERTIES[pid] || entries[pid]) return;
       var owner = Story.PROPERTIES[pid].owner, to = now[owner] || null;
@@ -7224,7 +7243,7 @@
       '<p class="tc-blurb">' + storyEsc(sp.blurb) + '</p>' +
       (sp.kind === 'shop' && Story.SHOP_STOCK[id] ? '<div class="tc-soon">' + (storyShopReady(id) ? storyShopReady(id) + ' thing' + (storyShopReady(id) > 1 ? 's' : '') + ' set aside for you.' : 'Ask about what is on the shelves.') + '</div>' : (sp.soon && !Story.SHOP_STOCK[id] ? '<div class="tc-soon">' + storyEsc(sp.soon) + '</div>' : '')) +
       '<div class="tc-actions">' + (sp.kind === 'shop' && Story.SHOP_STOCK[id] ? '<button class="btn-primary tc-mini" id="tcShop" type="button">Browse the shelves</button>' : '') +
-      (spEv ? '<button class="btn-primary tc-mini" id="tcPlay" type="button">' + (story.data.play[spEv.id] && story.data.play[spEv.id].won ? 'Join in again' : 'Join in') + '</button>' : '') +
+      (spEv ? '<button class="btn-primary tc-mini" id="tcPlay" type="button">' + storyPlayLabel(spEv.id) + '</button>' : '') +
       (issue ? '<button class="btn-ghost tc-mini" id="tcNews" type="button">Read about it in the Courier</button>' : '') + '</div>';
     var card = document.getElementById('townCard');
     card.innerHTML = html; card.classList.add('open');
@@ -7303,11 +7322,16 @@
   /* ---------- playing an event: three things to do, three ways to answer ---------- */
   function storyShuffle(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--){ var j = storyRand(i + 1), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function storyPlayRecord(eid){ var r = story.data.play[eid]; if (!r){ r = story.data.play[eid] = { r:{}, won:false }; } return r; }
-  function storyPlayScore(eid){ var r = (story.data.play[eid] || {}).r || {}; return Object.keys(r).filter(function(k){ return r[k]; }).length; }
+  // r[i] = 1 when station i was put right, -1 or -2 (the wrong answer picked) when it was not; nothing = not tried.
+  function storyPlayScore(eid){ var r = (story.data.play[eid] || {}).r || {}; return Object.keys(r).filter(function(k){ return r[k] === 1; }).length; }
+  function storyPlayTried(eid){ var r = (story.data.play[eid] || {}).r || {}; return Object.keys(r).filter(function(k){ return r[k] != null; }).length; }
+  function storyPlayState(eid){ var t = storyPlayTried(eid); return t >= 3 ? 'done' : (t ? 'part' : 'new'); }
+  function storyEventLive(e){ return !!(e && e.spot && Story.spotsAt(storyToday(), storyDoneMap(), story.data.lastJump).some(function(s){ return s.id === e.spot; })); }
+  function storyPlayLabel(eid){ var st = storyPlayState(eid); return st === 'done' ? 'Look back' : (st === 'part' ? 'Carry on' : 'Join in'); }
   function storyOpenPlay(eid){
     var e = Story.eventById(eid), pl = Story.eventPlay(eid); if (!e || !pl) return;
     var ov = document.getElementById('storyPlay'), scene = document.getElementById('storyPlayScene');
-    var live = !!(e.spot && Story.spotsAt(storyToday(), storyDoneMap(), story.data.lastJump).some(function(s){ return s.id === e.spot; }));
+    var live = storyEventLive(e);
     var just = false;    // the keepsake was won a moment ago
     function av(s, cls){ var col = s.c ? Story.CHARACTERS[s.c].color : '#a89878'; return '<span class="' + cls + '" style="--pin:' + col + '">' + storyEsc(s.who.charAt(0)) + '</span>'; }
     function prizeHtml(){
@@ -7315,20 +7339,23 @@
       if (!it) return '';
       var score = storyPlayScore(eid);
       if (rec.won) return '<div class="pl-prize won"><img src="' + it.src + '" alt=""><div><b>' + storyEsc(it.name) + '</b><span>' + (just ? 'Thank you for today — it’s on its way to you!' : 'Already at home') + '</span></div></div>';
-      var pips = '';
+      var pips = '', over = storyPlayState(eid) === 'done';
       for (var k = 0; k < 3; k++) pips += '<i class="' + (k < score ? 'on' : '') + '"></i>';
-      return '<div class="pl-prize"><img class="locked" src="' + it.src + '" alt=""><div><b>A keepsake from today</b><span>Get ' + Story.EVENT_NEED + ' of 3 right</span></div><div class="pl-pips" aria-label="' + score + ' of 3">' + pips + '</div></div>';
+      return '<div class="pl-prize"><img class="locked" src="' + it.src + '" alt=""><div><b>A keepsake from today</b><span>' + (over ? 'Not this time. There will be another one.' : 'Get ' + Story.EVENT_NEED + ' of 3 right. One go with each person.') + '</span></div><div class="pl-pips" aria-label="' + score + ' of 3">' + pips + '</div></div>';
     }
     function sheet(inner, actions, arriving){
       return '<div class="lt-sheet ev-sheet ev-happening pl-sheet show ' + (arriving ? 'arriving ' : '') + 'ready" id="storyPlayCard" style="--rot:' + (arriving ? storyRot() : '0deg') + '"><div class="lt-paper"><div class="ev-top"></div><div class="ev-body">' + inner + '</div><div class="lt-actions">' + actions + '</div></div></div>';
     }
     function hub(){
-      var rec = story.data.play[eid] || { r:{} }, full = storyPlayScore(eid) === 3;
+      var rec = story.data.play[eid] || { r:{} }, full = storyPlayScore(eid) === 3, over = storyPlayState(eid) === 'done';
       var stations = pl.st.map(function(s, i){
-        var ok = rec.r && rec.r[i];
-        return '<button class="pl-st' + (ok ? ' ok' : '') + '" type="button" data-i="' + i + '"><span class="pl-mark">' + (ok ? '✓' : '?') + '</span>' + av(s, 'pl-av') + '<b>' + storyEsc(s.who) + '</b><small>' + storyEsc(s.role) + '</small></button>';
+        var v = rec.r ? rec.r[i] : null, ok = v === 1, miss = v != null && v !== 1;
+        return '<button class="pl-st' + (ok ? ' ok' : '') + (miss ? ' miss' : '') + '" type="button" data-i="' + i + '"><span class="pl-mark">' + (ok ? '✓' : (miss ? '·' : '?')) + '</span>' + av(s, 'pl-av') + '<b>' + storyEsc(s.who) + '</b><small>' + storyEsc(s.role) + '</small></button>';
       }).join('');
-      var lead = rec.won ? (full ? 'Full marks — the whole day went right.' : 'A good day. One more person could still use your help.') : 'Who will you help first?';
+      var lead;
+      if (over) lead = rec.won ? (full ? 'Full marks. The whole day went right.' : 'A good day. Not everything went to plan, and that is alright.') : 'Not every plan works out, and that is alright. There will be another one with the seasons.';
+      else if (!live) lead = 'The day is over. Here is how it went.';
+      else lead = rec.won ? 'A good day so far. One more person could still use you.' : 'Who will you help first? You get one go with each person.';
       scene.innerHTML = sheet(
         '<div class="ev-kicker">' + storyEsc(Story.monthOf(e.day).label) + (live ? ' · on now' : ' · a memory') + '</div><h3 class="ev-title">' + storyEsc(e.title) + '</h3>' +
         '<p class="pl-lead">' + lead + '</p><div class="pl-stations">' + stations + '</div>' + prizeHtml(),
@@ -7339,12 +7366,12 @@
       just = false;
     }
     function talk(i){
-      var s = pl.st[i], rec = storyPlayRecord(eid), solved = !!rec.r[i], picked = -1;
+      var s = pl.st[i], rec = storyPlayRecord(eid), v = rec.r[i], tried = v != null, picked = tried ? (v === 1 ? 0 : -v) : -1;
       var opts = storyShuffle([0, 1, 2]);
       function paint(){
         var body = '<div class="pl-talk">' + av(s, 'pl-av big') + '<div class="pl-bubble"><small>' + storyEsc(s.who) + ' · ' + storyEsc(s.role) + '</small>' + storyEsc(s.say) + '</div></div>';
-        if (solved && picked < 0){
-          body += '<div class="pl-reply good"><b>All sorted ✓</b>' + storyEsc(s.o[0][1]) + '</div>';
+        if (picked < 0 && !live){
+          body += '<div class="pl-reply meh"><b>Too late</b>The day is over, and ' + storyEsc(s.who) + ' has gone home.</div>';
         } else if (picked < 0){
           body += '<div class="pl-opts">' + opts.map(function(oi, n){ return '<button class="pl-opt" type="button" data-o="' + oi + '"><i>' + 'ABC'.charAt(n) + '</i><span>' + storyEsc(s.o[oi][0]) + '</span></button>'; }).join('') + '</div>';
         } else {
@@ -7356,11 +7383,10 @@
         document.getElementById('plBack').addEventListener('click', hub);
       }
       function choose(oi){
+        if (rec.r[i] != null) return;          // one go with each person
         picked = oi;
-        if (oi === 0){
-          rec.r[i] = 1;
-          if (!rec.won && storyPlayScore(eid) >= Story.EVENT_NEED){ rec.won = true; just = true; }
-        } else { rec.tries = (rec.tries || 0) + 1; }
+        rec.r[i] = oi === 0 ? 1 : -oi;
+        if (oi === 0 && !rec.won && storyPlayScore(eid) >= Story.EVENT_NEED){ rec.won = true; just = true; }
         storySaveData(); storyRefreshTrayStates();
         paint();
       }
@@ -7388,7 +7414,7 @@
     var doneHere = Story.QUESTS.filter(function(q){ return q.property === pid && done[q.id]; });
     var html =
       '<div class="tc-head">' + storyAvatar(e.resident, 'tc-av') +
-      '<div><div class="tc-name">' + storyEsc(c.name) + ', ' + c.age + '</div><div class="tc-sub">' + storyEsc(c.job) + ' · ' + storyEsc(prop.name) + '</div>' +
+      '<div><div class="tc-name">' + storyEsc(c.name) + ', ' + Story.ageOf(e.resident, storyToday()) + '</div><div class="tc-sub">' + storyEsc(Story.jobOf(e.resident, done)) + ' · ' + storyEsc(prop.name) + '</div>' +
       (storyDistrictName(prop) ? '<div class="tc-where">' + storyEsc(storyDistrictName(prop)) + '</div>' : '') + '</div>' +
       '<button class="tc-close" id="tcClose" type="button" aria-label="Close">&times;</button></div>';
     var toProp = e.past && e.to ? Story.PROPERTIES[e.to] : null;
@@ -7396,7 +7422,7 @@
       html += '<p class="tc-note">' + (e.kept ? storyEsc(c.name) + ' keeps this place as well. ' : storyEsc(c.name) + ' lives somewhere new now. ') + 'The rooms you made here are just as they were.</p>';
       if (toProp) html += '<div class="tc-actions" style="margin-bottom:10px"><button class="btn-ghost tc-mini" id="tcWhere" type="button">Show me ' + storyEsc(c.name) + '’s ' + (e.kept ? 'cabin' : 'new home') + '</button></div>';
     } else {
-      html += '<p class="tc-blurb">' + storyEsc(c.blurb) + '</p>';
+      html += '<p class="tc-blurb">' + storyEsc(Story.blurbOf(e.resident, done)) + '</p>';
       if (v.idle && v.idle.length){
         story.idle = story.idle || {};
         if (story.idle[pid] == null) story.idle[pid] = v.idle[storyRand(v.idle.length)];
@@ -7594,8 +7620,9 @@
     function li(when, text, cls){ return '<li class="' + (cls || '') + '"><b>' + storyEsc(when) + '</b><span>' + storyEsc(text) + '</span></li>'; }
     var rows = selList.map(function(e){
       if (!Story.eventPlay(e.id)) return li(Story.monthOf(e.day).part, e.title);
-      var won = story.data.play[e.id] && story.data.play[e.id].won;
-      return '<li class="playable"><b>' + storyEsc(Story.monthOf(e.day).part) + '</b><span>' + storyEsc(e.title) + '</span><button class="cal-play' + (won ? ' won' : '') + '" type="button" data-ev="' + e.id + '">' + (won ? 'Revisit \u2713' : 'Join in') + '</button></li>';
+      var won = story.data.play[e.id] && story.data.play[e.id].won, pst = storyPlayState(e.id);
+      if (pst === 'new' && !storyEventLive(e)) return li(Story.monthOf(e.day).part, e.title + ' (you missed this one)');
+      return '<li class="playable"><b>' + storyEsc(Story.monthOf(e.day).part) + '</b><span>' + storyEsc(e.title) + '</span><button class="cal-play' + (won ? ' won' : '') + '" type="button" data-ev="' + e.id + '">' + (won ? 'Look back \u2713' : storyPlayLabel(e.id)) + '</button></li>';
     }).join('') +
       upl.map(function(e){ return li(Story.monthOf(e.day).part, e.tease + ' (coming up)', 'soon'); }).join('');
     var page = '<div class="cal-page"><h4>' + storyEsc(MONTHS_FULL[sm]) + ' ' + sy + '</h4><ul>' +
@@ -7638,7 +7665,7 @@
     }).join('') + '</div>';
   }
   function storyDiaryPeople(){
-    var done = storyDoneMap(), open = storyOpenIds(), out = '';
+    var done = storyDoneMap(), open = storyOpenIds(), out = '', ents = storyTownEntries();
     Object.keys(Story.CHARACTERS).forEach(function(cid){
       var chain = Story.questsOf(cid);
       if (!chain.some(function(q){ return done[q.id] || open[q.id]; })) return;
@@ -7646,12 +7673,13 @@
       var best = jobs.reduce(function(s, q){ return s + (story.data.quests[q.id].best || 0); }, 0);
       var learned = [];
       chain.forEach(function(q){ storyKnownQuirks(q).forEach(function(k){ if (learned.indexOf(k.text) === -1) learned.push(k.text); }); });
-      var pid = Object.keys(Story.PROPERTIES).filter(function(k){ return Story.PROPERTIES[k].owner === cid; })[0];
+      var pid = Object.keys(ents).filter(function(k){ return ents[k].resident === cid && !ents[k].past && !ents[k].work; })[0] ||
+        Object.keys(Story.PROPERTIES).filter(function(k){ return Story.PROPERTIES[k].owner === cid; })[0];
       var prop = pid ? Story.PROPERTIES[pid] : null;
       out += '<article class="dy-person" style="--pin:' + c.color + '"><div class="dy-ph">' + storyAvatar(cid, 'dy-av') +
-        '<div><h4>' + storyEsc(c.name) + ', ' + c.age + '</h4><small>' + storyEsc(c.job) + (prop ? ' · ' + storyEsc(prop.name) : '') + '</small></div>' +
+        '<div><h4>' + storyEsc(c.name) + ', ' + Story.ageOf(cid, storyToday()) + '</h4><small>' + storyEsc(Story.jobOf(cid, done)) + (prop ? ' · ' + storyEsc(prop.name) : '') + '</small></div>' +
         '<span class="dy-pn">' + jobs.length + ' of ' + chain.length + ' jobs' + (jobs.length ? ' · ' + storyHeartsHtml(Math.round(best / jobs.length)) : '') + '</span></div>' +
-        '<p>' + storyEsc(c.blurb) + '</p>' +
+        '<p>' + storyEsc(Story.blurbOf(cid, done)) + '</p>' +
         (learned.length ? '<ul class="dy-learned">' + learned.map(function(x){ return '<li>' + storyEsc(x) + '</li>'; }).join('') + '</ul>' : '<p class="dy-none">Nothing learned yet beyond what the letters said.</p>') + '</article>';
     });
     return out ? '<div class="dy-people">' + out + '</div>' : '<div class="dy-empty"><b>Nobody yet</b>The first letter is waiting in the mailbox. People you meet will be noted down here.</div>';
@@ -7663,18 +7691,19 @@
     known.forEach(function(e){
       var pl = Story.eventPlay(e.id); if (!pl) return;
       var rec = story.data.play[e.id];
-      if (rec && (rec.won || rec.tries || storyPlayScore(e.id))) joined.push(e); else waiting.push(e);
+      if (rec && (rec.won || storyPlayTried(e.id))) joined.push(e); else waiting.push(e);
     });
     function card(e, isJoined){
-      var pl = Story.eventPlay(e.id), rec = story.data.play[e.id] || {}, it = getAsset(pl.prize), sc = storyPlayScore(e.id);
+      var pl = Story.eventPlay(e.id), rec = story.data.play[e.id] || {}, it = getAsset(pl.prize), sc = storyPlayScore(e.id), pst = storyPlayState(e.id), live = storyEventLive(e);
+      var line = isJoined ? (rec.won ? 'Keepsake won' + (sc === 3 ? ' · full marks' : '') : (pst === 'done' ? 'Not this time · there will be another' : sc + ' of 3 put right so far')) : (live ? 'You haven’t been to this one yet.' : 'You missed this one. There will be another.');
       return '<article class="dy-ev ' + (rec.won ? 'won' : '') + '"><div class="dy-evh"><small>' + storyEsc(Story.monthOf(e.day).label) + '</small><h4>' + storyEsc(e.title) + '</h4></div>' +
-        (isJoined ? '<p class="dy-evs">' + (rec.won ? 'Keepsake won' + (sc === 3 ? ' · full marks' : '') : sc + ' of 3 put right so far') + '</p>' : '<p class="dy-evs">You haven’t been to this one yet.</p>') +
-        (it ? '<div class="dy-keep ' + (rec.won ? '' : 'off') + '"><img src="' + it.src + '" alt=""><span>' + (rec.won ? storyEsc(it.name) : 'Keepsake still to win') + '</span></div>' : '') +
-        '<button class="dy-evb" type="button" data-ev="' + e.id + '">' + (isJoined ? 'Revisit' : 'Join in') + '</button></article>';
+        '<p class="dy-evs">' + line + '</p>' +
+        (it ? '<div class="dy-keep ' + (rec.won ? '' : 'off') + '"><img src="' + it.src + '" alt=""><span>' + (rec.won ? storyEsc(it.name) : 'Keepsake not won') + '</span></div>' : '') +
+        ((isJoined || live) ? '<button class="dy-evb" type="button" data-ev="' + e.id + '">' + storyPlayLabel(e.id) + '</button>' : '') + '</article>';
     }
     var out = '';
     if (joined.length) out += '<h5 class="dy-h5">Events you joined</h5><div class="dy-evgrid">' + joined.map(function(e){ return card(e, true); }).join('') + '</div>';
-    if (waiting.length) out += '<h5 class="dy-h5">Still to join in</h5><div class="dy-evgrid">' + waiting.map(function(e){ return card(e, false); }).join('') + '</div>';
+    if (waiting.length) out += '<h5 class="dy-h5">Other happenings</h5><div class="dy-evgrid">' + waiting.map(function(e){ return card(e, false); }).join('') + '</div>';
     return out || '<div class="dy-empty"><b>No events yet</b>When the town has something going on, it will be noted here, and you can join in.</div>';
   }
   function storyOpenDiary(tab){
@@ -8089,6 +8118,7 @@
       var lines = Story.TOWN.prologue.map(function(t){ return '<p>' + storyEsc(t) + '</p>'; }).join('');
       storyDialog('<h3>Welcome to ' + storyEsc(Story.TOWN.name) + '</h3>' + lines +
         '<p class="name-ask">What should the neighbours call you?</p><input class="name-input" id="storyNameInput" type="text" maxlength="18" placeholder="Your name" autocomplete="off" spellcheck="false">' +
+        (storyHadOld ? '<p style="opacity:.85">The Cove has a longer story this time: three years, six neighbours. Your old photos are still in the diary.</p>' : '') +
         '<p style="opacity:.85">There\'s something in the mailbox with your name on it.</p>',
         [ { label:'Check the mailbox', cls:'btn-primary', pre:function(){
             var inp = document.getElementById('storyNameInput');
@@ -8104,7 +8134,11 @@
     }
   }
   // small read-only handle for testing from the browser console
-  window.__rsStory = { season:storySeason, shopTier:storyShopTier, lock:storyItemLock, play:storyOpenPlay, score:storyPlayScore, data:function(){ return story.data; }, level:storyLevel, start:storyStartQuest };
+  window.__rsStory = { season:storySeason, shopTier:storyShopTier, lock:storyItemLock, play:storyOpenPlay, score:storyPlayScore, data:function(){ return story.data; }, level:storyLevel, start:storyStartQuest,
+    // test helpers: put a piece in a room of the current job, clear the editable rooms, hand in
+    place:function(assetId, x, y, roomKey){ var q = storyCurrentQuest(); var item = getAsset(assetId); if (!q || !item) return false; addPiece(item, x, y, storyRoomId(q.property, roomKey), { silent:true }); return true; },
+    clear:function(){ state.placed = state.placed.filter(function(p){ return p.starter || !storyIsEditableRoom(p.roomId); }); renderRooms(); },
+    submit:function(){ storySubmit(true); }, spent:storySpent, pieces:storyGatherPieces, open:storyOpenIds, entries:storyTownEntries };
 
 
   /* ---------------- init ---------------- */
@@ -8148,7 +8182,7 @@
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   // version check: shows which build of each file is live, so a stale upload or cache is obvious
   (function(){
-    var want = '0.12.0', box = document.getElementById('titleFiles');
+    var want = '0.13.0', box = document.getElementById('titleFiles');
     var d = (typeof DATA_FILE_VERSION !== 'undefined') ? DATA_FILE_VERSION : null;
     var st = (typeof STORY_FILE_VERSION !== 'undefined') ? STORY_FILE_VERSION : null;
     var stale = [];
@@ -8158,7 +8192,7 @@
       box.className = 'title-files stale';
       box.textContent = 'Not up to date: ' + stale.join(', ') + '. Upload it, then refresh.';
     } else {
-      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 16:50';
+      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 18:04';
     }
   })();
   renderRoomGrid();
