@@ -4,9 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Roomstories</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,450;0,9..144,560;0,9..144,650;1,9..144,500&family=Karla:wght@400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<!-- fonts live in the game's own fonts/ folder: no outside requests, works offline (Steam) and nothing re-flows when they arrive -->
+<link rel="preload" href="fonts/karla.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="fonts/fraunces.woff" as="font" type="font/woff" crossorigin>
+<style>
+  @font-face{ font-family:'Fraunces'; font-style:normal; font-weight:450 650; font-display:swap; src:url('fonts/fraunces.woff') format('woff'); }
+  @font-face{ font-family:'Fraunces'; font-style:italic; font-weight:400 600; font-display:swap; src:url('fonts/fraunces-italic.woff') format('woff'); }
+  @font-face{ font-family:'Karla'; font-style:normal; font-weight:400 700; font-display:swap; src:url('fonts/karla.woff') format('woff'); }
+  @font-face{ font-family:'Patrick Hand'; font-style:normal; font-weight:400; font-display:swap; src:url('fonts/patrick-hand.woff') format('woff'); }
+</style>
 <style>
   :root{
     --paper:#F6F1E4;
@@ -2627,6 +2633,10 @@
 .res-photo .rp-done{ font-weight:700; color:#3f6b4b; }
 @media (max-width:640px){ .dy-tabs{ padding:10px 12px 0; } .dy-tab{ padding:6px 11px 5px; font-size:14.5px; } .dy-grid{ grid-template-columns:repeat(2,1fr); gap:18px 12px; } }
 
+/* tray pages are only containers: their cards sit straight in the tray grid */
+.tray-page{ display:contents; }
+.tray-page[hidden]{ display:none; }
+
 </style>
 </head>
 <body>
@@ -2639,7 +2649,7 @@
   <div class="title-scrim"></div>
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
-    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.11.0 &middot; The Diary</div>
+    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.11.1 &middot; Quieter Frames</div>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
     <button class="title-fresh-link title-newstory-link" id="titleNewStoryBtn" type="button" style="display:none;">Or begin a brand new story</button>
@@ -2763,7 +2773,6 @@
 <div class="lt-overlay" id="storyResult"><div class="lt-scene" id="storyResultScene"></div></div>
 <div class="lt-overlay" id="storyEvent"><div class="lt-scene" id="storyEventScene"></div></div>
 <div class="lt-overlay" id="storyNews"><div class="lt-scene" id="storyNewsScene"></div></div>
-<div class="lt-overlay" id="storyCal"><div class="lt-scene" id="storyCalScene"></div></div>
 <div class="lt-overlay" id="storyDiary"><div class="lt-scene" id="storyDiaryScene"></div></div>
 <div class="lt-overlay" id="storyShop"><div class="lt-scene" id="storyShopScene"></div></div>
 <div class="lt-overlay" id="storyPlay"><div class="lt-scene" id="storyPlayScene"></div></div>
@@ -2927,8 +2936,8 @@
   </div>
 </div>
 
-<script src="data.js?v=0.11.0"></script>
-<script src="story.js?v=0.11.0"></script>
+<script src="data.js?v=0.11.1"></script>
+<script src="story.js?v=0.11.1"></script>
 <script>
 (function(){
   "use strict";
@@ -2969,6 +2978,10 @@
     { id:'textiles', label:'Textiles' },
   ];
   function tabOf(item){ return item.tab || item.category; }
+  var trayItemsCache = {};
+  function trayItemsOf(tabId){
+    return (trayItemsCache[tabId] = trayItemsCache[tabId] || ITEMS.filter(function(it){ return tabOf(it) === tabId; })).slice();
+  }
 
   /* ---------------- color-variant families ----------------
      Items that are the same piece in different colors (e.g. "Hale Couch
@@ -3159,7 +3172,13 @@
     colorFilter: ''
   };
 
-  function getAsset(id){ for (var i=0;i<ITEMS.length;i++) if (ITEMS[i].id===id) return ITEMS[i]; return null; }
+  // ITEMS never changes while the game runs, so look pieces up through an index
+  // instead of scanning ~600 entries on every call (it is called in many loops)
+  var itemIndex = null;
+  function getAsset(id){
+    if (!itemIndex){ itemIndex = Object.create(null); for (var i = 0; i < ITEMS.length; i++) itemIndex[ITEMS[i].id] = ITEMS[i]; }
+    return itemIndex[id] || null;
+  }
   function getBackground(id){ for (var i=0;i<BACKGROUNDS.length;i++) if (BACKGROUNDS[i].id===id) return BACKGROUNDS[i]; return null; }
   function getPiece(uid){ for (var i=0;i<state.placed.length;i++) if (state.placed[i].uid===uid) return state.placed[i]; return null; }
   function getRoom(id){ for (var i=0;i<state.rooms.length;i++) if (state.rooms[i].id===id) return state.rooms[i]; return null; }
@@ -3497,7 +3516,15 @@
   }
 
   var LAMP_GLOW_RADIUS = 30; // max reach of the effect, in % of stage width
-  function updateLampProximityGlow(onlyRoomId){
+  // writes a piece's rim-light only when the value really changed, so an
+  // unchanged glow costs nothing instead of re-painting the piece
+  function setVisualFilter(visual, value){
+    var cur = visual._lf !== undefined ? visual._lf : visual.style.filter;
+    if (cur === value) return;
+    visual._lf = value;
+    visual.style.filter = value;
+  }
+  function updateLampProximityGlow(onlyRoomId, onlyUid){
     var rooms = onlyRoomId ? state.rooms.filter(function(r){ return r.id === onlyRoomId; }) : state.rooms;
     rooms.forEach(function(room){
       var roomEl = roomStageEl(room.id);
@@ -3512,6 +3539,7 @@
       });
 
       roomPieces.forEach(function(piece){
+        if (onlyUid && piece.uid !== onlyUid) return;   // dragging a normal piece only changes that piece's own glow
         var asset = getAsset(piece.assetId);
         if (asset.category === 'lighting') return; // lamps don't relight themselves
         var el = pieceEl(piece.uid);
@@ -3519,7 +3547,7 @@
         if (!visual) return;
 
         if (!dark || litLamps.length === 0){
-          visual.style.filter = '';
+          setVisualFilter(visual, '');
           return;
         }
 
@@ -3533,12 +3561,12 @@
 
         var maxPx = LAMP_GLOW_RADIUS/100 * stageRect.width;
         if (!best || bestDistPx > maxPx || bestDistPx === 0){
-          visual.style.filter = '';
+          setVisualFilter(visual, '');
           return;
         }
 
         var rimMult = LIGHT_LEVELS[best.lamp.lightIntensity || 2].rim;
-        var intensity = (1 - (bestDistPx / maxPx)) * rimMult; // 0..1, stronger when closer or brighter
+        var intensity = Math.round((1 - (bestDistPx / maxPx)) * rimMult * 40) / 40; // 0..1, stronger when closer or brighter (stepped, so tiny moves don't restyle)
         var angle = Math.atan2(best.dy, best.dx);
         var ux = Math.cos(angle), uy = Math.sin(angle);
 
@@ -3555,10 +3583,10 @@
         var alpha1 = (0.16 + intensity*0.30).toFixed(2);
         var alpha2 = (0.09 + intensity*0.18).toFixed(2);
 
-        visual.style.filter =
+        setVisualFilter(visual,
           'drop-shadow(0 10px 14px rgba(30,22,14,.30)) ' +
           'drop-shadow(' + (rux*off1).toFixed(1) + 'px ' + (ruy*off1).toFixed(1) + 'px ' + blur1.toFixed(0) + 'px rgba(255,200,120,'+alpha1+')) ' +
-          'drop-shadow(' + (rux*off2).toFixed(1) + 'px ' + (ruy*off2).toFixed(1) + 'px ' + blur2.toFixed(0) + 'px rgba(255,180,90,'+alpha2+'))';
+          'drop-shadow(' + (rux*off2).toFixed(1) + 'px ' + (ruy*off2).toFixed(1) + 'px ' + blur2.toFixed(0) + 'px rgba(255,180,90,'+alpha2+'))');
       });
     });
   }
@@ -3576,14 +3604,17 @@
         var a = getAsset(p.assetId);
         return a.category === 'lighting' && p.lampOn !== false;
       }) : [];
-      if (!litLamps.length){ layer.style.background = 'none'; return; }
-      var stageRect = roomEl.getBoundingClientRect();
-      var radiusPx = Math.round(LAMP_GLOW_RADIUS/100 * stageRect.width);
-      layer.style.background = litLamps.map(function(lamp){
-        var mult = LIGHT_LEVELS[lamp.lightIntensity || 2].pool;
-        var alpha = (0.5 * mult).toFixed(2);
-        return 'radial-gradient(circle '+radiusPx+'px at '+lamp.x+'% '+lamp.y+'%, rgba(255,190,110,'+alpha+'), rgba(255,190,110,0) 75%)';
-      }).join(', ');
+      var bg = 'none';
+      if (litLamps.length){
+        var stageRect = roomEl.getBoundingClientRect();
+        var radiusPx = Math.round(LAMP_GLOW_RADIUS/100 * stageRect.width);
+        bg = litLamps.map(function(lamp){
+          var mult = LIGHT_LEVELS[lamp.lightIntensity || 2].pool;
+          var alpha = (0.5 * mult).toFixed(2);
+          return 'radial-gradient(circle '+radiusPx+'px at '+lamp.x.toFixed(1)+'% '+lamp.y.toFixed(1)+'%, rgba(255,190,110,'+alpha+'), rgba(255,190,110,0) 75%)';
+        }).join(', ');
+      }
+      if (layer._bg !== bg){ layer._bg = bg; layer.style.background = bg; }
     });
   }
 
@@ -3911,8 +3942,10 @@
       btn.className = 'tab' + (cat.id===state.activeCategory ? ' active' : '');
       btn.textContent = cat.label;
       btn.addEventListener('click', function(){
+        if (state.activeCategory === cat.id) return;
         state.activeCategory = cat.id;
-        renderTabs();
+        var tabEls = trayTabs.children;
+        for (var i = 0; i < tabEls.length; i++) tabEls[i].classList.toggle('active', TABS[i].id === cat.id);
         renderTray();
       });
       trayTabs.appendChild(btn);
@@ -3948,10 +3981,40 @@
     });
   }
 
-  function renderTray(){ trayFlyoutPending = null; renderTrayInner(); syncFlyout(); }
+  // Every tab (and tab+filter) is built once and then just shown or hidden.
+  // Rebuilding ~100 cards and re-fetching their pictures on every tab click
+  // was the source of the tray flicker. Pass fresh=true when what the cards
+  // show can differ (story starts or ends).
+  var trayPages = {}, trayPageOrder = [], TRAY_PAGE_MAX = 24, trayTarget = null, trayBuildGroups = null;
+  function trayPageKey(){ return state.activeCategory + '|' + (state.styleFilter || '') + '|' + (state.colorFilter || ''); }
+  function renderTray(fresh){
+    trayFlyoutPending = null;
+    if (fresh === true){ trayPages = {}; trayPageOrder = []; trayGrid.textContent = ''; }
+    var key = trayPageKey(), page = trayPages[key];
+    for (var i = 0; i < trayGrid.children.length; i++) trayGrid.children[i].hidden = true;
+    if (!page){
+      var el = document.createElement('div');
+      el.className = 'tray-page';
+      trayTarget = document.createDocumentFragment(); trayBuildGroups = {};
+      renderTrayInner();
+      el.appendChild(trayTarget);
+      page = trayPages[key] = { el:el, groups:trayBuildGroups };
+      trayTarget = null; trayBuildGroups = null;
+      trayGrid.appendChild(el);
+      trayPageOrder.push(key);
+      while (trayPageOrder.length > TRAY_PAGE_MAX){        // keep memory bounded when someone plays with filters a lot
+        var old = trayPageOrder.shift();
+        if (old !== key && trayPages[old]){ trayPages[old].el.remove(); delete trayPages[old]; }
+      }
+    }
+    page.el.hidden = false;
+    trayGrid.scrollTop = 0;
+    var g = state.expandedGroup && page.groups[state.expandedGroup];
+    if (g) trayFlyoutPending = { group:g.group, card:g.card };
+    syncFlyout();
+  }
   function renderTrayInner(){
-    trayGrid.innerHTML = '';
-    var itemsInCat = ITEMS.filter(function(it){ return tabOf(it)===state.activeCategory; });
+    var itemsInCat = trayItemsOf(state.activeCategory);
     var filtering = !!(state.styleFilter || state.colorFilter);
     if (state.styleFilter){
       itemsInCat = itemsInCat.filter(function(it){ return it.style1===state.styleFilter || it.style2===state.styleFilter; });
@@ -3963,7 +4026,7 @@
       // filtering is about finding a specific item, so show exact matches
       // plainly rather than folding them back into a color-family card
       if (!itemsInCat.length){
-        trayGrid.innerHTML = '<div class="tray-empty-note">No items match that filter</div>';
+        trayTarget.innerHTML = '<div class="tray-empty-note">No items match that filter</div>';
         return;
       }
       itemsInCat.forEach(function(item){ renderSingleCard(item); });
@@ -4002,7 +4065,7 @@
       '<div class="sticker-label">'+item.name+'</div>';
     card.addEventListener('pointerdown', function(e){ startTrayDrag(e, item, card); });
     storyDecorateCard(card, item);
-    trayGrid.appendChild(card);
+    trayTarget.appendChild(card);
   }
 
   function renderGroupCard(group){
@@ -4025,9 +4088,9 @@
     });
     storyDecorateCard(card, primary);
     wrap.appendChild(card);
-    if (expanded) trayFlyoutPending = { group:group, card:card };
+    trayBuildGroups[group.key] = { group:group, card:card };
 
-    trayGrid.appendChild(wrap);
+    trayTarget.appendChild(wrap);
   }
 
   /* ---------------- colour variants: side panel next to the tray ---------------- */
@@ -4824,22 +4887,33 @@
     el.addEventListener('pointerup', onMoveEnd);
     el.addEventListener('pointercancel', onMoveEnd);
   }
+  // pointer events can arrive faster than the screen refreshes; only the
+  // newest position matters, so the piece is moved once per frame
+  var moveRaf = 0, moveLast = null;
   function onMoveMove(e){
     if (!moveDrag || e.pointerId!==moveDrag.pointerId) return;
     if (Math.abs(e.clientX-moveDrag.startX) > 4 || Math.abs(e.clientY-moveDrag.startY) > 4) moveDrag.moved = true;
+    moveLast = { x:e.clientX, y:e.clientY };
+    if (!moveRaf) moveRaf = requestAnimationFrame(applyMove);
+  }
+  function applyMove(){
+    moveRaf = 0;
+    if (!moveDrag || !moveLast) return;
     var piece = getPiece(moveDrag.uid);
-    var dxPct = (e.clientX - moveDrag.startX) / moveDrag.rect.width * 100;
-    var dyPct = (e.clientY - moveDrag.startY) / moveDrag.rect.height * 100;
+    var dxPct = (moveLast.x - moveDrag.startX) / moveDrag.rect.width * 100;
+    var dyPct = (moveLast.y - moveDrag.startY) / moveDrag.rect.height * 100;
     piece.x = clamp(moveDrag.startPctX + dxPct, 0, 100);
     piece.y = clamp(moveDrag.startPctY + dyPct, 0, 100);
     moveDrag.el.style.left = piece.x + '%';
     moveDrag.el.style.top = piece.y + '%';
-    updateLampLighting(piece.roomId);
+    if (getAsset(piece.assetId).category === 'lighting') updateLampLighting(piece.roomId);
+    else updateLampProximityGlow(piece.roomId, piece.uid);
     updateForegroundBlurFor(piece, moveDrag.el);
     positionToolbar();
   }
   function onMoveEnd(e){
     if (!moveDrag || e.pointerId!==moveDrag.pointerId) return;
+    if (moveRaf){ cancelAnimationFrame(moveRaf); applyMove(); }
     if (!moveDrag.moved){
       var piece = getPiece(moveDrag.uid);
       var asset = getAsset(piece.assetId);
@@ -4857,7 +4931,7 @@
     moveDrag.el.removeEventListener('pointermove', onMoveMove);
     moveDrag.el.removeEventListener('pointerup', onMoveEnd);
     moveDrag.el.removeEventListener('pointercancel', onMoveEnd);
-    moveDrag = null;
+    moveDrag = null; moveLast = null;
   }
 
   /* ---------------- resizing ---------------- */
@@ -6061,7 +6135,6 @@
     }
     return null;
   }
-  function storyGiftLocked(itemId){ return !!storyItemLock(itemId); }
   function storyRand(n){ return Math.floor(Math.random() * n); }
   function storyReduced(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 
@@ -6230,7 +6303,7 @@
     storyAddStarters(q);
     deselect();
     state.expandedGroup = null;
-    renderTray();
+    renderTray(true);
     story.lastSig = '';
     storyTick(true);
     storyHideOverlays();
@@ -6273,7 +6346,7 @@
     setTimeout(function(){ storyRunEvents(function(){ if (ids.length) setTimeout(function(){ storyAnnounce(ids); }, 350); }); }, 650);
   }
   function storyHideOverlays(){
-    ['storyIntro','storyResult','storyDialog','storyEvent','storyNews','storyCal','storyShop','storyPlay'].forEach(function(id){ var o = document.getElementById(id); o.classList.remove('active', 'closing'); });
+    ['storyIntro','storyResult','storyDialog','storyEvent','storyNews','storyDiary','storyShop','storyPlay'].forEach(function(id){ var o = document.getElementById(id); o.classList.remove('active', 'closing'); });
   }
   // restore whatever free play had; used whenever the player returns to it
   function storyLeaveForFreePlay(){
@@ -6291,7 +6364,7 @@
     state.selectedUid = null;
     state.expandedGroup = null;
     renderRooms();
-    renderTray();
+    renderTray(true);
     var startBtn = document.getElementById('titleStartBtn');
     startBtn.textContent = hasExistingSave ? 'Free play · continue' : 'Free play';
     document.getElementById('titleFreshBtn').style.display = hasExistingSave ? 'block' : 'none';
@@ -7268,27 +7341,6 @@
     var seasonCol = { spring:'#7fa88a', summer:'#d9a441', autumn:'#c9714a', winter:'#6f8fae' }[season];
     return { tiles:tiles, page:page, cur:cur, season:season, seasonCol:seasonCol, curIdx:curIdx };
   }
-  function storyOpenCalendar(sel){
-    var cb = storyCalendarBuild(sel), tiles = cb.tiles, page = cb.page, cur = cb.cur, season = cb.season, seasonCol = cb.seasonCol;
-    document.getElementById('storyCalScene').innerHTML =
-      '<div class="lt-sheet cal-sheet show arriving" id="storyCalCard" style="--rot:' + storyRot() + ';--cal:' + seasonCol + '"><div class="lt-paper">' +
-        '<div class="cal-top"><div><small>Pennywhistle Cove</small><h3>Our year in the Cove</h3></div><span class="cal-season">' + storyEsc(cur.label) + ' · ' + storyEsc(storyCap1(season)) + '</span></div>' +
-        '<div class="cal-body"><div class="cal-months">' + tiles + '</div>' + page +
-        '<p class="cal-hint">Time moves on when you finish a job. Each one takes a month or so of town time.</p></div>' +
-        '<div class="lt-actions"><button class="lt-btn primary" id="calClose" type="button">Close</button></div>' +
-      '</div></div>';
-    var ov = document.getElementById('storyCal');
-    if (!ov.classList.contains('active')) storyShowOverlay('storyCal');
-    var sheet = document.getElementById('storyCalCard');
-    sheet.classList.add('ready');
-    if (typeof sel === 'number' || ov.dataset.open === '1') sheet.classList.remove('arriving');
-    ov.dataset.open = '1';
-    sheet.querySelectorAll('.cal-play').forEach(function(btn){ btn.addEventListener('click', function(){ ov.dataset.open = ''; storyDismissSheet('storyCal', sheet, function(){ storyOpenPlay(btn.dataset.ev); }); }); });
-    sheet.querySelectorAll('.cal-m').forEach(function(btn){ btn.addEventListener('click', function(){ storyOpenCalendar(+btn.dataset.idx); }); });
-    document.getElementById('calClose').addEventListener('click', function(){ ov.dataset.open = ''; storyDismissSheet('storyCal', sheet); });
-  }
-
-
   /* ---------- the diary book ---------- */
   var storyDiaryTab = 'rooms', storyDiaryView = null;
   function storyDiaryEntries(){
@@ -7825,7 +7877,7 @@
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   // version check: shows which build of each file is live, so a stale upload or cache is obvious
   (function(){
-    var want = '0.11.0', box = document.getElementById('titleFiles');
+    var want = '0.11.1', box = document.getElementById('titleFiles');
     var d = (typeof DATA_FILE_VERSION !== 'undefined') ? DATA_FILE_VERSION : null;
     var st = (typeof STORY_FILE_VERSION !== 'undefined') ? STORY_FILE_VERSION : null;
     var stale = [];
@@ -7835,7 +7887,7 @@
       box.className = 'title-files stale';
       box.textContent = 'Not up to date: ' + stale.join(', ') + '. Upload it, then refresh.';
     } else {
-      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 12:59';
+      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 13:44';
     }
   })();
   renderRoomGrid();
