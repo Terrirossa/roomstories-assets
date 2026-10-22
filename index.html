@@ -1163,6 +1163,8 @@
   }
   .result-bar-track{ height:8px; border-radius:99px; background:var(--line); overflow:hidden; }
   .result-bar-fill{ height:100%; border-radius:99px; background:var(--sage); transition:width .5s cubic-bezier(.2,.8,.3,1); }
+  .results-photo-btn{ display:block; width:100%; margin-bottom:14px; }
+  .results-photo-btn.done{ opacity:.7; pointer-events:none; }
   .results-actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
   .profile-link-btn{
     display:block; width:100%; margin-bottom:14px;
@@ -2557,6 +2559,74 @@
   .pl-reply.meh{ background:rgba(217,164,65,.2); } .pl-reply.meh b{ color:#8a5a2d; }
   .shp-head .ev-ribbon{ display:inline-block; margin-bottom:6px; }
 
+/* ============ v0.11.0 — the diary book ============ */
+.diary-btn{ border:0; cursor:pointer; font-family:inherit; color:var(--ink); display:flex; align-items:center; gap:8px; padding:7px 14px 7px 11px; font-size:12.5px; font-weight:700; }
+.diary-btn svg{ width:21px; height:21px; flex-shrink:0; }
+.title-diary-link{ margin-top:2px; }
+.dy-sheet{ width:min(100%, 780px); }
+.dy-tabs{ display:flex; gap:6px; padding:12px 22px 0; background:#fbf6ea; border-bottom:2px solid rgba(120,90,50,.22); }
+.dy-tab{ font:inherit; font-family:'Fraunces',serif; font-style:italic; font-size:16px; font-weight:560; color:#6a5439; background:rgba(120,90,50,.1); border:0; border-radius:10px 10px 0 0; padding:7px 18px 6px; cursor:pointer; margin-bottom:-2px; }
+.dy-tab:hover{ background:rgba(120,90,50,.18); }
+.dy-tab.on{ background:#fbf6ea; color:#3a2d20; box-shadow:inset 0 3px 0 var(--cal,#6f9a78); border:2px solid rgba(120,90,50,.22); border-bottom-color:#fbf6ea; }
+.dy-body{ min-height:340px; }
+.dy-empty{ text-align:center; padding:60px 24px; color:#6a5439; font-size:15px; line-height:1.45; }
+.dy-empty b{ display:block; font-family:'Fraunces',serif; font-style:italic; font-size:21px; color:#3a2d20; margin-bottom:6px; }
+.dy-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:22px 18px; padding:14px 4px 10px; }
+.dy-pol{ position:relative; display:flex; flex-direction:column; text-align:left; font:inherit; color:#3a2d20; cursor:pointer; border:0; background:#fffdf6; padding:9px 9px 10px; border-radius:3px;
+  box-shadow:0 5px 12px rgba(70,45,20,.26); transform:rotate(var(--r,0deg)); transition:transform .18s ease, box-shadow .18s ease; }
+.dy-pol:hover{ transform:rotate(0deg) translateY(-3px) scale(1.02); box-shadow:0 12px 20px rgba(70,45,20,.3); }
+.dy-pol img{ width:100%; aspect-ratio:16/10; object-fit:cover; background:#e6dcc7; display:block; border-radius:1px; }
+.dy-pol b{ font-family:'Fraunces',serif; font-style:italic; font-weight:560; font-size:15px; margin-top:7px; line-height:1.15; }
+.dy-pol small{ font-size:12px; opacity:.65; margin-top:1px; }
+.dy-pol .dy-h{ margin-top:3px; font-size:12px; }
+.dy-tape{ position:absolute; top:-9px; left:50%; width:62px; height:18px; margin-left:-31px; background:rgba(226,208,160,.72); transform:rotate(-2deg); box-shadow:0 1px 2px rgba(0,0,0,.16); }
+.dy-pol.free .dy-tape{ background:rgba(160,196,178,.7); }
+.dy-view{ padding:10px 4px 4px; text-align:center; }
+.dy-frame{ display:inline-block; max-width:100%; padding:12px 12px 16px; background:#fffdf6; border-radius:3px; box-shadow:0 8px 20px rgba(70,45,20,.3); transform:rotate(-.6deg); }
+.dy-frame img{ display:block; max-width:100%; max-height:min(46vh, 380px); border-radius:1px; }
+.dy-shots{ display:flex; gap:6px; justify-content:center; margin:12px 0 0; flex-wrap:wrap; font-size:13px; opacity:.85; }
+.dy-shots button{ font:inherit; font-size:13px; font-weight:700; border:1.5px solid rgba(120,90,50,.35); background:transparent; color:#6a5439; padding:3px 12px; border-radius:99px; cursor:pointer; }
+.dy-shots button.on{ background:#6a5439; color:#fff; border-color:#6a5439; }
+.dy-cap{ margin:12px 0 4px; font-family:'Fraunces',serif; font-style:italic; font-weight:560; font-size:21px; line-height:1.15; }
+.dy-cap small{ display:block; font-family:'Karla',sans-serif; font-style:normal; font-size:13px; opacity:.65; margin-top:2px; font-weight:600; }
+.dy-nav{ display:flex; justify-content:center; gap:8px; margin:12px 0 6px; }
+.dy-nav button, .dy-del button{ font:inherit; font-size:13px; font-weight:700; color:#5a4630; background:rgba(120,90,50,.12); border:0; border-radius:99px; padding:6px 15px; cursor:pointer; }
+.dy-nav button:hover:not(:disabled), .dy-del button:hover{ background:rgba(120,90,50,.22); }
+.dy-nav button:disabled{ opacity:.35; cursor:default; }
+.dy-del{ margin:4px 0 8px; } .dy-del button{ background:none; opacity:.6; font-weight:600; font-size:12.5px; text-decoration:underline; }
+.dy-people{ display:grid; gap:12px; padding:12px 2px 6px; }
+.dy-person{ background:rgba(255,255,255,.6); border-radius:6px; padding:12px 16px 12px; border-left:5px solid var(--pin,#a89878); }
+.dy-ph{ display:flex; align-items:center; gap:12px; }
+.dy-ph h4{ margin:0; font-family:'Fraunces',serif; font-weight:560; font-size:19px; line-height:1.1; }
+.dy-ph small{ font-size:12.5px; opacity:.7; }
+.dy-av{ width:42px; height:42px; border-radius:50%; flex-shrink:0; background:radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--pin) 70%, #fff), var(--pin) 60%, color-mix(in srgb, var(--pin) 70%, #000)); color:#fff; font-family:'Fraunces',serif; font-weight:650; font-size:19px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,.25); }
+.dy-pn{ margin-left:auto; font-size:12.5px; font-weight:700; opacity:.75; text-align:right; white-space:nowrap; }
+.dy-person p{ margin:8px 0 0; font-size:14px; line-height:1.4; color:#5a4630; }
+.dy-person p.dy-none{ opacity:.55; font-style:italic; font-size:13px; }
+.dy-learned{ list-style:none; margin:8px 0 0; padding:0; font-size:14px; }
+.dy-learned li{ position:relative; padding-left:16px; margin:3px 0; }
+.dy-learned li::before{ content:'✎'; position:absolute; left:0; color:var(--pin,#a89878); font-size:12px; top:1px; }
+.dy-h5{ margin:16px 2px 8px; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:#6a5439; font-weight:800; }
+.dy-h5:first-child{ margin-top:8px; }
+.dy-evgrid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(215px, 1fr)); gap:12px; }
+.dy-ev{ background:rgba(255,255,255,.6); border-radius:6px; padding:11px 14px; display:flex; flex-direction:column; gap:6px; border-top:4px solid rgba(120,90,50,.3); }
+.dy-ev.won{ border-top-color:#6f9a78; }
+.dy-evh small{ font-size:12px; opacity:.65; font-weight:700; }
+.dy-evh h4{ margin:0; font-family:'Fraunces',serif; font-weight:560; font-size:17px; line-height:1.15; }
+.dy-evs{ margin:0; font-size:13.5px; color:#5a4630; }
+.dy-keep{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; }
+.dy-keep img{ width:44px; height:38px; object-fit:contain; }
+.dy-keep.off img{ filter:grayscale(1) brightness(.8) opacity(.5); } .dy-keep.off span{ opacity:.6; font-weight:600; }
+.dy-evb{ align-self:flex-start; margin-top:auto; font:inherit; font-size:12.5px; font-weight:800; border:0; border-radius:99px; padding:5px 14px; cursor:pointer; background:#d9a441; color:#3a2d20; }
+.dy-evb:hover{ filter:brightness(1.07); }
+.res-photo{ margin:14px 0 4px; padding:10px 12px; border:1.5px dashed rgba(90,60,30,.4); border-radius:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:.95em; background:rgba(255,255,255,.35); }
+.res-photo span{ flex:1 1 180px; }
+.res-photo button{ font:inherit; font-weight:700; font-size:.88em; border:0; border-radius:99px; padding:6px 14px; cursor:pointer; background:#d9a441; color:#3a2d20; }
+.res-photo button.skip{ background:transparent; border:1.5px solid rgba(90,60,30,.35); color:inherit; opacity:.75; }
+.res-photo.gone{ display:none; }
+.res-photo .rp-done{ font-weight:700; color:#3f6b4b; }
+@media (max-width:640px){ .dy-tabs{ padding:10px 12px 0; } .dy-tab{ padding:6px 11px 5px; font-size:14.5px; } .dy-grid{ grid-template-columns:repeat(2,1fr); gap:18px 12px; } }
+
 </style>
 </head>
 <body>
@@ -2569,12 +2639,13 @@
   <div class="title-scrim"></div>
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
-    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.10.1 &middot; Calmer Sway</div>
+    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.11.0 &middot; The Diary</div>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
     <button class="title-fresh-link title-newstory-link" id="titleNewStoryBtn" type="button" style="display:none;">Or begin a brand new story</button>
     <button class="btn-ghost title-free-btn" id="titleStartBtn" type="button">Free play</button>
     <button class="title-fresh-link" id="titleFreshBtn" style="display:none;">Or start a brand new room</button>
+    <button class="title-fresh-link title-diary-link" id="titleDiaryBtn" type="button" style="display:none;">&#128214; Open my diary</button>
     <div class="title-files" id="titleFiles"></div>
   </div>
 </section>
@@ -2671,6 +2742,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M5 4.5h11.5a2 2 0 0 1 2 2V19a1.5 1.5 0 0 0 1.5 1.5H6.5A2.5 2.5 0 0 1 4 18V5.5z"/><path d="M7.5 8.5h8M7.5 12h8M7.5 15.5h5"/></svg>
       <span>News</span><i class="news-dot"></i>
     </button>
+    <button class="town-glass diary-btn" id="diaryBtn" type="button" title="Open my diary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6.5 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M9 3.5v17M12 8h4M12 11.5h4"/></svg>
+      <span>Diary</span>
+    </button>
     <div class="town-glass renown-chip" id="renownChip"></div>
     <button class="town-glass mailbox-btn" id="mailboxBtn" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.6 7 8.4 6.4L20.4 7"/></svg>
@@ -2689,6 +2764,7 @@
 <div class="lt-overlay" id="storyEvent"><div class="lt-scene" id="storyEventScene"></div></div>
 <div class="lt-overlay" id="storyNews"><div class="lt-scene" id="storyNewsScene"></div></div>
 <div class="lt-overlay" id="storyCal"><div class="lt-scene" id="storyCalScene"></div></div>
+<div class="lt-overlay" id="storyDiary"><div class="lt-scene" id="storyDiaryScene"></div></div>
 <div class="lt-overlay" id="storyShop"><div class="lt-scene" id="storyShopScene"></div></div>
 <div class="lt-overlay" id="storyPlay"><div class="lt-scene" id="storyPlayScene"></div></div>
 <div class="lt-overlay" id="storyDialog"><div class="lt-scene" id="storyDialogScene"></div></div>
@@ -2771,6 +2847,7 @@
     <div class="results-bars" id="resultsBars"></div>
     <button class="btn-ghost profile-link-btn" id="viewProfileBtn" type="button">View design profile</button>
     <button class="btn-ghost" id="viewAchievementsBtn" type="button" style="display:block; width:100%; margin-bottom:14px;">Achievements (<span id="achievementCountLabel">0</span>/<span id="achievementTotalLabel">0</span>)</button>
+    <button class="btn-ghost results-photo-btn" id="resultsPhotoBtn" type="button" style="display:none;">&#128247; Proud of it? Add a photo to my diary</button>
     <div class="results-actions">
       <button class="btn-ghost" id="resultsKeepBtn">Keep decorating</button>
       <button class="btn-ghost" id="resultsChangeRoomBtn">Try a new room</button>
@@ -2850,8 +2927,8 @@
   </div>
 </div>
 
-<script src="data.js?v=0.10.1"></script>
-<script src="story.js?v=0.10.1"></script>
+<script src="data.js?v=0.11.0"></script>
+<script src="story.js?v=0.11.0"></script>
 <script>
 (function(){
   "use strict";
@@ -4158,6 +4235,138 @@
     }
     trayDrag = null;
   }
+
+
+  /* ---------------- room photos & the diary store ---------------- */
+  var PHOTO_W = 720;
+  var PHOTO_TINTS = {
+    dawn:  ['rgba(110,52,54,.34)', 'rgba(168,96,58,.24)'],
+    dusk:  ['rgba(90,40,70,.42)',  'rgba(190,100,50,.30)'],
+    night: ['rgba(23,20,52,.55)',  'rgba(41,28,58,.40)']
+  };
+  function photoLoadImg(src){
+    return new Promise(function(res){
+      var im = new Image();
+      im.onload = function(){ res(im); };
+      im.onerror = function(){ res(null); };
+      im.src = src;
+    });
+  }
+  // Redraws one room onto a flat canvas from what is on screen: the
+  // backdrop, every piece in stacking order (position, size, turn, flip and
+  // transparency read from the live elements, so stretched curtains and
+  // swapped views come out right), the evening tint, a glow around lit
+  // lamps, and a soft vignette. Resolves to a small JPEG data URL, or null.
+  function capturePhoto(roomId){
+    try{
+      var room = getRoom(roomId), stage = roomStageEl(roomId);
+      if (!room || !stage) return Promise.resolve(null);
+      var sr = stage.getBoundingClientRect();
+      if (!sr.width || !sr.height) return Promise.resolve(null);
+      var W = PHOTO_W, k = W / sr.width, H = Math.round(sr.height * k);
+      var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      var ctx = cv.getContext('2d');
+      var list = state.placed.filter(function(p){ return p.roomId === roomId; }).sort(function(a, b){ return a.z - b.z; });
+      var jobs = list.map(function(p){
+        var el = pieceEl(p.uid), vis = el && el.querySelector('.piece-visual');
+        if (!vis || !vis.offsetWidth) return Promise.resolve(null);
+        var vr = vis.getBoundingClientRect();
+        var meta = { p:p, asset:getAsset(p.assetId), w:vis.offsetWidth * k, h:vis.offsetHeight * k,
+                     cx:(vr.left + vr.width / 2 - sr.left) * k, cy:(vr.top + vr.height / 2 - sr.top) * k };
+        var imgP;
+        if (vis.tagName === 'IMG'){
+          imgP = (vis.complete && vis.naturalWidth) ? Promise.resolve(vis) : photoLoadImg(vis.currentSrc || vis.src);
+        } else {
+          var svg = vis.querySelector('svg');
+          if (!svg) return Promise.resolve(null);
+          var c = svg.cloneNode(true);
+          c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+          c.setAttribute('width', Math.round(vis.offsetWidth)); c.setAttribute('height', Math.round(vis.offsetHeight));
+          c.removeAttribute('style');
+          imgP = photoLoadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(c)));
+        }
+        return imgP.then(function(im){ meta.im = im; return im ? meta : null; });
+      });
+      return Promise.all([photoLoadImg(currentTimeSrcForRoom(room))].concat(jobs)).then(function(r){
+        var bg = r[0];
+        ctx.fillStyle = '#d8cbb6'; ctx.fillRect(0, 0, W, H);
+        if (bg && bg.naturalWidth){
+          var s = Math.max(W / bg.naturalWidth, H / bg.naturalHeight), bw = bg.naturalWidth * s, bh = bg.naturalHeight * s;
+          ctx.drawImage(bg, (W - bw) / 2, (H - bh) / 2, bw, bh);
+        }
+        var metas = r.slice(1).filter(Boolean);
+        metas.forEach(function(m){
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, Math.min(1, (m.p.transparency || 100) / 100));
+          ctx.translate(m.cx, m.cy);
+          ctx.rotate((m.p.rotation || 0) * Math.PI / 180);
+          if (m.p.flipped) ctx.scale(-1, 1);
+          try{ ctx.drawImage(m.im, -m.w / 2, -m.h / 2, m.w, m.h); }catch(e){}
+          ctx.restore();
+        });
+        var tint = ['dawn', 'dusk', 'night'].filter(function(t){ var n = stage.querySelector('.night-overlay'); return n && n.classList.contains('tint-' + t); })[0];
+        if (tint){
+          var g = ctx.createLinearGradient(W * 0.67, 0, W * 0.33, H);
+          g.addColorStop(0, PHOTO_TINTS[tint][0]); g.addColorStop(1, PHOTO_TINTS[tint][1]);
+          ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        }
+        if (stage.classList.contains('lamps-lit')){
+          ctx.save(); ctx.globalCompositeOperation = 'screen';
+          metas.forEach(function(m){
+            var a = m.asset || {}, big = a.category === 'lighting' && m.p.lampOn !== false, small = !!(a.flickerWhenOn && m.p.toggled);
+            if (!big && !small) return;
+            var rad = Math.max(m.w, m.h) * (big ? 1.25 : 0.8), gx = m.cx, gy = m.cy - m.h * 0.15;
+            var rg = ctx.createRadialGradient(gx, gy, 0, gx, gy, rad);
+            rg.addColorStop(0, big ? 'rgba(255,214,150,.55)' : 'rgba(255,190,110,.5)'); rg.addColorStop(1, 'rgba(255,214,150,0)');
+            ctx.fillStyle = rg; ctx.fillRect(gx - rad, gy - rad, rad * 2, rad * 2);
+          });
+          ctx.restore();
+        }
+        var vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.45, W / 2, H / 2, Math.max(W, H) * 0.75);
+        vg.addColorStop(0, 'rgba(30,18,8,0)'); vg.addColorStop(1, 'rgba(30,18,8,.26)');
+        ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+        try{ return cv.toDataURL('image/jpeg', 0.74); }catch(e){ return null; }   // a blocked canvas (e.g. file:// images) ends up here
+      }).catch(function(){ return null; });
+    }catch(e){ return Promise.resolve(null); }
+  }
+
+  // The diary's own storage: separate from the story save, so photos can
+  // never push the story save over the browser's size limit.
+  var DIARY_KEY = 'roomstories_diary_v1', DIARY_FREE_MAX = 40, diaryData = null;
+  function diaryLoad(){
+    if (diaryData) return diaryData;
+    var d = null;
+    try{ d = JSON.parse(localStorage.getItem(DIARY_KEY) || 'null'); }catch(e){}
+    if (!d || !Array.isArray(d.entries)) d = { version:1, entries:[] };
+    return (diaryData = d);
+  }
+  function diarySave(){
+    var d = diaryLoad();
+    for (var i = 0; i < 80; i++){
+      try{ localStorage.setItem(DIARY_KEY, JSON.stringify(d)); return true; }catch(e){
+        if (!d.entries.length) return false;
+        // out of room: let the oldest free-play photo go first, then the oldest of all
+        var at = -1;
+        for (var j = 0; j < d.entries.length; j++){ if (d.entries[j].kind === 'free'){ at = j; break; } }
+        d.entries.splice(at < 0 ? 0 : at, 1);
+      }
+    }
+    return false;
+  }
+  function diaryPut(entry){
+    var d = diaryLoad();
+    entry.id = entry.id || ('d' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36));
+    entry.ts = entry.ts || Date.now();
+    if (entry.key) d.entries = d.entries.filter(function(e){ return e.key !== entry.key; });
+    d.entries.push(entry);
+    var free = d.entries.filter(function(e){ return e.kind === 'free'; });
+    while (free.length > DIARY_FREE_MAX){ var old = free.shift(); d.entries.splice(d.entries.indexOf(old), 1); }
+    var ok = diarySave();
+    return ok && d.entries.indexOf(entry) !== -1;
+  }
+  function diaryRemove(id){ var d = diaryLoad(); d.entries = d.entries.filter(function(e){ return e.id !== id; }); diarySave(); }
+  function diaryClearStory(){ var d = diaryLoad(); d.entries = d.entries.filter(function(e){ return e.kind !== 'story'; }); diarySave(); }
+  function diaryHas(key){ return diaryLoad().entries.some(function(e){ return e.key === key; }); }
 
   function addPiece(item, xPct, yPct, roomId, opts){
     opts = opts || {};
@@ -5637,7 +5846,21 @@
     }).join('');
     document.getElementById('achievementCountLabel').textContent = state.discoveredAchievements.length;
     document.getElementById('achievementTotalLabel').textContent = ACHIEVEMENTS.length;
+    var photoBtn = document.getElementById('resultsPhotoBtn');
+    photoBtn.style.display = window.rsDiaryReady ? 'block' : 'none';
+    photoBtn.classList.remove('done'); photoBtn.textContent = '\ud83d\udcf7 Proud of it? Add a photo to my diary';
     resultsOverlay.classList.add('active');
+  });
+  document.getElementById('resultsPhotoBtn').addEventListener('click', function(){
+    var btn = this, rid = state.focusedRoomId, room = getRoom(rid);
+    if (!room || btn.classList.contains('done')) return;
+    btn.textContent = 'Taking the photo\u2026';
+    capturePhoto(rid).then(function(img){
+      var bg = getBackground(room.backgroundId), nm = ((bg && bg.name) || 'My room').split(' \u2014 ')[0];
+      var ok = img && diaryPut({ kind:'free', title:nm, score:(computeScore() || {}).overall || null, shots:[{ label:nm, img:img }] });
+      btn.textContent = ok ? '\u2713 It\u2019s in your diary' : 'Couldn\u2019t take the photo this time';
+      if (ok) btn.classList.add('done');
+    });
   });
 
   document.getElementById('resultsClose').addEventListener('click', function(){ resultsOverlay.classList.remove('active'); });
@@ -6456,7 +6679,8 @@
     document.getElementById('storyResultScene').innerHTML =
       '<div class="lt-sheet reply show arriving" id="storyResultCard" style="--rot:' + storyRot() + ';--accent:' + c.color + '">' +
         '<div class="lt-paper paper paper-' + v.paper + '"><div class="lt-scroll">' + stamps + text + gifts +
-          (news ? '<div class="reply-news">' + news + '</div>' : '') + '</div>' +
+          (news ? '<div class="reply-news">' + news + '</div>' : '') +
+          '<div class="res-photo" id="resPhotoRow"><span>' + (diaryHas('q:' + q.id) ? 'Proud of it this time? Swap the photo in your diary.' : 'Proud of this one? Pin a photo of it in your diary.') + '</span><button type="button" id="resPhotoYes">📷 Add a photo</button><button type="button" id="resPhotoNo" class="skip">Not this time</button></div></div>' +
           '<div class="lt-actions"><button class="lt-btn" id="resDetails" type="button">How did I do?</button><button class="lt-btn" id="resKeep" type="button">Keep tinkering</button><button class="lt-btn primary" id="resTown" type="button">Back to the map</button></div></div>' +
       '</div>' +
       '<div class="lt-sheet analysis" id="storyAnalysisCard" style="--rot:0deg;--accent:' + c.color + ';--hand:' + hand + '">' +
@@ -6476,6 +6700,21 @@
         setTimeout(function(){ to.classList.remove('flip-in'); }, 520);
       }, storyReduced() ? 10 : 260);
     }
+    (function(){
+      var row = document.getElementById('resPhotoRow'); if (!row) return;
+      document.getElementById('resPhotoNo').addEventListener('click', function(){ row.classList.add('gone'); });
+      document.getElementById('resPhotoYes').addEventListener('click', function(){
+        row.innerHTML = '<span>Taking the photo…</span>';
+        var ids = q.edit.map(function(k){ return storyRoomId(q.property, k); });
+        Promise.all(ids.map(function(id){ return capturePhoto(id); })).then(function(imgs){
+          var shots = [];
+          imgs.forEach(function(img, i){ if (img){ var r = getRoom(ids[i]); shots.push({ label: r && r.label ? r.label : '', img: img }); } });
+          var ok = shots.length && diaryPut({ kind:'story', key:'q:' + q.id, qid:q.id, char:q.char, who:c.name, title:q.title, hearts:hearts, day:storyToday(), shots:shots });
+          row.innerHTML = ok ? '<span class="rp-done">✓ Pinned into your diary</span>' : '<span>The photo didn’t work this time. Your room is safe.</span>';
+          if (ok) storyRefreshTitle();
+        });
+      });
+    })();
     document.getElementById('resDetails').addEventListener('click', function(){ flip(true); });
     document.getElementById('anBack').addEventListener('click', function(){ flip(false); });
     function keep(){ storyDismissSheet('storyResult', sheet.classList.contains('show') ? sheet : an); }
@@ -6988,7 +7227,7 @@
     winter:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 5v30M6.7 12.5l26.6 15M6.7 27.5l26.6-15M16 7l4 4 4-4M16 33l4-4 4 4"/></svg>'
   };
   function storyMonthSeason(m){ return (m === 11 || m <= 1) ? 'winter' : (m <= 4 ? 'spring' : (m <= 7 ? 'summer' : 'autumn')); }
-  function storyOpenCalendar(sel){
+  function storyCalendarBuild(sel){
     var today = storyToday(), done = storyDoneMap(), c = Story.TOWN.calendar;
     var startIdx = c.year * 12 + c.month, cur = Story.monthOf(today), curIdx = cur.key;
     if (typeof sel === 'number') storyCalSel = sel; else if (storyCalSel == null) storyCalSel = curIdx;
@@ -7027,6 +7266,10 @@
       (rows || '<li class="none">' + (storyCalSel > curIdx ? 'Nothing to tell yet. Time moves on as you finish jobs.' : 'A quiet month. The bakery was open, the clock tower four minutes fast.') + '</li>') + '</ul></div>';
     var season = Story.seasonOf(today);
     var seasonCol = { spring:'#7fa88a', summer:'#d9a441', autumn:'#c9714a', winter:'#6f8fae' }[season];
+    return { tiles:tiles, page:page, cur:cur, season:season, seasonCol:seasonCol, curIdx:curIdx };
+  }
+  function storyOpenCalendar(sel){
+    var cb = storyCalendarBuild(sel), tiles = cb.tiles, page = cb.page, cur = cb.cur, season = cb.season, seasonCol = cb.seasonCol;
     document.getElementById('storyCalScene').innerHTML =
       '<div class="lt-sheet cal-sheet show arriving" id="storyCalCard" style="--rot:' + storyRot() + ';--cal:' + seasonCol + '"><div class="lt-paper">' +
         '<div class="cal-top"><div><small>Pennywhistle Cove</small><h3>Our year in the Cove</h3></div><span class="cal-season">' + storyEsc(cur.label) + ' · ' + storyEsc(storyCap1(season)) + '</span></div>' +
@@ -7044,6 +7287,122 @@
     sheet.querySelectorAll('.cal-m').forEach(function(btn){ btn.addEventListener('click', function(){ storyOpenCalendar(+btn.dataset.idx); }); });
     document.getElementById('calClose').addEventListener('click', function(){ ov.dataset.open = ''; storyDismissSheet('storyCal', sheet); });
   }
+
+
+  /* ---------- the diary book ---------- */
+  var storyDiaryTab = 'rooms', storyDiaryView = null;
+  function storyDiaryEntries(){
+    return diaryLoad().entries.slice().sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+  }
+  function storyDiaryDate(e){
+    if (e.kind === 'story' && e.day != null) return Story.monthOf(e.day).label;
+    try{ return new Date(e.ts).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' }); }catch(x){ return ''; }
+  }
+  function storyDiaryRooms(){
+    var list = storyDiaryEntries();
+    if (storyDiaryView){
+      var i = list.map(function(e){ return e.id; }).indexOf(storyDiaryView.id);
+      if (i === -1){ storyDiaryView = null; }
+      else {
+        var e = list[i], si = Math.min(storyDiaryView.shot || 0, e.shots.length - 1), sh = e.shots[si];
+        var cap = e.kind === 'story' ? storyEsc(e.title) + '<small>' + storyEsc(e.who) + ' · ' + storyEsc(storyDiaryDate(e)) + '</small>' + (e.hearts ? '<span class="dy-h">' + storyHeartsHtml(e.hearts) + '</span>' : '') :
+          storyEsc(e.title) + '<small>Free play · ' + storyEsc(storyDiaryDate(e)) + (e.score ? ' · ' + e.score + '/100' : '') + '</small>';
+        return '<div class="dy-view"><div class="dy-frame"><img src="' + sh.img + '" alt="' + storyEsc(e.title) + '"></div>' +
+          (e.shots.length > 1 ? '<div class="dy-shots">' + e.shots.map(function(s, k){ return '<button type="button" class="' + (k === si ? 'on' : '') + '" data-shot="' + k + '">' + storyEsc(s.label || ('Room ' + (k + 1))) + '</button>'; }).join('') + '</div>' : (sh.label && e.kind === 'story' ? '<div class="dy-shots"><span>' + storyEsc(sh.label) + '</span></div>' : '')) +
+          '<div class="dy-cap">' + cap + '</div>' +
+          '<div class="dy-nav"><button type="button" id="dyPrev"' + (i >= list.length - 1 ? ' disabled' : '') + '>← Older</button><button type="button" id="dyList">All photos</button><button type="button" id="dyNext"' + (i <= 0 ? ' disabled' : '') + '>Newer →</button></div>' +
+          '<div class="dy-del"><button type="button" id="dyDel">Take this photo out of the diary</button></div></div>';
+      }
+    }
+    if (!list.length) return '<div class="dy-empty"><b>No photos yet</b>When you finish a room you are proud of, choose “Add a photo to my diary”. It will be pinned here.</div>';
+    return '<div class="dy-grid">' + list.map(function(e, i){
+      var rot = (((i * 37) % 7) - 3) * 0.7;
+      return '<button type="button" class="dy-pol ' + e.kind + '" data-id="' + e.id + '" style="--r:' + rot.toFixed(2) + 'deg"><span class="dy-tape"></span><img src="' + e.shots[0].img + '" alt="">' +
+        '<b>' + storyEsc(e.title) + '</b><small>' + (e.kind === 'story' ? storyEsc(e.who) + ' · ' : 'Free play · ') + storyEsc(storyDiaryDate(e)) + '</small>' +
+        (e.kind === 'story' && e.hearts ? '<span class="dy-h">' + storyHeartsHtml(e.hearts) + '</span>' : '') + '</button>';
+    }).join('') + '</div>';
+  }
+  function storyDiaryPeople(){
+    var done = storyDoneMap(), open = storyOpenIds(), out = '';
+    Object.keys(Story.CHARACTERS).forEach(function(cid){
+      var chain = Story.questsOf(cid);
+      if (!chain.some(function(q){ return done[q.id] || open[q.id]; })) return;
+      var c = Story.CHARACTERS[cid], jobs = chain.filter(function(q){ return done[q.id]; });
+      var best = jobs.reduce(function(s, q){ return s + (story.data.quests[q.id].best || 0); }, 0);
+      var learned = [];
+      chain.forEach(function(q){ storyKnownQuirks(q).forEach(function(k){ if (learned.indexOf(k.text) === -1) learned.push(k.text); }); });
+      var pid = Object.keys(Story.PROPERTIES).filter(function(k){ return Story.PROPERTIES[k].owner === cid; })[0];
+      var prop = pid ? Story.PROPERTIES[pid] : null;
+      out += '<article class="dy-person" style="--pin:' + c.color + '"><div class="dy-ph">' + storyAvatar(cid, 'dy-av') +
+        '<div><h4>' + storyEsc(c.name) + ', ' + c.age + '</h4><small>' + storyEsc(c.job) + (prop ? ' · ' + storyEsc(prop.name) : '') + '</small></div>' +
+        '<span class="dy-pn">' + jobs.length + ' of ' + chain.length + ' jobs' + (jobs.length ? ' · ' + storyHeartsHtml(Math.round(best / jobs.length)) : '') + '</span></div>' +
+        '<p>' + storyEsc(c.blurb) + '</p>' +
+        (learned.length ? '<ul class="dy-learned">' + learned.map(function(x){ return '<li>' + storyEsc(x) + '</li>'; }).join('') + '</ul>' : '<p class="dy-none">Nothing learned yet beyond what the letters said.</p>') + '</article>';
+    });
+    return out ? '<div class="dy-people">' + out + '</div>' : '<div class="dy-empty"><b>Nobody yet</b>The first letter is waiting in the mailbox. People you meet will be noted down here.</div>';
+  }
+  function storyDiaryEvents(){
+    var today = storyToday(), done = storyDoneMap();
+    var known = Story.EVENTS.filter(function(e){ return e.after ? !!done[e.after] : e.day <= today; }).sort(function(a, b){ return a.day - b.day; });
+    var joined = [], waiting = [];
+    known.forEach(function(e){
+      var pl = Story.eventPlay(e.id); if (!pl) return;
+      var rec = story.data.play[e.id];
+      if (rec && (rec.won || rec.tries || storyPlayScore(e.id))) joined.push(e); else waiting.push(e);
+    });
+    function card(e, isJoined){
+      var pl = Story.eventPlay(e.id), rec = story.data.play[e.id] || {}, it = getAsset(pl.prize), sc = storyPlayScore(e.id);
+      return '<article class="dy-ev ' + (rec.won ? 'won' : '') + '"><div class="dy-evh"><small>' + storyEsc(Story.monthOf(e.day).label) + '</small><h4>' + storyEsc(e.title) + '</h4></div>' +
+        (isJoined ? '<p class="dy-evs">' + (rec.won ? 'Keepsake won' + (sc === 3 ? ' · full marks' : '') : sc + ' of 3 put right so far') + '</p>' : '<p class="dy-evs">You haven’t been to this one yet.</p>') +
+        (it ? '<div class="dy-keep ' + (rec.won ? '' : 'off') + '"><img src="' + it.src + '" alt=""><span>' + (rec.won ? storyEsc(it.name) : 'Keepsake still to win') + '</span></div>' : '') +
+        '<button class="dy-evb" type="button" data-ev="' + e.id + '">' + (isJoined ? 'Revisit' : 'Join in') + '</button></article>';
+    }
+    var out = '';
+    if (joined.length) out += '<h5 class="dy-h5">Events you joined</h5><div class="dy-evgrid">' + joined.map(function(e){ return card(e, true); }).join('') + '</div>';
+    if (waiting.length) out += '<h5 class="dy-h5">Still to join in</h5><div class="dy-evgrid">' + waiting.map(function(e){ return card(e, false); }).join('') + '</div>';
+    return out || '<div class="dy-empty"><b>No events yet</b>When the town has something going on, it will be noted here, and you can join in.</div>';
+  }
+  function storyOpenDiary(tab){
+    if (!story.data) story.data = storyLoadData();
+    if (tab && tab !== storyDiaryTab){ storyDiaryTab = tab; storyDiaryView = null; }
+    var ov = document.getElementById('storyDiary'), scene = document.getElementById('storyDiaryScene');
+    var isOpen = ov.classList.contains('active') && ov.dataset.open === '1';
+    var today = storyToday(), season = Story.seasonOf(today), cur = Story.monthOf(today);
+    var seasonCol = { spring:'#7fa88a', summer:'#d9a441', autumn:'#c9714a', winter:'#6f8fae' }[season];
+    var tabs = [['rooms', 'Rooms'], ['year', 'Year'], ['people', 'People'], ['events', 'Events']];
+    var body;
+    if (storyDiaryTab === 'year'){ var cb = storyCalendarBuild(); body = '<div class="cal-months">' + cb.tiles + '</div>' + cb.page + '<p class="cal-hint">Time moves on when you finish a job. Each one takes a month or so of town time.</p>'; }
+    else if (storyDiaryTab === 'people') body = storyDiaryPeople();
+    else if (storyDiaryTab === 'events') body = storyDiaryEvents();
+    else body = storyDiaryRooms();
+    scene.innerHTML =
+      '<div class="lt-sheet cal-sheet dy-sheet show ' + (isOpen ? '' : 'arriving ') + 'ready" id="storyDiaryCard" style="--rot:' + (isOpen ? '0deg' : storyRot()) + ';--cal:' + seasonCol + '"><div class="lt-paper">' +
+        '<div class="cal-top"><div><small>' + (storyName() ? storyEsc(storyName()) + '’s' : 'My') + ' diary</small><h3>Pennywhistle Cove</h3></div><span class="cal-season">' + storyEsc(cur.label) + ' · ' + storyEsc(storyCap1(season)) + '</span></div>' +
+        '<div class="dy-tabs" role="tablist">' + tabs.map(function(x){ return '<button type="button" role="tab" class="dy-tab' + (x[0] === storyDiaryTab ? ' on' : '') + '" data-tab="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+        '<div class="cal-body dy-body" id="dyBody">' + body + '</div>' +
+        '<div class="lt-actions"><button class="lt-btn primary" id="dyClose" type="button">Close the diary</button></div>' +
+      '</div></div>';
+    if (!ov.classList.contains('active')) storyShowOverlay('storyDiary');
+    ov.dataset.open = '1';
+    var sheet = document.getElementById('storyDiaryCard');
+    function again(){ storyOpenDiary(); }
+    sheet.querySelectorAll('.dy-tab').forEach(function(b){ b.addEventListener('click', function(){ storyDiaryTab = b.dataset.tab; storyDiaryView = null; again(); }); });
+    sheet.querySelectorAll('.cal-m').forEach(function(b){ b.addEventListener('click', function(){ storyCalendarBuild(+b.dataset.idx); again(); }); });
+    function toPlay(eid){ ov.dataset.open = ''; storyDismissSheet('storyDiary', sheet, function(){ storyOpenPlay(eid); }); }
+    sheet.querySelectorAll('.cal-play, .dy-evb').forEach(function(b){ b.addEventListener('click', function(){ toPlay(b.dataset.ev); }); });
+    sheet.querySelectorAll('.dy-pol').forEach(function(b){ b.addEventListener('click', function(){ storyDiaryView = { id:b.dataset.id, shot:0 }; again(); }); });
+    sheet.querySelectorAll('.dy-shots button').forEach(function(b){ b.addEventListener('click', function(){ storyDiaryView.shot = +b.dataset.shot; again(); }); });
+    var list = storyDiaryEntries(), idx = storyDiaryView ? list.map(function(e){ return e.id; }).indexOf(storyDiaryView.id) : -1;
+    var pv = document.getElementById('dyPrev'), nx = document.getElementById('dyNext'), ls = document.getElementById('dyList'), dl = document.getElementById('dyDel');
+    if (pv) pv.addEventListener('click', function(){ storyDiaryView = { id:list[idx + 1].id, shot:0 }; again(); });
+    if (nx) nx.addEventListener('click', function(){ storyDiaryView = { id:list[idx - 1].id, shot:0 }; again(); });
+    if (ls) ls.addEventListener('click', function(){ storyDiaryView = null; again(); });
+    if (dl) dl.addEventListener('click', function(){ if (dl.dataset.sure !== '1'){ dl.dataset.sure = '1'; dl.textContent = 'Really take it out? Tap again'; return; } diaryRemove(list[idx].id); storyDiaryView = null; again(); });
+    document.getElementById('dyClose').addEventListener('click', function(){ ov.dataset.open = ''; storyDiaryView = null; storyDismissSheet('storyDiary', sheet); });
+  }
+  document.getElementById('diaryBtn').addEventListener('click', function(e){ e.stopPropagation(); storyOpenDiary(); });
+  document.getElementById('titleDiaryBtn').addEventListener('click', function(){ storyOpenDiary(); });
+  window.rsDiaryReady = storyAvailable;
 
   /* ---------- the newspaper ---------- */
   function storyOpenNews(wantDay){
@@ -7101,7 +7460,7 @@
   document.getElementById('pausedChip').addEventListener('click', function(){ var q = this.dataset.q; if (q) storyStartQuest(q); });
   document.getElementById('townBackBtn').addEventListener('click', function(){ showScreen('title'); });
   document.getElementById('storyMapBtn').addEventListener('click', storyExitToTown);
-  document.getElementById('dateChip').addEventListener('click', function(e){ e.stopPropagation(); storyCalSel = null; storyOpenCalendar(); });
+  document.getElementById('dateChip').addEventListener('click', function(e){ e.stopPropagation(); storyCalSel = null; storyDiaryTab = 'year'; storyDiaryView = null; storyOpenDiary('year'); });
   document.getElementById('newsBtn').addEventListener('click', function(e){ e.stopPropagation(); story.newsIdx = 0; storyOpenNews(); });
   document.addEventListener('keydown', function(e){
     if ((e.key !== 'm' && e.key !== 'M') || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -7366,6 +7725,7 @@
   function storyNewGame(){
     story.data = storyDefaultData();
     storySaveData();
+    diaryClearStory();
     story.active = null; story.selectedPin = null; story.selectedSpot = null; story.announce = []; story.lastSig = ''; story.idle = {}; story.newsIdx = null; storyFx.season = null;
     storyEarnedCache.sig = null;
     Object.keys(storyPinEls).forEach(function(pid){ var el = storyPinEls[pid]; if (el.parentNode) el.parentNode.removeChild(el); });
@@ -7386,6 +7746,8 @@
     var any = storyHasProgress();
     sBtn.textContent = any ? 'Story mode · continue' : 'Story mode';
     if (nBtn) nBtn.style.display = any ? 'block' : 'none';
+    var dBtn = document.getElementById('titleDiaryBtn');
+    if (dBtn) dBtn.style.display = (any || diaryLoad().entries.length) ? 'block' : 'none';
   }
 
   function storyEnter(){
@@ -7463,7 +7825,7 @@
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   // version check: shows which build of each file is live, so a stale upload or cache is obvious
   (function(){
-    var want = '0.10.1', box = document.getElementById('titleFiles');
+    var want = '0.11.0', box = document.getElementById('titleFiles');
     var d = (typeof DATA_FILE_VERSION !== 'undefined') ? DATA_FILE_VERSION : null;
     var st = (typeof STORY_FILE_VERSION !== 'undefined') ? STORY_FILE_VERSION : null;
     var stale = [];
@@ -7473,7 +7835,7 @@
       box.className = 'title-files stale';
       box.textContent = 'Not up to date: ' + stale.join(', ') + '. Upload it, then refresh.';
     } else {
-      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 11:22';
+      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 12:59';
     }
   })();
   renderRoomGrid();

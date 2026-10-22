@@ -15,7 +15,7 @@
   // in (see the "backgrounds" folder next to this file on GitHub), rather than
   // embedded, so this game file stays small no matter how many rooms get added.
   // If a filename ever changes on GitHub, update its src here to match.
-  var DATA_FILE_VERSION = '0.10.1'; // stamped by the build, shown on the title screen
+  var DATA_FILE_VERSION = '0.11.0'; // stamped by the build, shown on the title screen
   var ASSET_BASE = 'backgrounds/';
   var ROOM_OPTIONS_BASE = 'roomoptions/';
   var BACKGROUNDS = [
