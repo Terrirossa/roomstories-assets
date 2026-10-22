@@ -12,7 +12,7 @@
    are matched by item id / category below. If an item is added or renamed in
    data.js, only the KINDS table has to learn about it.
    ========================================================================== */
-var STORY_FILE_VERSION = '0.11.2'; // stamped by the build, shown on the title screen
+var STORY_FILE_VERSION = '0.12.0'; // stamped by the build, shown on the title screen
 var Story = (function(){
 
   /* ------------------------------------------------------------------ town */
@@ -106,41 +106,41 @@ var Story = (function(){
   var PROPERTIES = {
     MIA_HOME_A:    { owner:'mia',   name:"Mia's first flat",       family:'modern', district:'canal', map:{x:59.5,y:63},
                      rooms:[ {key:'living',  label:'Living room', arch:'twowindows-rightdoor'},
-                             {key:'bedroom', label:'Bedroom',     arch:'twowindows-bothdoors'},
+                             {key:'bedroom', label:'Bedroom',     arch:'bigwindow-bothdoors'},
                              {key:'spare',   label:'Little spare room', arch:'onewindow-leftdoor'} ] },
     MIA_HOME_B:    { owner:'mia',   name:"Mia & Alex's flat",      family:'sunlit-living-room-twin-windows', district:'church', map:{x:21,y:58},
                      rooms:[ {key:'living',  label:'Living room', arch:'both-rightdoor'},
-                             {key:'dining',  label:'Dining room', arch:'both-bothdoors'},
-                             {key:'bedroom', label:'Bedroom',     arch:'both-leftdoor'} ] },
+                             {key:'dining',  label:'Dining room', arch:'left-bothdoors'},
+                             {key:'bedroom', label:'Bedroom',     arch:'right-leftdoor'} ] },
     JULES_HOME_A:  { owner:'jules', name:"Jules's attic studio",    family:'historic', district:'mills', map:{x:83,y:64},
                      rooms:[ {key:'studio',  label:'The studio',  arch:'onewindow-nodoors'} ] },
     JULES_HOME_B:  { owner:'jules', name:"Jules's top-floor loft", family:'loft', district:'mills', map:{x:88,y:63},
                      rooms:[ {key:'living',  label:'Living room', arch:'threewindows-rightdoor'},
-                             {key:'bedroom', label:'Bedroom',     arch:'threewindows-bothdoors'},
-                             {key:'art',     label:'Art room',    arch:'threewindows-leftdoor'} ] },
+                             {key:'bedroom', label:'Bedroom',     arch:'twowindows-bothdoors'},
+                             {key:'art',     label:'Art room',    arch:'onewindow-leftdoor'} ] },
     SAM_HOME_A:    { owner:'sam',   name:"Sam's city apartment",   family:'brutalist', district:'glass', map:{x:75,y:38},
                      rooms:[ {key:'kitchen', label:'Kitchen',     arch:'bigwindow-rightdoor'},
-                             {key:'dining',  label:'Dining room', arch:'bigwindow-bothdoors'},
-                             {key:'living',  label:'Living room', arch:'bigwindow-leftdoor'} ] },
+                             {key:'dining',  label:'Dining room', arch:'twowindows-bothdoors'},
+                             {key:'living',  label:'Living room', arch:'rightwindow-leftdoor'} ] },
     SAM_HOME_B:    { owner:'sam',   name:"Sam & Robin's home",     family:'historic', district:'oldtown', map:{x:44,y:35},
                      rooms:[ {key:'kitchen', label:'Kitchen',     arch:'twowindows-rightdoor'},
                              {key:'living',  label:'Living room', arch:'roundwindow-bothdoors'},
                              {key:'bedroom', label:'Bedroom',     arch:'baywindowright-leftdoor'} ] },
     NOOR_HOME_A:   { owner:'noor',  name:"Noor's rental",          family:'modern', district:'glass', map:{x:69,y:31},
                      rooms:[ {key:'bedroom', label:'Bedroom',     arch:'widenarrowwindow-rightdoor'},
-                             {key:'living',  label:'Living room', arch:'widenarrowwindow-bothdoors'},
-                             {key:'kitchen', label:'Kitchen',     arch:'widenarrowwindow-leftdoor'} ] },
+                             {key:'living',  label:'Living room', arch:'bigwindow-bothdoors'},
+                             {key:'kitchen', label:'Kitchen',     arch:'onewindow-leftdoor'} ] },
     NOOR_HOME_B:   { owner:'noor',  name:"Noor's top-floor flat", family:'loft', district:'glass', map:{x:72.5,y:34},
                      rooms:[ {key:'living',  label:'Living room', arch:'twowindows-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'onewindow-bothdoors'},
-                             {key:'study',   label:'Quiet room',  arch:'onewindow-leftdoor'} ] },
+                             {key:'study',   label:'Quiet room',  arch:'threewindows-leftdoor'} ] },
     THEO_HOME_A:   { owner:'theo',  name:"Theo & Elena's cabin",   family:'cozy-cabin', district:'lane', map:{x:36.8,y:23.4},
                      rooms:[ {key:'living',  label:'Living room', arch:'bigwindow-rightdoor'},
                              {key:'bedroom', label:'Bedroom',     arch:'smallwindow-leftdoor'} ] },
     THEO_HOME_B:   { owner:'theo',  name:"Theo's family flat",     family:'modern', district:'orchard', map:{x:20.3,y:24.8},
                      rooms:[ {key:'living',  label:'Living room', arch:'twowindows-rightdoor'},
-                             {key:'dining',  label:'Dining room', arch:'twowindows-bothdoors'},
-                             {key:'bedroom', label:'Bedroom',     arch:'twowindows-leftdoor'} ] },
+                             {key:'dining',  label:'Dining room', arch:'widenarrowwindow-bothdoors'},
+                             {key:'bedroom', label:'Bedroom',     arch:'onewindow-leftdoor'} ] },
     ROSA_HOME_A:   { owner:'rosa',  name:"Rosa's old apartment",   family:'historic', district:'oldtown', map:{x:46.5,y:63},
                      rooms:[ {key:'sitting', label:'Sitting room',arch:'twowindows-rightdoor'},
                              {key:'dining',  label:'Dining room', arch:'roundwindow-bothdoors'},
@@ -800,6 +800,15 @@ var Story = (function(){
     var d = dateOf(day), part = d.d <= 10 ? 'Early' : (d.d <= 20 ? 'Mid' : 'Late');
     return { m:d.m, y:d.y, name:d.monthName, part:part, label:part + ' ' + d.monthName, short:d.monthName.slice(0, 3), year:d.y, key:d.y * 12 + d.m };
   }
+  // One job = one month. The jobs are spread over the calendar in story order, the 2nd of each
+  // month, so the seasons turn with every job you finish (the order is the order they were
+  // written in: by their old day, then by position).
+  (function(){
+    var order = QUESTS.map(function(q, i){ return { q:q, k:q.day * 1000 + i }; }).sort(function(a, b){ return a.k - b.k; });
+    var c = TOWN.calendar, start = Date.UTC(c.year, c.month, c.day);
+    order.forEach(function(o, i){ o.q.day = Math.round((Date.UTC(c.year, c.month + i, c.day) - start) / 86400000); });
+  })();
+
   // the day of the story that was reached by the jobs finished so far
   function todayOf(doneMap, renownPts){
     var t = 0;
@@ -954,51 +963,67 @@ var Story = (function(){
   var SHOP_STOCK = {
     bakery: {
       stock: [
-        ['food-bakedbread',0], ['food-bread-basket',0], ['food-bread-basket-baquettes',0], ['food-lemon-cake',0],
-        ['food-cookie-jar',1], ['food-muffin-tray',1], ['food-orange-cake',1,'winter'], ['food-strawberry-cake',1,'summer'],
-        ['food-bread-coolingrack',2], ['food-plum-cake',2,'autumn'], ['food-pistachio-cake',2,'spring'], ['food-pecan-pie',2,'autumn'],
-        ['food-redvelvet-cake',3]
+        ['food-bread-basket-baquettes',1,'spring'], ['food-cookie-jar',2,'spring'], ['food-pistachio-cake',3,'spring'],
+        ['food-bread-basket',1,'summer'], ['food-lemon-cake',2,'summer'], ['food-strawberry-cake',3,'summer'],
+        ['food-bread-coolingrack',1,'autumn'], ['food-pecan-pie',2,'autumn'], ['food-plum-cake',3,'autumn'],
+        ['food-muffin-tray',1,'winter'], ['food-orange-cake',2,'winter'], ['food-redvelvet-cake',3,'winter']
       ],
       have: ['food-cuttingboard-withdough','food-cuttingboards-wood','food-cuttingboards-marble','food-potcollection-copper']
     },
     flowers: {
       stock: [
-        ['flowers-dara-blue',0], ['flowers-hilda-white',0],
-        ['flowers-lia-blue',1,'summer'], ['flowers-nina-rosa',1,'spring'], ['flowers-gina-brown',1,'autumn'], ['hangingplant-sulie',1],
-        ['flowers-mina-red',2,'winter'], ['flowers-nadja-red',2,'autumn'], ['flowers-sia-green',2,'spring'], ['monstera-tall',2], ['rubber-tree-alix',2], ['plant-kiki',2],
-        ['plant-hugo',3], ['plant-sala',3], ['zuzu-plant-tall',3]
+        ['flowers-hilda-white',1,'spring'], ['flowers-nina-rosa',2,'spring'], ['flowers-sia-green',3,'spring'],
+        ['flowers-dara-blue',1,'summer'], ['flowers-lia-blue',2,'summer'], ['monstera-tall',3,'summer'],
+        ['flowers-gina-brown',1,'autumn'], ['flowers-nadja-red',2,'autumn'], ['plant-hugo',3,'autumn'],
+        ['flowers-mina-red',1,'winter'], ['plant-sala',2,'winter'], ['zuzu-plant-tall',3,'winter']
       ],
       have: ['blooming-flowers','flowers-jutta-rosa','flowers-sia-rosa','flowers-lola-white','monstera-small','fiddle-leaf-small']
     },
     antiques: {
       stock: [
-        ['recordplayer-black',0], ['recordplayer-rosa',0],
-        ['recordplayer-beige',1], ['piano-alexander-black',1], ['piano-alexander-brown',1],
-        ['piano-beth-black',2], ['piano-beth-brown',2], ['piano-luther-white',2], ['marble-pillar-jutta',2],
-        ['grand-piano-riga-black',3], ['fireplace-marlo-marble-grey',3], ['fireplace-maka-beige',3,'winter']
+        ['recordplayer-rosa',1,'spring'], ['marble-pillar-jutta',2,'spring'], ['piano-luther-white',3,'spring'],
+        ['recordplayer-beige',1,'summer'], ['piano-alexander-brown',2,'summer'], ['piano-beth-brown',3,'summer'],
+        ['recordplayer-black',1,'autumn'], ['piano-alexander-black',2,'autumn'], ['piano-beth-black',3,'autumn'],
+        ['fireplace-maka-beige',1,'winter'], ['fireplace-marlo-marble-grey',2,'winter'], ['grand-piano-riga-black',3,'winter']
       ],
       have: ['sideboard-lulu-darkwood','cabinet-luna-darkwood','armchair-bruno-green','wall-lamp-rita']
     },
     books: {
       stock: [
-        ['book-collection-beige',0], ['books-stacked-white-small',0], ['books-leaning-white',0],
-        ['book-collection-earthy',1,'autumn'], ['book-collection-blue-22',1,'summer'], ['books-stacked-thick-beige',1], ['bockstack-01',1],
-        ['book-collection-marblebookends-small',2], ['book-collection-marblebookends-wide',2], ['books-beige-stonebookends',2], ['books-stacked-thick-black',2,'winter'],
-        ['book-collection-beige-thick',3], ['book-collection-blue-21',3]
+        ['book-collection-beige',1,'spring'], ['book-collection-marblebookends-small',2,'spring'], ['books-leaning-white',3,'spring'],
+        ['book-collection-blue-21',1,'summer'], ['book-collection-blue-22',2,'summer'], ['books-stacked-white-small',3,'summer'],
+        ['book-collection-earthy',1,'autumn'], ['book-collection-marblebookends-wide',2,'autumn'], ['books-stacked-thick-beige',3,'autumn'],
+        ['bockstack-01',1,'winter'], ['book-collection-beige-thick',2,'winter'], ['books-stacked-thick-black',3,'winter']
       ],
       have: ['book-collection-big','book-collection-small','book-collection-orange','book-stack-standing','bockstack-02','books-blank-stack-white']
     },
     gallery: {
       stock: [
-        ['painting-field-beige',0],
-        ['painting-polly-blue-beige',1,'summer'], ['painting-rocks-beige-dark',1,'autumn'],
-        ['painting-shadow-fern-pink',2,'spring'], ['painting-turner-pink',2], ['paiting-easel-karl',2],
-        ['painting-green-mist',3], ['modern-painting',3]
+        ['painting-field-beige',1,'spring'], ['painting-shadow-fern-pink',3,'spring'], ['painting-green-mist',1,'summer'],
+        ['painting-polly-blue-beige',3,'summer'], ['painting-rocks-beige-dark',1,'autumn'], ['paiting-easel-karl',3,'autumn'],
+        ['modern-painting',1,'winter'], ['painting-turner-pink',3,'winter']
       ],
       have: ['painting-fern','painting-fern-blue','painting-livia','painting-polly-green-beige','painting-turner-beige','wallart-tulipa']
     }
   };
-  var SHOP_OWNER = {};   // item id -> { spot, level, season|null }
+  // How well the town must know you before a shop sets a piece aside (renown points). These are the
+  // shop's own steps, higher than the job levels, so early on you will see lovely things you cannot
+  // have yet. They come round again every year.
+  var SHOP_TIERS = [ { at:0, title:'Passer-by' }, { at:12, title:'Familiar Face' }, { at:30, title:'Trusted Neighbour' }, { at:55, title:'Cove Favourite' } ];
+  function shopTier(points){
+    var t = 0;
+    for (var i = 0; i < SHOP_TIERS.length; i++) if (points >= SHOP_TIERS[i].at) t = i;
+    return t;
+  }
+  // what the shopkeeper says when you take something home
+  var SHOP_SAY = {
+    bakery:   { one:"Thanks for stopping by! It will be boxed up and sent over still warm. Enjoy it!", many:"Thanks for stopping by! Everything will be boxed up and sent over still warm. Enjoy!" },
+    flowers:  { one:"Thanks for stopping by! It will be wrapped up and sent over to you. Take good care of it!", many:"Thanks for stopping by! The plants will be packed up and sent over to you. Take good care of them!" },
+    antiques: { one:"A fine choice. Marigold will wrap it in old newspaper and have it sent over. Mind the weight!", many:"A fine haul. Marigold will wrap everything in old newspaper and have it sent over. Mind the weight!" },
+    books:    { one:"Thanks for stopping by! It will be wrapped in brown paper and sent over. Happy reading!", many:"Thanks for stopping by! They will be wrapped in brown paper and sent over. Happy reading!" },
+    gallery:  { one:"Lovely choice. It will be wrapped with care and sent over to you.", many:"Lovely choices. Everything will be wrapped with care and sent over to you." }
+  };
+  var SHOP_OWNER = {};   // item id -> { spot, level (shop tier), season|null }
   Object.keys(SHOP_STOCK).forEach(function(spot){
     SHOP_STOCK[spot].stock.forEach(function(r){ SHOP_OWNER[r[0]] = { spot:spot, level:r[1], season:r[2] || null }; });
   });
@@ -1442,8 +1467,9 @@ var Story = (function(){
       : Math.round(100 * (0.55 * frac('must') + 0.30 * frac('like') + 0.15 * (hasStuff ? frac('avoid') : 0)));
     var mustAll = reqs.filter(function(r){ return r.tier === 'must'; }).every(function(r){ return r.met; });
     var quirksOk = quirks.every(function(r){ return r.met; });
+    var avoidOk = !hasStuff || reqs.filter(function(r){ return r.tier === 'avoid'; }).every(function(r){ return r.met; });
 
-    return { reqs:reqs, quirks:quirks, brief:brief, mustAll:mustAll, quirksOk:quirksOk };
+    return { reqs:reqs, quirks:quirks, brief:brief, mustAll:mustAll, quirksOk:quirksOk, avoidOk:avoidOk };
   }
 
   // "furnished nicely": measurable things only — fullness, variety, balance,
@@ -1565,12 +1591,17 @@ var Story = (function(){
     return null;
   }
 
-  function heartsFor(briefScore, qualityScore, mustAll, anyPieces, quirksOk){
+  // The brief counts for most. A neighbour who asked for something and did not get it cannot
+  // be delighted: missing must-haves cap the room at two hearts, a broken "please not" at
+  // three, and five hearts also needs the unspoken things understood.
+  function heartsFor(briefScore, qualityScore, mustAll, anyPieces, quirksOk, avoidOk){
     if (!anyPieces) return 1;
-    var final = 0.5 * briefScore + 0.5 * qualityScore;
+    var final = 0.65 * briefScore + 0.35 * qualityScore;
     var h = final < 25 ? 1 : (final < 45 ? 2 : (final < 65 ? 3 : (final < 88 ? 4 : 5)));
-    if (mustAll && h < 3) h = 3;     // if you listened to every must-have, you get at least 3
-    if (quirksOk === false && h > 4) h = 4;   // five hearts means they felt truly understood
+    if (mustAll && h < 3) h = 3;                      // if you listened to every must-have, you get at least 3
+    if (!mustAll && h > 2) h = 2;                     // the thing they asked for is missing
+    if (avoidOk === false && h > 3) h = 3;            // you did the one thing they asked you not to
+    if (quirksOk === false && h > 4) h = 4;           // five hearts means they felt truly understood
     return h;
   }
 
@@ -1599,7 +1630,7 @@ var Story = (function(){
     TOWN: TOWN, RENOWN_LEVELS: RENOWN_LEVELS, renownLevel: renownLevel,
     CHARACTERS: CHARACTERS, PROPERTIES: PROPERTIES, QUESTS: QUESTS, ROLES: ROLES, KINDS: KINDS, MOODS: MOODS,
     questById: questById, questsOf: questsOf, isUnlocked: isUnlocked,
-    QUIRKS: QUIRKS, giftsEarned: giftsEarned, giftOwner: giftOwner, SHOP_STOCK: SHOP_STOCK, shopOf: shopOf, EVENT_PLAY: EVENT_PLAY, eventPlay: eventPlay, prizeOf: prizeOf, EVENT_NEED: EVENT_NEED, REWARDS: REWARDS, VOICES: VOICES,
+    QUIRKS: QUIRKS, giftsEarned: giftsEarned, giftOwner: giftOwner, SHOP_STOCK: SHOP_STOCK, shopOf: shopOf, SHOP_TIERS: SHOP_TIERS, shopTier: shopTier, SHOP_SAY: SHOP_SAY, EVENT_PLAY: EVENT_PLAY, eventPlay: eventPlay, prizeOf: prizeOf, EVENT_NEED: EVENT_NEED, REWARDS: REWARDS, VOICES: VOICES,
     starsFor: starsFor, isKind: isKind,
     evaluate: evaluate, quality: quality, qualityDetail: qualityDetail, analyze: analyze, districtAt: districtAt, dateOf: dateOf, monthOf: monthOf, seasonOf: seasonOf, todayOf: todayOf, SPOTS: SPOTS, spotById: function(id){ return SPOT_BY_ID[id] || null; }, spotsAt: spotsAt, EVENTS: EVENTS, eventById: function(id){ return EVENT_BY_ID[id] || null; }, eventsDue: eventsDue, upcoming: upcoming, pastEvents: pastEvents, NEWS: NEWS, issuesAt: issuesAt, heartsFor: heartsFor, buildReply: buildReply
   };

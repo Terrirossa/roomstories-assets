@@ -884,24 +884,46 @@
     gap:6px;
     margin-bottom:8px;
   }
-  .tray-filter-select{
-    flex:1;
-    font-family:inherit;
-    font-size:11px;
-    font-weight:600;
-    color:var(--ink-70);
-    background:var(--glass-bg-strong);
-    border:1px solid var(--glass-border);
-    border-radius:99px;
-    padding:5px 10px;
-    cursor:pointer;
-    min-width:0;
+  .tray-filter-btn{
+    flex:1; min-width:0; display:flex; align-items:center; gap:6px;
+    font-family:inherit; font-size:11.5px; font-weight:700; color:var(--ink-70);
+    background:var(--glass-bg-strong); border:1px solid var(--glass-border); border-radius:99px;
+    padding:5px 9px 5px 12px; cursor:pointer; transition:background .15s ease, color .15s ease, border-color .15s ease;
   }
-  .tray-filter-select.active{
-    background:var(--sage);
-    color:#fff;
-    border-color:var(--sage);
-  }
+  .tray-filter-btn:hover{ background:rgba(255,255,255,.7); }
+  .tray-filter-btn svg{ width:10px; height:10px; margin-left:auto; flex:none; opacity:.6; }
+  .tray-filter-btn .tf-lab{ flex:none; }
+  .tray-filter-btn .tf-chips{ display:flex; align-items:center; min-width:0; }
+  .tray-filter-btn .tf-chips i{ width:14px; height:14px; border-radius:50%; margin-left:-3px; border:1.5px solid #fff; background:var(--c,#999); flex:none; box-shadow:0 0 0 .5px rgba(0,0,0,.2); }
+  .tray-filter-btn .tf-chips i:first-child{ margin-left:3px; }
+  .tray-filter-btn .tf-chips b{ margin-left:5px; font-size:10.5px; font-weight:800; }
+  .tray-filter-btn.active{ background:var(--sage); color:#fff; border-color:var(--sage); }
+  .tray-filter-btn.open{ box-shadow:0 0 0 2px rgba(255,255,255,.7), 0 0 0 3.5px var(--sage); }
+  /* filter side panel (same family as the colour alternatives) */
+  .variant-flyout.filter-flyout{ width:262px; max-height:min(76vh, 560px); }
+  .variant-flyout.filter-flyout.styles{ width:236px; }
+  .ff-head{ display:flex; align-items:center; gap:8px; margin:0 2px 9px; }
+  .ff-head h4{ margin:0; font-family:'Fraunces',serif; font-weight:560; font-size:15px; color:var(--ink); flex:1; }
+  .ff-clear{ border:0; background:none; font:inherit; font-size:11.5px; font-weight:700; color:var(--clay,#b5683f); cursor:pointer; padding:2px 4px; border-radius:6px; }
+  .ff-clear:hover{ background:rgba(54,43,34,.08); }
+  .ff-clear[hidden]{ display:none; }
+  .ff-body{ overflow-y:auto; padding:2px; }
+  .ff-colors{ display:grid; grid-template-columns:repeat(4, 1fr); gap:9px 4px; }
+  .ff-c{ border:0; background:none; padding:0; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; font-family:inherit; color:var(--ink-70); }
+  .ff-sw{ position:relative; width:38px; height:38px; border-radius:50%; background:var(--c); box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.14), 0 2px 5px rgba(0,0,0,.14); transition:transform .15s ease, box-shadow .15s ease; display:flex; align-items:center; justify-content:center; }
+  .ff-c:hover .ff-sw{ transform:translateY(-2px) scale(1.06); }
+  .ff-c b{ font-size:9.5px; font-weight:700; line-height:1.15; text-align:center; max-width:58px; }
+  .ff-c.on .ff-sw{ box-shadow:0 0 0 2.5px #fff, 0 0 0 4.5px var(--ink), 0 3px 8px rgba(0,0,0,.2); }
+  .ff-c.on b{ color:var(--ink); }
+  .ff-sw svg{ width:18px; height:18px; stroke:#fff; stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; opacity:0; filter:drop-shadow(0 1px 2px rgba(0,0,0,.55)); transition:opacity .12s ease; }
+  .ff-c.on .ff-sw svg{ opacity:1; }
+  .ff-styles{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+  .ff-s{ border:0; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:5px; padding:10px 4px 8px; border-radius:16px; font-family:inherit; font-size:11.5px; font-weight:700; color:var(--ink-70); background:rgba(255,255,255,.45); box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7); transition:transform .15s ease, background .15s ease; }
+  .ff-s:hover{ transform:translateY(-2px); background:rgba(255,255,255,.75); }
+  .ff-si{ width:40px; height:40px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; }
+  .ff-si svg{ width:23px; height:23px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .ff-s.on{ background:var(--sage); color:#fff; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+  .ff-s.on .ff-si{ background:rgba(255,255,255,.28); }
   .tray-empty-note{
     grid-column:1 / -1;
     text-align:center;
@@ -2685,6 +2707,22 @@
 .shp-bar .ev-act[hidden]{ display:none; }
 @media (max-width:640px){ .shp-name{ font-size:22px; } .shp-it{ width:calc(var(--d) + 8px); } .shp-bar .ev-act{ width:auto; flex:1; } }
 
+/* ============ v0.12.0 — a tad bigger pins and names; district description only on click ============ */
+.town-pin-avatar{ width:56px; height:56px; font-size:24px; border-width:3px; }
+.town-pin-tail{ border-left-width:8px; border-right-width:8px; border-top-width:12px; }
+.town-pin.past .town-pin-avatar{ width:34px; height:34px; border-width:2px; }
+.town-pin.past .town-pin-avatar::before{ width:16px; height:15px; }
+.town-pin-label{ padding:5px 14px 6px; margin-top:5px; }
+.town-pin-label b{ font-size:14.5px; }
+.town-pin-label span{ font-size:12.5px; }
+.town-spot{ width:44px; height:44px; }
+.town-spot .sp-badge{ width:42px; height:42px; border-width:3px; }
+.town-spot svg{ width:24px; height:24px; }
+.town-spot .sp-label{ font-size:13.5px; padding:4px 12px 5px; margin-top:4px; }
+.district-tag b{ font-size:19px; }
+.district-tag.full{ max-width:320px; }
+.district-tag.full span{ font-size:13px; }
+
 </style>
 </head>
 <body>
@@ -2697,7 +2735,7 @@
   <div class="title-scrim"></div>
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
-    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.11.2 &middot; Open Doors</div>
+    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.12.0 &middot; Slow Seasons</div>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
     <button class="title-fresh-link title-newstory-link" id="titleNewStoryBtn" type="button" style="display:none;">Or begin a brand new story</button>
@@ -2766,8 +2804,8 @@
     <div class="tray-drag-handle" id="trayDragHandle" aria-label="Drag to move"><span></span></div>
     <div class="tray-tabs" id="trayTabs"></div>
     <div class="tray-filter-row">
-      <select class="tray-filter-select" id="styleFilterSelect"><option value="">Any style</option></select>
-      <select class="tray-filter-select" id="colorFilterSelect"><option value="">Any color</option></select>
+      <button class="tray-filter-btn" id="styleFilterBtn" type="button" aria-haspopup="true" aria-expanded="false"><span class="tf-lab">Style</span><span class="tf-chips"></span><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.5 7.5 6 4 9.5"/></svg></button>
+      <button class="tray-filter-btn" id="colorFilterBtn" type="button" aria-haspopup="true" aria-expanded="false"><span class="tf-lab">Colour</span><span class="tf-chips"></span><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.5 7.5 6 4 9.5"/></svg></button>
     </div>
     <div class="tray-grid" id="trayGrid"></div>
   </div>
@@ -2984,8 +3022,8 @@
   </div>
 </div>
 
-<script src="data.js?v=0.11.2"></script>
-<script src="story.js?v=0.11.2"></script>
+<script src="data.js?v=0.12.0"></script>
+<script src="story.js?v=0.12.0"></script>
 <script>
 (function(){
   "use strict";
@@ -3216,8 +3254,8 @@
     motionOff: false,
     expandedGroup: null,
     discoveredAchievements: [],
-    styleFilter: '',
-    colorFilter: ''
+    styleFilters: [],
+    colorFilters: []
   };
 
   // ITEMS never changes while the game runs, so look pieces up through an index
@@ -3995,38 +4033,152 @@
         var tabEls = trayTabs.children;
         for (var i = 0; i < tabEls.length; i++) tabEls[i].classList.toggle('active', TABS[i].id === cat.id);
         renderTray();
+        renderFilterFlyout();
       });
       trayTabs.appendChild(btn);
     });
   }
 
+  /* ---------------- filters: colours and styles open in a side panel, several can be picked ---------------- */
+  var COLOR_ORDER = ['White','Beige','Greige','Grey','Black','Light Wood','Medium Wood','Warm Wood','Dark Wood','Brown','Cognac','Red','Orange','Yellow','Green','Blue','Purple','Pink','Rosa','Blush','Gold','Brass','Silver','Chrome','Steel','Clear','Carrara','Calacatta','Travertine','Terrazzo','Natural','Zebra','Multi'];
+  var COLOR_SWATCH = {
+    'White':'#f7f4ec', 'Beige':'#dccdb0', 'Greige':'#bbb1a2', 'Grey':'#9b9b9b', 'Black':'#2b2929',
+    'Light Wood':'repeating-linear-gradient(100deg,#dcbf92 0 5px,#d2b27f 5px 8px)', 'Medium Wood':'repeating-linear-gradient(100deg,#b88556 0 5px,#a9774a 5px 8px)',
+    'Warm Wood':'repeating-linear-gradient(100deg,#c97b40 0 5px,#b96d35 5px 8px)', 'Dark Wood':'repeating-linear-gradient(100deg,#5e3d2b 0 5px,#4e3123 5px 8px)',
+    'Brown':'#7b5236', 'Cognac':'#9a5a2e', 'Red':'#c0392b', 'Orange':'#e48b3b', 'Yellow':'#efc94c', 'Green':'#6b9a68', 'Blue':'#5b86b8', 'Purple':'#8a6bb0',
+    'Pink':'#f0b2c4', 'Rosa':'#e6a1ac', 'Blush':'#efcdc3',
+    'Gold':'linear-gradient(135deg,#f3dc8a,#d4af37 45%,#a8841f)', 'Brass':'linear-gradient(135deg,#e6c77c,#b5893a 50%,#8a6523)',
+    'Silver':'linear-gradient(135deg,#f2f3f5,#bfc3c9 50%,#9aa0a8)', 'Chrome':'linear-gradient(135deg,#ffffff,#c9d0d8 40%,#8f99a4 60%,#e8edf1)', 'Steel':'linear-gradient(135deg,#a6b0bb,#7d8995)',
+    'Clear':'repeating-conic-gradient(#e9eef2 0 25%,#fff 0 50%) 0 0/10px 10px',
+    'Carrara':'linear-gradient(120deg,transparent 40%,rgba(120,125,135,.45) 42%,transparent 46%),linear-gradient(60deg,transparent 60%,rgba(120,125,135,.3) 62%,transparent 65%),#f1f1ef',
+    'Calacatta':'linear-gradient(115deg,transparent 35%,rgba(150,120,70,.55) 37%,transparent 41%),linear-gradient(70deg,transparent 58%,rgba(110,110,115,.35) 60%,transparent 63%),#f6f3ec',
+    'Travertine':'repeating-linear-gradient(0deg,#e3d6bc 0 5px,#d5c6a8 5px 6.5px)',
+    'Terrazzo':'radial-gradient(circle at 25% 30%,#c0392b 0 2px,transparent 3px),radial-gradient(circle at 70% 25%,#4b6f8f 0 2.5px,transparent 3.5px),radial-gradient(circle at 55% 70%,#2f2f2f 0 2px,transparent 3px),radial-gradient(circle at 25% 75%,#d9a441 0 2px,transparent 3px),#e8e3da',
+    'Natural':'repeating-linear-gradient(45deg,#cdb98f 0 4px,#bba579 4px 6px)',
+    'Zebra':'repeating-linear-gradient(60deg,#fff 0 4px,#222 4px 8px)',
+    'Multi':'conic-gradient(#e8574b,#efc94c,#6b9a68,#5b86b8,#8a6bb0,#e8574b)'
+  };
+  var STYLE_ICON = {
+    'Organic':'<path d="M5 19c0-9 5-14 14-14 0 9-5 14-14 14z"/><path d="M5 19l8-8"/>',
+    'Cozy':'<path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/><path d="M16 11h2a2 2 0 0 1 0 4h-2"/><path d="M8.5 3.5c0 1.2 1 1.2 1 2.4M12.5 3.5c0 1.2 1 1.2 1 2.4"/>',
+    'Bohemian':'<circle cx="12" cy="12" r="3.3"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2.1 2.1M15.9 15.9 18 18M18 6l-2.1 2.1M8.1 15.9 6 18"/>',
+    'Mid-Century':'<circle cx="12" cy="12" r="1.6"/><path d="M12 4v5M12 15v5M4 12h5M15 12h5M6.3 6.3l3.4 3.4M14.3 14.3l3.4 3.4M17.7 6.3l-3.4 3.4M9.7 14.3l-3.4 3.4"/>',
+    'Vintage':'<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3.5 2"/>',
+    'Modern':'<rect x="5" y="5" width="14" height="14" rx="1"/><path d="M5 12h14M12 5v14"/>',
+    'Scandinavian':'<path d="M12 3l5 7h-3l4 6H6l4-6H7z"/><path d="M12 16v5"/>',
+    'Minimal':'<circle cx="12" cy="10" r="4"/><path d="M5 19h14"/>',
+    'Traditional':'<path d="M4 20h16M6.5 20V11M10.5 20V11M13.5 20V11M17.5 20V11M4 11l8-6 8 6z"/>',
+    'Eclectic':'<circle cx="8" cy="8" r="3.5"/><rect x="12.5" y="12" width="7" height="7" rx="1"/><path d="M4.5 19.5 8 14l3.5 5.5z"/>',
+    'Rustic':'<ellipse cx="7.5" cy="12" rx="3.5" ry="6"/><path d="M7.5 6H19v12H7.5"/><circle cx="7.5" cy="12" r="1.2"/>',
+    'Industrial':'<path d="M12 3l7 4v10l-7 4-7-4V7z"/><circle cx="12" cy="12" r="2.6"/>'
+  };
+  var filterFlyoutEl = null, filterKind = null;
+  function filterList(kind){ return kind === 'style' ? state.styleFilters : state.colorFilters; }
+  function filterOptions(kind){
+    var seen = {};
+    trayItemsOf(state.activeCategory).forEach(function(it){
+      if (kind === 'style'){ if (it.style1) seen[it.style1] = true; if (it.style2) seen[it.style2] = true; }
+      else if (it.color) seen[it.color] = true;
+    });
+    filterList(kind).forEach(function(v){ seen[v] = true; });
+    var names = Object.keys(seen);
+    if (kind === 'style') return names.sort();
+    return names.sort(function(a, b){
+      var ia = COLOR_ORDER.indexOf(a), ib = COLOR_ORDER.indexOf(b);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
+    });
+  }
+  function filterButtons(){ return { style:document.getElementById('styleFilterBtn'), color:document.getElementById('colorFilterBtn') }; }
+  function refreshFilterButtons(){
+    var b = filterButtons();
+    [['style', state.styleFilters], ['color', state.colorFilters]].forEach(function(p){
+      var btn = b[p[0]], list = p[1], chips = btn.querySelector('.tf-chips');
+      btn.classList.toggle('active', list.length > 0);
+      if (!list.length){ chips.textContent = ''; return; }
+      chips.innerHTML = (p[0] === 'color' ? list.slice(0, 3).map(function(c){ return '<i style="--c:' + (COLOR_SWATCH[c] ? '#bbb' : '#bbb') + ';background:' + (COLOR_SWATCH[c] || '#bbb') + '"></i>'; }).join('') : '') + '<b>' + (p[0] === 'style' && list.length === 1 ? list[0] : (list.length > 1 ? '· ' + list.length : '')) + '</b>';
+    });
+  }
+  function renderFilterFlyout(){
+    if (!filterFlyoutEl || !filterKind) return;
+    var kind = filterKind, list = filterList(kind), opts = filterOptions(kind);
+    var check = '<svg viewBox="0 0 24 24"><path d="m5.5 12.5 4.5 4.5L18.5 7.5"/></svg>';
+    var body;
+    if (kind === 'color'){
+      body = '<div class="ff-colors">' + opts.map(function(c){
+        return '<button class="ff-c' + (list.indexOf(c) !== -1 ? ' on' : '') + '" type="button" data-v="' + c + '" aria-pressed="' + (list.indexOf(c) !== -1) + '"><span class="ff-sw" style="background:' + (COLOR_SWATCH[c] || '#bbb') + '">' + check + '</span><b>' + c + '</b></button>';
+      }).join('') + '</div>';
+    } else {
+      body = '<div class="ff-styles">' + opts.map(function(st){
+        return '<button class="ff-s' + (list.indexOf(st) !== -1 ? ' on' : '') + '" type="button" data-v="' + st + '" aria-pressed="' + (list.indexOf(st) !== -1) + '"><span class="ff-si"><svg viewBox="0 0 24 24">' + (STYLE_ICON[st] || '<circle cx="12" cy="12" r="6"/>') + '</svg></span>' + st + '</button>';
+      }).join('') + '</div>';
+    }
+    var scroll = (filterFlyoutEl.querySelector('.ff-body') || {}).scrollTop || 0;
+    filterFlyoutEl.className = 'variant-flyout filter-flyout show' + (kind === 'style' ? ' styles' : '');
+    filterFlyoutEl.innerHTML = '<div class="ff-head"><h4>' + (kind === 'style' ? 'Style' : 'Colour') + '</h4><button class="ff-clear" type="button"' + (list.length ? '' : ' hidden') + '>Clear</button><button class="variant-flyout-close" type="button" aria-label="Close">×</button></div><div class="ff-body">' + body + '</div>';
+    filterFlyoutEl.querySelector('.ff-body').scrollTop = scroll;
+    positionFilterFlyout();
+  }
+  function positionFilterFlyout(){
+    if (!filterFlyoutEl || !filterKind || !filterFlyoutEl.classList.contains('show')) return;
+    if (!state.trayOpen){ closeFilterFlyout(); return; }
+    var btn = filterButtons()[filterKind], br = btn.getBoundingClientRect(), pr = trayPanel.getBoundingClientRect();
+    var fr = filterFlyoutEl.getBoundingClientRect(), gap = 8;
+    var spaceLeft = pr.left, spaceRight = window.innerWidth - pr.right;
+    var toLeft = spaceLeft >= fr.width + gap || spaceLeft >= spaceRight;
+    var left = clamp(toLeft ? pr.left - fr.width - gap : pr.right + gap, 4, Math.max(4, window.innerWidth - fr.width - 4));
+    var top = clamp(br.top - 8, 4, Math.max(4, window.innerHeight - fr.height - 4));
+    filterFlyoutEl.style.left = left + 'px'; filterFlyoutEl.style.top = top + 'px';
+    filterFlyoutEl.style.setProperty('--fly-from', toLeft ? '8px' : '-8px');
+  }
+  function closeFilterFlyout(){
+    if (filterFlyoutEl) filterFlyoutEl.classList.remove('show');
+    var b = filterButtons(); b.style.classList.remove('open'); b.color.classList.remove('open');
+    b.style.setAttribute('aria-expanded', 'false'); b.color.setAttribute('aria-expanded', 'false');
+    filterKind = null;
+  }
+  function openFilterFlyout(kind){
+    if (!filterFlyoutEl){
+      filterFlyoutEl = document.createElement('div'); filterFlyoutEl.setAttribute('role', 'group'); document.body.appendChild(filterFlyoutEl);
+      filterFlyoutEl.addEventListener('click', function(e){
+        var t = e.target.closest ? e.target : null; if (!t) return;
+        var opt = t.closest('[data-v]');
+        if (opt){ setFilter(filterKind, opt.dataset.v, true); return; }
+        if (t.closest('.ff-clear')){ clearFilter(filterKind); return; }
+        if (t.closest('.variant-flyout-close')) closeFilterFlyout();
+      });
+    }
+    closeFlyout();
+    var b = filterButtons();
+    filterKind = kind;
+    b.style.classList.toggle('open', kind === 'style'); b.color.classList.toggle('open', kind === 'color');
+    b.style.setAttribute('aria-expanded', kind === 'style' ? 'true' : 'false'); b.color.setAttribute('aria-expanded', kind === 'color' ? 'true' : 'false');
+    renderFilterFlyout();
+  }
+  function setFilter(kind, value, toggle){
+    var list = filterList(kind), i = list.indexOf(value);
+    if (toggle){ if (i === -1) list.push(value); else list.splice(i, 1); }
+    else { list.length = 0; if (value) list.push(value); }
+    afterFilterChange();
+  }
+  function clearFilter(kind){ filterList(kind).length = 0; afterFilterChange(); }
+  function afterFilterChange(){
+    refreshFilterButtons();
+    renderTray();
+    renderFilterFlyout();
+  }
   function setupTrayFilters(){
-    var styles = {}, colors = {};
-    ITEMS.forEach(function(it){
-      if (it.style1) styles[it.style1] = true;
-      if (it.style2) styles[it.style2] = true;
-      if (it.color) colors[it.color] = true;
-    });
-    var styleSelect = document.getElementById('styleFilterSelect');
-    var colorSelect = document.getElementById('colorFilterSelect');
-    Object.keys(styles).sort().forEach(function(s){
-      var opt = document.createElement('option'); opt.value = s; opt.textContent = s;
-      styleSelect.appendChild(opt);
-    });
-    Object.keys(colors).sort().forEach(function(c){
-      var opt = document.createElement('option'); opt.value = c; opt.textContent = c;
-      colorSelect.appendChild(opt);
-    });
-    styleSelect.addEventListener('change', function(){
-      state.styleFilter = styleSelect.value;
-      styleSelect.classList.toggle('active', !!styleSelect.value);
-      renderTray();
-    });
-    colorSelect.addEventListener('change', function(){
-      state.colorFilter = colorSelect.value;
-      colorSelect.classList.toggle('active', !!colorSelect.value);
-      renderTray();
-    });
+    var b = filterButtons();
+    b.style.addEventListener('click', function(){ if (filterKind === 'style') closeFilterFlyout(); else openFilterFlyout('style'); });
+    b.color.addEventListener('click', function(){ if (filterKind === 'color') closeFilterFlyout(); else openFilterFlyout('color'); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && filterKind) closeFilterFlyout(); });
+    document.addEventListener('pointerdown', function(e){
+      if (!filterKind) return;
+      var t = e.target;
+      if (filterFlyoutEl.contains(t) || (t.closest && (t.closest('.tray-filter-btn') || t.closest('.tray-tabs') || t.closest('.tray-drag-handle')))) return;
+      closeFilterFlyout();
+    }, true);
+    window.addEventListener('resize', positionFilterFlyout);
+    window.__rsFilter = { color:function(v){ setFilter('color', v, false); }, style:function(v){ setFilter('style', v, false); }, toggleColor:function(v){ setFilter('color', v, true); }, toggleStyle:function(v){ setFilter('style', v, true); } };
   }
 
   // Every tab (and tab+filter) is built once and then just shown or hidden.
@@ -4034,7 +4186,7 @@
   // was the source of the tray flicker. Pass fresh=true when what the cards
   // show can differ (story starts or ends).
   var trayPages = {}, trayPageOrder = [], TRAY_PAGE_MAX = 24, trayTarget = null, trayBuildGroups = null;
-  function trayPageKey(){ return state.activeCategory + '|' + (state.styleFilter || '') + '|' + (state.colorFilter || ''); }
+  function trayPageKey(){ return state.activeCategory + '|' + state.styleFilters.slice().sort().join(',') + '|' + state.colorFilters.slice().sort().join(','); }
   function renderTray(fresh){
     trayFlyoutPending = null;
     if (fresh === true){ trayPages = {}; trayPageOrder = []; trayGrid.textContent = ''; }
@@ -4063,12 +4215,12 @@
   }
   function renderTrayInner(){
     var itemsInCat = trayItemsOf(state.activeCategory);
-    var filtering = !!(state.styleFilter || state.colorFilter);
-    if (state.styleFilter){
-      itemsInCat = itemsInCat.filter(function(it){ return it.style1===state.styleFilter || it.style2===state.styleFilter; });
+    var filtering = !!(state.styleFilters.length || state.colorFilters.length);
+    if (state.styleFilters.length){
+      itemsInCat = itemsInCat.filter(function(it){ return state.styleFilters.indexOf(it.style1) !== -1 || state.styleFilters.indexOf(it.style2) !== -1; });
     }
-    if (state.colorFilter){
-      itemsInCat = itemsInCat.filter(function(it){ return it.color===state.colorFilter; });
+    if (state.colorFilters.length){
+      itemsInCat = itemsInCat.filter(function(it){ return state.colorFilters.indexOf(it.color) !== -1; });
     }
     if (filtering){
       // filtering is about finding a specific item, so show exact matches
@@ -4185,6 +4337,7 @@
     positionFlyout();
   }
   function positionFlyout(){
+    positionFilterFlyout();
     if (!flyoutEl || !flyoutEl.classList.contains('show')) return;
     if (!flyoutCard || !flyoutCard.isConnected || !state.trayOpen){ closeFlyout(); return; }
     var cr = flyoutCard.getBoundingClientRect(), gr = trayGrid.getBoundingClientRect(), pr = trayPanel.getBoundingClientRect();
@@ -4228,7 +4381,7 @@
   /* ---------------- show / hide the items panel ---------------- */
   function setTrayOpen(open){
     state.trayOpen = open;
-    if (!open) closeFlyout();
+    if (!open){ closeFlyout(); if (typeof closeFilterFlyout === 'function') closeFilterFlyout(); }
     trayPanel.classList.toggle('hidden', !open);
     trayToggle.classList.toggle('open', open);
     trayToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -6168,10 +6321,10 @@
     var sh = Story.shopOf(itemId);
     if (sh){
       if (story.data.shopTaken && story.data.shopTaken[itemId]) return null;
-      var sp = Story.spotById(sh.spot), need = Story.RENOWN_LEVELS[sh.level];
+      var sp = Story.spotById(sh.spot), need = Story.SHOP_TIERS[sh.level];
       var txt;
       if (!storySpotOpen(sh.spot)) txt = "This one is sold at " + sp.name + ", which opens later in the story.";
-      else if (storyLevel() < sh.level) txt = sp.name + " will set this aside once you are a " + need.title + ".";
+      else if (storyShopTier() < sh.level) txt = sp.name + " is keeping this for a " + need.title + ". The town will get to know you.";
       else if (sh.season && sh.season !== storySeason()) txt = sp.name + " stocks this one in " + sh.season + ". It's back on the shelves then.";
       else txt = "It's waiting for you at " + sp.name + ". Pop in and take it home.";
       return { kind:'shop', chip:'shop', text:txt };
@@ -6185,6 +6338,7 @@
     return null;
   }
   function storySeason(){ return Story.seasonOf(storyToday()); }
+  function storyShopTier(){ return Story.shopTier(storyRenown()); }
   function storyRand(n){ return Math.floor(Math.random() * n); }
   function storyReduced(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 
@@ -6690,7 +6844,7 @@
     });
     var achList = Object.keys(found).map(function(k){ return found[k]; });
     var qual = Story.quality(q, pieces, getAsset, achList.length);
-    var hearts = Story.heartsFor(ev.brief, qual, ev.mustAll, true, ev.quirksOk);
+    var hearts = Story.heartsFor(ev.brief, qual, ev.mustAll, true, ev.quirksOk, ev.avoidOk);
     var reply = Story.buildReply(q, ev, hearts);
 
     var newlyLearned = ev.quirks.filter(function(k){ return !k.known; });
@@ -7096,12 +7250,12 @@
   }
   function storyShopReady(spotId){
     if (!Story.SHOP_STOCK[spotId] || !storySpotOpen(spotId)) return 0;
-    var lvl = storyLevel();
+    var lvl = storyShopTier();
     return storyShopRows(spotId).filter(function(r){ return r[1] <= lvl && !story.data.shopTaken[r[0]]; }).length;
   }
   function storyOpenShop(spotId){
     var sp = Story.spotById(spotId), shop = Story.SHOP_STOCK[spotId]; if (!sp || !shop) return;
-    var L = Story.RENOWN_LEVELS, season = storySeason(), rows = storyShopRows(spotId);
+    var L = Story.SHOP_TIERS, season = storySeason(), rows = storyShopRows(spotId);
     var ov = document.getElementById('storyShop'), scene = document.getElementById('storyShopScene');
     var items = rows.map(function(r){
       var it = getAsset(r[0]); if (!it) return '';
@@ -7118,27 +7272,28 @@
     var probe = new Image(); probe.onerror = function(){ room.classList.add('noimg'); }; probe.src = imgUrl;
     function state(btn){
       var id = btn.dataset.id, tier = +btn.dataset.tier;
-      return story.data.shopTaken[id] ? 'home' : (storyLevel() >= tier ? 'ready' : 'shut');
+      return story.data.shopTaken[id] ? 'home' : (storyShopTier() >= tier ? 'ready' : 'shut');
     }
     function paint(){
-      var lvl = storyLevel(), ready = 0;
+      var ready = 0;
       scene.querySelectorAll('.shp-it').forEach(function(b){
         var st = state(b), tier = +b.dataset.tier;
         b.className = 'shp-it ' + st; if (st === 'ready') ready++;
         b.querySelector('small').textContent = st === 'home' ? 'At home' : (st === 'shut' ? L[tier].title : 'Take home');
       });
-      document.getElementById('shStatus').textContent = ready ? ready + (ready === 1 ? ' piece is' : ' pieces are') + ' set aside for you.' : (scene.querySelector('.shp-it.shut') ? 'The number is the reputation a piece needs.' : 'Everything on these shelves is yours.');
+      document.getElementById('shStatus').textContent = ready ? (ready === 1 ? 'One piece is' : ready + ' pieces are') + ' set aside for you.' : (scene.querySelector('.shp-it.shut') ? 'Some things are kept for people the town knows better.' : 'You have taken everything that was set aside for you.');
       var all = document.getElementById('shAll'); all.hidden = !ready; all.querySelector('b').textContent = 'Take everything (' + ready + ')';
       document.getElementById('shClose').querySelector('b').textContent = ready ? 'Later' : 'Thanks!';
     }
     function take(ids){
       ids.forEach(function(id){ story.data.shopTaken[id] = true; });
       storySaveData(); storyRefreshTrayStates(); paint();
-      storyToast(ids.length > 1 ? ids.length + ' pieces are now in your tray.' : 'It is now in your tray.');
+      var say = Story.SHOP_SAY[spotId] || { one:'Thanks for stopping by!', many:'Thanks for stopping by!' };
+      storyToast(ids.length > 1 ? say.many : say.one);
     }
     scene.querySelectorAll('.shp-it').forEach(function(b){ b.addEventListener('click', function(){ if (b.classList.contains('ready')) take([b.dataset.id]); }); });
     document.getElementById('shAll').addEventListener('click', function(){
-      take(storyShopRows(spotId).filter(function(r){ return r[1] <= storyLevel() && !story.data.shopTaken[r[0]]; }).map(function(r){ return r[0]; }));
+      take(storyShopRows(spotId).filter(function(r){ return r[1] <= storyShopTier() && !story.data.shopTaken[r[0]]; }).map(function(r){ return r[0]; }));
     });
     document.getElementById('shClose').addEventListener('click', function(){ storyDismissSheet('storyShop', room); });
     paint();
@@ -7159,7 +7314,7 @@
       var rec = story.data.play[eid] || {}, it = getAsset(pl.prize);
       if (!it) return '';
       var score = storyPlayScore(eid);
-      if (rec.won) return '<div class="pl-prize won"><img src="' + it.src + '" alt=""><div><b>' + storyEsc(it.name) + '</b><span>' + (just ? 'Yours now — it’s in your tray!' : 'In your tray') + '</span></div></div>';
+      if (rec.won) return '<div class="pl-prize won"><img src="' + it.src + '" alt=""><div><b>' + storyEsc(it.name) + '</b><span>' + (just ? 'Thank you for today — it’s on its way to you!' : 'Already at home') + '</span></div></div>';
       var pips = '';
       for (var k = 0; k < 3; k++) pips += '<i class="' + (k < score ? 'on' : '') + '"></i>';
       return '<div class="pl-prize"><img class="locked" src="' + it.src + '" alt=""><div><b>A keepsake from today</b><span>Get ' + Story.EVENT_NEED + ' of 3 right</span></div><div class="pl-pips" aria-label="' + score + ' of 3">' + pips + '</div></div>';
@@ -7816,32 +7971,42 @@
   }
 
   /* ---------- neighbourhood names on hover ---------- */
-  var storyDistrictCur = null, storyTagTimer = null;
-  function storyHideDistrictTag(){
+  var storyDistrictCur = null, storyTagTimer = null, storyDistrictPin = null;   // pin = the district whose full description is open
+  function storyHideDistrictTag(keepPinned){
+    if (keepPinned === true && storyDistrictPin) return;
     clearTimeout(storyTagTimer);
-    var tag = document.getElementById('districtTag'); if (tag) tag.classList.remove('show');
+    var tag = document.getElementById('districtTag'); if (tag) tag.classList.remove('show', 'full');
     var path = document.getElementById('townDistrictPath'); if (path) path.classList.remove('on');
-    storyDistrictCur = null;
+    storyDistrictCur = null; storyDistrictPin = null;
   }
-  function storyShowDistrictAt(clientX, clientY){
+  function storyDistrictFull(d){
+    var entries = story.data ? storyTownEntries() : {}, who = [];
+    Object.keys(entries).forEach(function(pid){
+      if (Story.PROPERTIES[pid].district === d.id && !entries[pid].past){ var n = Story.CHARACTERS[entries[pid].resident].name; if (who.indexOf(n) === -1) who.push(n); }
+    });
+    var here = Story.spotsAt(storyToday(), story.data ? storyDoneMap() : {}, story.data && story.data.lastJump).filter(function(sp){ return sp.district === d.id; }).map(function(sp){ return sp.name; });
+    return '<b>' + storyEsc(d.name) + '</b><span>' + storyEsc(d.blurb) + '</span>' + (d.reason ? '<span class="dt-why">' + storyEsc(d.reason) + '</span>' : '') +
+      (d.homes ? '<span class="dt-homes">Homes: ' + storyEsc(d.homes) + '</span>' : '') +
+      (here.length ? '<em>On the street: ' + storyEsc(here.join(' · ')) + '</em>' : '') + (who.length ? '<em>Neighbours: ' + storyEsc(who.join(' · ')) + '</em>' : '');
+  }
+  // hover shows the name only; a click opens the description and keeps it open until the next click
+  function storyShowDistrictAt(clientX, clientY, open){
     var stage = document.getElementById('townStage'), r = stage.getBoundingClientRect();
     var x = (clientX - r.left) / r.width * 100, y = (clientY - r.top) / r.height * 100;
     var d = Story.districtAt(x, y);
     if (!d){ storyHideDistrictTag(); return; }
     var tag = document.getElementById('districtTag'), path = document.getElementById('townDistrictPath');
-    if (!storyDistrictCur || storyDistrictCur.id !== d.id){
+    if (open){
+      if (storyDistrictPin && storyDistrictPin.id === d.id){ storyHideDistrictTag(); return; }   // click the same place again to close
+      storyDistrictPin = d;
+    } else if (storyDistrictPin){ return; }
+    var full = !!storyDistrictPin;
+    if (!storyDistrictCur || storyDistrictCur.id !== d.id || open){
       storyDistrictCur = d;
       path.setAttribute('d', 'M' + d.poly.map(function(pt){ return pt[0] + ' ' + pt[1]; }).join(' L') + ' Z');
       path.classList.add('on');
-      var entries = story.data ? storyTownEntries() : {};
-      var who = [];
-      Object.keys(entries).forEach(function(pid){
-        if (Story.PROPERTIES[pid].district === d.id && !entries[pid].past){ var n = Story.CHARACTERS[entries[pid].resident].name; if (who.indexOf(n) === -1) who.push(n); }
-      });
-      var here = Story.spotsAt(storyToday(), story.data ? storyDoneMap() : {}, story.data && story.data.lastJump).filter(function(sp){ return sp.district === d.id; }).map(function(sp){ return sp.name; });
-      tag.innerHTML = '<b>' + storyEsc(d.name) + '</b><span>' + storyEsc(d.blurb) + '</span>' + (d.reason ? '<span class="dt-why">' + storyEsc(d.reason) + '</span>' : '') +
-        (d.homes ? '<span class="dt-homes">Homes: ' + storyEsc(d.homes) + '</span>' : '') +
-        (here.length ? '<em>On the street: ' + storyEsc(here.join(' · ')) + '</em>' : '') + (who.length ? '<em>Neighbours: ' + storyEsc(who.join(' · ')) + '</em>' : '');
+      tag.innerHTML = full ? storyDistrictFull(d) : '<b>' + storyEsc(d.name) + '</b>';
+      tag.classList.toggle('full', full);
     }
     tag.classList.add('show');
     var w = tag.offsetWidth, h = tag.offsetHeight;
@@ -7857,17 +8022,15 @@
       if (raf) return;
       raf = requestAnimationFrame(function(){
         raf = 0;
+        if (storyDistrictPin) return;
         if (last.target.closest && last.target.closest('.town-pin')){ storyHideDistrictTag(); return; }
-        storyShowDistrictAt(last.clientX, last.clientY);
+        storyShowDistrictAt(last.clientX, last.clientY, false);
       });
     });
-    stage.addEventListener('mouseleave', storyHideDistrictTag);
-    // touch: a tap on the map (not on a pin) names the neighbourhood for a moment
+    stage.addEventListener('mouseleave', function(){ storyHideDistrictTag(true); });
     stage.addEventListener('click', function(e){
-      if (window.matchMedia && window.matchMedia('(hover: hover)').matches) return;
-      storyShowDistrictAt(e.clientX, e.clientY);
-      clearTimeout(storyTagTimer);
-      storyTagTimer = setTimeout(storyHideDistrictTag, 2600);
+      if (e.target.closest && e.target.closest('.town-pin')){ storyHideDistrictTag(); return; }
+      storyShowDistrictAt(e.clientX, e.clientY, true);
     });
   })();
 
@@ -7941,7 +8104,7 @@
     }
   }
   // small read-only handle for testing from the browser console
-  window.__rsStory = { season:storySeason, lock:storyItemLock, play:storyOpenPlay, score:storyPlayScore, data:function(){ return story.data; }, level:storyLevel, start:storyStartQuest };
+  window.__rsStory = { season:storySeason, shopTier:storyShopTier, lock:storyItemLock, play:storyOpenPlay, score:storyPlayScore, data:function(){ return story.data; }, level:storyLevel, start:storyStartQuest };
 
 
   /* ---------------- init ---------------- */
@@ -7985,7 +8148,7 @@
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   // version check: shows which build of each file is live, so a stale upload or cache is obvious
   (function(){
-    var want = '0.11.2', box = document.getElementById('titleFiles');
+    var want = '0.12.0', box = document.getElementById('titleFiles');
     var d = (typeof DATA_FILE_VERSION !== 'undefined') ? DATA_FILE_VERSION : null;
     var st = (typeof STORY_FILE_VERSION !== 'undefined') ? STORY_FILE_VERSION : null;
     var stale = [];
@@ -7995,7 +8158,7 @@
       box.className = 'title-files stale';
       box.textContent = 'Not up to date: ' + stale.join(', ') + '. Upload it, then refresh.';
     } else {
-      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 15:54';
+      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 16:50';
     }
   })();
   renderRoomGrid();
