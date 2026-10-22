@@ -2496,74 +2496,6 @@
   .cal-play.won{ background:rgba(111,154,120,.2); color:#3f6b4b; box-shadow:none; }
   .cal-play:hover{ filter:brightness(1.06); }
 
-  /* shop shelf */
-  .shp-sheet{ width:min(100%, 580px); }
-  .shp-sheet .lt-paper{ display:flex; flex-direction:column; max-height:min(86vh, 760px); }
-  .shp-head{ padding:30px 28px 4px; text-align:center; flex:none; }
-  .shp-blurb{ font-size:13.5px; color:#6a5439; margin:4px 0 4px; }
-  .shp-status{ font-size:12.5px; font-weight:700; color:#8a5a2d; margin:0 0 6px; }
-  .shp-scroll{ overflow-y:auto; padding:6px 22px 8px; flex:1 1 auto; min-height:0; }
-  .shp-tier{ margin:0 0 14px; }
-  .shp-tier h4{ font-family:'Fraunces',serif; font-weight:560; font-size:16px; margin:12px 0 8px; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
-  .shp-tier h4 small{ font-family:'Karla',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.04em; opacity:.6; }
-  .shp-tier.shut h4{ opacity:.7; }
-  .shp-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(116px, 1fr)); gap:10px; }
-  .shp-item{ position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; padding:10px 6px 8px; border-radius:14px; background:rgba(255,255,255,.75); box-shadow:0 1px 0 rgba(0,0,0,.06); }
-  .shp-item img{ width:72px; height:62px; object-fit:contain; }
-  .shp-item b{ font-size:11.5px; font-weight:700; line-height:1.2; min-height:28px; display:flex; align-items:center; }
-  .shp-item i{ font-style:normal; font-size:10.5px; color:#9a6a2d; font-weight:800; }
-  .shp-item.shut img{ filter:grayscale(1) brightness(.75) opacity(.55); }
-  .shp-item.shut{ background:rgba(60,40,20,.05); }
-  .shp-item.home{ background:rgba(111,154,120,.16); }
-  .shp-item.ready{ outline:2px solid rgba(217,164,65,.7); }
-  .shp-tag{ font-size:10.5px; font-weight:800; letter-spacing:.03em; color:#3f6b4b; padding-top:2px; }
-  .shp-tag.lock{ color:#7a6a58; }
-  .shp-take{ margin-top:3px; font-family:'Karla',sans-serif; font-size:11.5px; font-weight:800; padding:4px 12px; border-radius:99px; border:0; cursor:pointer; background:#c9714a; color:#fff; box-shadow:0 2px 0 rgba(0,0,0,.14); }
-  .shp-take:hover{ filter:brightness(1.07); }
-  .shp-sheet .lt-actions{ flex:none; flex-wrap:wrap; }
-
-  /* playing an event */
-  .pl-sheet{ width:min(100%, 500px); }
-  .pl-sheet .ev-body{ padding:26px 26px 8px; text-align:left; }
-  .pl-sheet .ev-kicker, .pl-sheet .ev-title{ text-align:center; }
-  .pl-intro{ text-align:center; font-size:14px; color:#5a4630; }
-  .pl-lead{ text-align:center; font-family:'Patrick Hand',cursive; font-size:19px; margin:4px 0 12px !important; }
-  .pl-stations{ display:flex; flex-direction:column; gap:9px; }
-  .pl-st{ display:flex; align-items:center; gap:12px; padding:9px 12px; border-radius:16px; border:0; cursor:pointer; background:rgba(255,255,255,.78); box-shadow:0 2px 0 rgba(0,0,0,.08); text-align:left; font-family:'Karla',sans-serif; color:inherit; transition:transform .15s ease, box-shadow .15s ease; }
-  .pl-st:hover{ transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,.12); }
-  .pl-st.ok{ background:rgba(111,154,120,.2); }
-  .pl-av{ flex:none; width:40px; height:40px; border-radius:50%; background:var(--pin); color:#fff; font-family:'Fraunces',serif; font-weight:650; font-size:18px; display:flex; align-items:center; justify-content:center; border:3px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,.18); }
-  .pl-av.big{ width:52px; height:52px; font-size:22px; }
-  .pl-who{ flex:1; display:flex; flex-direction:column; line-height:1.25; }
-  .pl-who b{ font-size:15px; }
-  .pl-who small{ font-size:12px; opacity:.65; }
-  .pl-mark{ flex:none; width:26px; height:26px; border-radius:50%; background:rgba(60,40,20,.1); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; }
-  .pl-st.ok .pl-mark{ background:#6f9a78; color:#fff; }
-  .pl-prize{ display:flex; align-items:center; gap:14px; margin:14px 0 4px; padding:10px 14px; border-radius:16px; background:rgba(255,255,255,.55); border:2px dashed rgba(60,40,20,.25); }
-  .pl-prize img{ width:64px; height:56px; object-fit:contain; flex:none; }
-  .pl-prize img.locked{ filter:brightness(0) opacity(.25); }
-  .pl-prize div{ display:flex; flex-direction:column; line-height:1.3; }
-  .pl-prize b{ font-family:'Fraunces',serif; font-weight:560; font-size:15px; }
-  .pl-prize span{ font-size:12.5px; opacity:.75; }
-  .pl-prize em{ font-style:normal; font-size:12px; font-weight:800; color:#8a5a2d; margin-top:2px; }
-  .pl-prize.won{ border-style:solid; border-color:#6f9a78; background:rgba(111,154,120,.16); animation:plPop .6s ease; }
-  .pl-prize.won em{ color:#3f6b4b; }
-  @keyframes plPop{ 0%{ transform:scale(.9); } 60%{ transform:scale(1.04); } 100%{ transform:scale(1); } }
-  .pl-talk{ display:flex; gap:12px; align-items:flex-start; margin:10px 0 14px; }
-  .pl-bubble{ flex:1; background:rgba(255,255,255,.85); border-radius:4px 18px 18px 18px; padding:10px 14px; font-family:'Patrick Hand',cursive; font-size:19px; line-height:1.3; box-shadow:0 2px 0 rgba(0,0,0,.08); }
-  .pl-bubble small{ display:block; font-family:'Karla',sans-serif; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; opacity:.55; margin-bottom:2px; }
-  .pl-opts{ display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
-  .pl-opt{ text-align:left; padding:10px 14px; border-radius:14px; border:0; cursor:pointer; background:#fff; font-family:'Karla',sans-serif; font-size:14.5px; line-height:1.35; color:inherit; box-shadow:0 2px 0 rgba(0,0,0,.1); transition:transform .15s ease, box-shadow .15s ease; }
-  button.pl-opt:hover{ transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,.14); }
-  .pl-opts.done .pl-opt{ cursor:default; box-shadow:none; }
-  .pl-opt.off{ opacity:.4; }
-  .pl-opt.right{ background:rgba(111,154,120,.28); }
-  .pl-opt.wrong{ background:rgba(201,113,74,.22); }
-  .pl-reply{ font-family:'Patrick Hand',cursive; font-size:19px; line-height:1.3; padding:10px 14px; border-radius:14px; margin-bottom:6px; }
-  .pl-reply b{ display:block; font-family:'Karla',sans-serif; font-size:11px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; margin-bottom:2px; }
-  .pl-reply.good{ background:rgba(111,154,120,.2); } .pl-reply.good b{ color:#3f6b4b; }
-  .pl-reply.meh{ background:rgba(217,164,65,.2); } .pl-reply.meh b{ color:#8a5a2d; }
-  .shp-head .ev-ribbon{ display:inline-block; margin-bottom:6px; }
 
 /* ============ v0.11.0 — the diary book ============ */
 .diary-btn{ border:0; cursor:pointer; font-family:inherit; color:var(--ink); display:flex; align-items:center; gap:8px; padding:7px 14px 7px 11px; font-size:12.5px; font-weight:700; }
@@ -2637,6 +2569,122 @@
 .tray-page{ display:contents; }
 .tray-page[hidden]{ display:none; }
 
+  /* playing an event: one wide card, big faces to pick, three big answers side by side */
+  .pl-sheet{ width:min(94vw, 880px); }
+  .pl-sheet .ev-body{ padding:24px 34px 10px; text-align:center; }
+  .pl-sheet .ev-title{ font-size:34px; margin-bottom:4px; }
+  .pl-lead{ font-family:'Patrick Hand',cursive; font-size:23px; margin:2px 0 18px !important; color:#5a4630; }
+  .pl-stations{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
+  .pl-st{ position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; padding:22px 12px 18px; border-radius:24px; border:0; cursor:pointer; background:rgba(255,255,255,.72); box-shadow:0 4px 0 rgba(0,0,0,.09), inset 0 0 0 2px rgba(255,255,255,.9); font-family:'Karla',sans-serif; color:inherit; transition:transform .18s ease, box-shadow .18s ease, background .18s ease; }
+  .pl-st:hover, .pl-st:focus-visible{ transform:translateY(-5px); box-shadow:0 12px 20px rgba(0,0,0,.16), inset 0 0 0 2px #fff; background:#fff; outline:none; }
+  .pl-st:active{ transform:translateY(-1px); }
+  .pl-st b{ font-family:'Fraunces',serif; font-weight:580; font-size:21px; margin-top:8px; }
+  .pl-st small{ font-size:13px; opacity:.65; }
+  .pl-st.ok{ background:rgba(111,154,120,.24); }
+  .pl-av{ flex:none; width:84px; height:84px; border-radius:50%; background:var(--pin); color:#fff; font-family:'Fraunces',serif; font-weight:650; font-size:38px; display:flex; align-items:center; justify-content:center; border:5px solid #fff; box-shadow:0 5px 12px rgba(0,0,0,.2); }
+  .pl-av.big{ width:72px; height:72px; font-size:32px; }
+  .pl-mark{ position:absolute; top:10px; right:12px; width:28px; height:28px; border-radius:50%; background:#3d2a33; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; }
+  .pl-st.ok .pl-mark{ background:#6f9a78; }
+  .pl-prize{ display:flex; align-items:center; justify-content:center; gap:14px; margin:20px auto 6px; padding:8px 20px 8px 12px; width:fit-content; max-width:100%; border-radius:99px; background:rgba(255,255,255,.55); border:2px dashed rgba(60,40,20,.25); text-align:left; }
+  .pl-prize img{ width:52px; height:46px; object-fit:contain; flex:none; }
+  .pl-prize img.locked{ filter:brightness(0) opacity(.25); }
+  .pl-prize div{ display:flex; flex-direction:column; line-height:1.25; }
+  .pl-prize b{ font-family:'Fraunces',serif; font-weight:560; font-size:16px; }
+  .pl-prize span{ font-size:13px; opacity:.75; }
+  .pl-pips{ display:flex; flex-direction:row !important; gap:6px; margin-left:6px; }
+  .pl-pips i{ width:14px; height:14px; border-radius:50%; background:rgba(60,40,20,.14); }
+  .pl-pips i.on{ background:#6f9a78; }
+  .pl-prize.won{ border-style:solid; border-color:#6f9a78; background:rgba(111,154,120,.16); animation:plPop .6s ease; }
+  .pl-prize.won span{ color:#3f6b4b; opacity:1; font-weight:700; }
+  @keyframes plPop{ 0%{ transform:scale(.9); } 60%{ transform:scale(1.04); } 100%{ transform:scale(1); } }
+  .pl-talk{ display:flex; gap:16px; align-items:center; margin:6px auto 22px; max-width:640px; text-align:left; }
+  .pl-bubble{ flex:1; background:rgba(255,255,255,.9); border-radius:6px 24px 24px 24px; padding:14px 20px 16px; font-family:'Patrick Hand',cursive; font-size:26px; line-height:1.25; box-shadow:0 3px 0 rgba(0,0,0,.08); }
+  .pl-bubble small{ display:block; font-family:'Karla',sans-serif; font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; opacity:.55; margin-bottom:3px; }
+  .pl-opts{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:12px; }
+  .pl-opt{ position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-height:150px; padding:18px 16px; border-radius:22px; border:0; cursor:pointer; background:#fff; font-family:'Karla',sans-serif; font-size:17px; font-weight:600; line-height:1.3; text-align:center; color:inherit; box-shadow:0 4px 0 rgba(0,0,0,.1); transition:transform .18s ease, box-shadow .18s ease, opacity .25s ease, background .25s ease; }
+  .pl-opt i{ font-style:normal; width:30px; height:30px; border-radius:50%; background:#3d2a33; color:#fff; font-family:'Fraunces',serif; font-weight:650; font-size:15px; display:flex; align-items:center; justify-content:center; }
+  button.pl-opt:hover, button.pl-opt:focus-visible{ transform:translateY(-5px); box-shadow:0 12px 20px rgba(0,0,0,.16); outline:none; }
+  button.pl-opt:active{ transform:translateY(-1px); }
+  .pl-opts.done .pl-opt{ cursor:default; box-shadow:none; }
+  .pl-opt.off{ opacity:.35; transform:scale(.97); }
+  .pl-opt.right{ background:rgba(111,154,120,.3); box-shadow:inset 0 0 0 3px #6f9a78; }
+  .pl-opt.right i{ background:#6f9a78; }
+  .pl-opt.wrong{ background:rgba(201,113,74,.2); box-shadow:inset 0 0 0 3px #c9714a; }
+  .pl-opt.wrong i{ background:#c9714a; }
+  .pl-reply{ max-width:640px; margin:0 auto 6px; font-family:'Patrick Hand',cursive; font-size:24px; line-height:1.28; padding:12px 22px 14px; border-radius:20px; }
+  .pl-reply b{ display:block; font-family:'Karla',sans-serif; font-size:12px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; margin-bottom:2px; }
+  .pl-reply.good{ background:rgba(111,154,120,.2); } .pl-reply.good b{ color:#3f6b4b; }
+  .pl-reply.meh{ background:rgba(217,164,65,.22); } .pl-reply.meh b{ color:#8a5a2d; }
+  @media (max-width:720px){
+    .pl-stations, .pl-opts{ grid-template-columns:1fr; gap:10px; }
+    .pl-st{ flex-direction:row; justify-content:flex-start; gap:14px; padding:12px 16px; text-align:left; }
+    .pl-st b{ margin:0; } .pl-av{ width:56px; height:56px; font-size:26px; border-width:4px; }
+    .pl-opt{ min-height:0; flex-direction:row; text-align:left; }
+    .pl-bubble{ font-size:21px; }
+  }
+
+/* ============ v0.11.2 — event cards: one clear line, three big tiles ============ */
+.ev-sheet{ width:min(94vw, 600px); }
+.ev-body{ padding:26px 40px 8px; }
+.ev-icon{ width:72px; height:72px; margin-bottom:12px; }
+.ev-icon svg{ width:38px; height:38px; }
+.ev-title{ font-size:32px; }
+.ev-lead{ font-family:'Patrick Hand',cursive; font-size:24px; line-height:1.28; margin:4px auto 10px !important; max-width:30em; }
+.ev-when{ font-size:13px; padding:4px 16px; }
+.ev-sheet .ev-react{ border-top:0; padding-top:0; margin-top:6px; justify-content:center; }
+.ev-sheet .ev-rtx{ font-size:20px; }
+.ev-acts{ display:flex; gap:12px; align-items:stretch; justify-content:center; padding:14px 26px 24px !important; flex-wrap:nowrap !important; }
+.ev-act{ flex:1 1 0; min-width:0; max-width:190px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:16px 10px 14px; border:0; border-radius:22px; cursor:pointer; background:rgba(255,255,255,.75); color:#3a2d20; font-family:'Karla',sans-serif; box-shadow:0 4px 0 rgba(0,0,0,.1); transition:transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.ev-act b{ font-size:15px; font-weight:800; line-height:1.2; text-align:center; }
+.ev-ai{ width:44px; height:44px; border-radius:50%; background:#3d2a33; color:#fff; display:flex; align-items:center; justify-content:center; }
+.ev-ai svg{ width:24px; height:24px; }
+.ev-act:hover, .ev-act:focus-visible{ transform:translateY(-4px); background:#fff; box-shadow:0 12px 18px rgba(0,0,0,.16); outline:none; }
+.ev-act.main{ background:#6f9a78; color:#fff; }
+.ev-act.main .ev-ai{ background:rgba(255,255,255,.25); }
+.ev-act.main:hover{ background:#7ba984; }
+.ev-invite .ev-body{ padding:34px 44px 8px; }
+@media (max-width:560px){ .ev-acts{ flex-direction:column; } .ev-act{ max-width:none; flex-direction:row; justify-content:flex-start; padding:10px 14px; } }
+
+/* ============ v0.11.2 — shops are real places: the shop's own picture, pieces on the counter ============ */
+#storyShop{ padding:0; background:#1b120c; backdrop-filter:none; -webkit-backdrop-filter:none; }
+#storyShop .lt-scene{ max-width:none; height:100%; min-height:0; }
+.shp-room{ position:relative; width:100%; height:100%; background:#f2e6cc center/cover no-repeat; display:flex; flex-direction:column; align-items:center; overflow:hidden; transition:opacity .45s ease; animation:shpIn .6s ease; }
+.shp-room.out{ opacity:0; }
+.shp-room.noimg{ background-image:linear-gradient(#f6ecd4, #ead8b0) !important; }
+@keyframes shpIn{ from{ opacity:0; transform:scale(1.02); } to{ opacity:1; transform:none; } }
+.shp-shade{ position:absolute; inset:0; pointer-events:none; background:linear-gradient(rgba(30,18,8,.6), rgba(30,18,8,0) 24%, rgba(30,18,8,0) 60%, rgba(30,18,8,.42)); }
+.shp-top{ position:relative; z-index:1; width:100%; padding:20px 28px 0; display:flex; align-items:center; gap:14px; }
+.shp-name{ font-family:'Fraunces',serif; font-weight:580; font-size:30px; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.45); }
+.shp-season{ font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#3d2a33; background:rgba(255,255,255,.88); padding:5px 13px; border-radius:99px; }
+.shp-season.s-spring{ background:#f6d3dc; } .shp-season.s-summer{ background:#f6e08a; } .shp-season.s-autumn{ background:#f0b27a; } .shp-season.s-winter{ background:#cfe3f0; }
+.shp-status{ position:relative; z-index:1; margin:6px 28px 0; align-self:flex-start; font-family:'Patrick Hand',cursive; font-size:21px; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.5); }
+.shp-circles{ position:relative; z-index:1; flex:1 1 auto; min-height:0; width:100%; max-width:1180px; overflow-y:auto; display:flex; padding:10px 28px 8px; }
+.shp-grid{ margin:auto; display:flex; flex-wrap:wrap; justify-content:center; gap:12px 22px; --d:clamp(112px, 19vh, 176px); }
+.shp-grid[data-n="8"]{ --d:clamp(100px, 15.5vh, 150px); }
+.shp-grid[data-n="12"]{ --d:clamp(88px, 12.5vh, 126px); }
+.shp-grid[data-n="16"]{ --d:clamp(80px, 11vh, 110px); }
+.shp-it{ flex:none; width:calc(var(--d) + 24px); display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; border:0; background:none; cursor:default; font-family:'Karla',sans-serif; color:#fff; text-shadow:0 1px 8px rgba(0,0,0,.65); animation:shpPop .5s cubic-bezier(.2,.9,.3,1.2) both; animation-delay:calc(var(--i) * 45ms + 150ms); }
+@keyframes shpPop{ from{ opacity:0; transform:translateY(14px) scale(.9); } to{ opacity:1; transform:none; } }
+.shp-circle{ position:relative; width:var(--d); height:var(--d); border-radius:50%; background:rgba(255,255,255,.66); box-shadow:0 8px 22px rgba(0,0,0,.22), inset 0 0 0 3px rgba(255,255,255,.55); display:flex; align-items:center; justify-content:center; transition:transform .2s ease, box-shadow .2s ease, background .2s ease; }
+.shp-circle img{ width:80%; height:80%; object-fit:contain; }
+.shp-badge{ position:absolute; top:2px; right:0; width:34px; height:34px; border-radius:50%; background:#3d2a33; color:#fff; font-family:'Fraunces',serif; font-weight:650; font-size:17px; display:flex; align-items:center; justify-content:center; text-shadow:none; box-shadow:0 2px 6px rgba(0,0,0,.3); }
+.shp-tick{ position:absolute; bottom:4px; right:6px; width:30px; height:30px; border-radius:50%; background:#6f9a78; color:#fff; font-weight:800; display:none; align-items:center; justify-content:center; text-shadow:none; }
+.shp-it b{ font-size:14px; font-weight:800; line-height:1.2; margin-top:8px; text-align:center; background:rgba(61,42,51,.82); padding:4px 12px; border-radius:99px; text-shadow:none; max-width:100%; }
+.shp-it small{ font-size:12px; font-weight:700; opacity:.9; }
+.shp-it.ready{ cursor:pointer; }
+.shp-it.ready:hover .shp-circle, .shp-it.ready:focus-visible .shp-circle{ transform:translateY(-6px) scale(1.04); background:rgba(255,255,255,.85); box-shadow:0 16px 28px rgba(0,0,0,.3), inset 0 0 0 3px #fff; }
+.shp-it.ready small{ background:#6f9a78; padding:3px 12px; border-radius:99px; text-shadow:none; }
+.shp-it.shut .shp-circle{ background:rgba(255,255,255,.36); }
+.shp-it.shut img{ filter:grayscale(1) opacity(.55); }
+.shp-it.shut b, .shp-it.shut small{ opacity:.8; }
+.shp-it.home .shp-circle{ background:rgba(222,238,224,.7); }
+.shp-it.home .shp-tick{ display:flex; }
+.shp-it.home small{ opacity:.85; }
+.shp-bar{ position:relative; z-index:1; display:flex; gap:14px; justify-content:center; padding:6px 20px 24px; }
+.shp-bar .ev-act{ flex:none; width:190px; }
+.shp-bar .ev-act[hidden]{ display:none; }
+@media (max-width:640px){ .shp-name{ font-size:22px; } .shp-it{ width:calc(var(--d) + 8px); } .shp-bar .ev-act{ width:auto; flex:1; } }
+
 </style>
 </head>
 <body>
@@ -2649,7 +2697,7 @@
   <div class="title-scrim"></div>
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
-    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.11.1 &middot; Quieter Frames</div>
+    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.11.2 &middot; Open Doors</div>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
     <button class="title-fresh-link title-newstory-link" id="titleNewStoryBtn" type="button" style="display:none;">Or begin a brand new story</button>
@@ -2936,8 +2984,8 @@
   </div>
 </div>
 
-<script src="data.js?v=0.11.1"></script>
-<script src="story.js?v=0.11.1"></script>
+<script src="data.js?v=0.11.2"></script>
+<script src="story.js?v=0.11.2"></script>
 <script>
 (function(){
   "use strict";
@@ -6124,6 +6172,7 @@
       var txt;
       if (!storySpotOpen(sh.spot)) txt = "This one is sold at " + sp.name + ", which opens later in the story.";
       else if (storyLevel() < sh.level) txt = sp.name + " will set this aside once you are a " + need.title + ".";
+      else if (sh.season && sh.season !== storySeason()) txt = sp.name + " stocks this one in " + sh.season + ". It's back on the shelves then.";
       else txt = "It's waiting for you at " + sp.name + ". Pop in and take it home.";
       return { kind:'shop', chip:'shop', text:txt };
     }
@@ -6135,6 +6184,7 @@
     }
     return null;
   }
+  function storySeason(){ return Story.seasonOf(storyToday()); }
   function storyRand(n){ return Math.floor(Math.random() * n); }
   function storyReduced(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 
@@ -6238,12 +6288,62 @@
     var rec = story.data.quests[q.id];
     if (rec && rec.done){
       // re-decorating a finished commission: improvements go straight into the home
-      story.data.homes[a.propertyId] = { rooms: ws.rooms, placed: ws.placed, uidCounter: ws.uidCounter };
+      storyCommitHome(q, ws);
     } else {
+      ws.seenQ = storyDoneOfProperty(a.propertyId);
       story.data.drafts[q.id] = ws;
       story.data.lastDraft = q.id;
     }
     storySaveData();
+  }
+
+  /* ---------- the flat is the truth; a draft only owns the rooms its job edits ---------- */
+  function storyDoneOfProperty(pid){
+    var m = storyDoneMap();
+    return Story.QUESTS.filter(function(x){ return x.property === pid && m[x.id]; }).map(function(x){ return x.id; });
+  }
+  function storyEditIds(q){ return q.edit.map(function(k){ return storyRoomId(q.property, k); }); }
+  // piece ids must be unique inside one flat; hands out fresh ones where two pieces clash
+  function storyUniqUids(placed, counter){
+    var seen = {}, top = counter || 1;
+    placed.forEach(function(p){ var n = parseInt(String(p.uid).slice(1), 10); if (n >= top) top = n + 1; });
+    placed.forEach(function(p){ if (seen[p.uid]) p.uid = 'p' + (top++); seen[p.uid] = true; });
+    return top;
+  }
+  function storyOrderRooms(pid, rooms){
+    var order = Story.PROPERTIES[pid].rooms.map(function(d){ return storyRoomId(pid, d.key); });
+    return rooms.slice().sort(function(a, b){ return order.indexOf(a.id) - order.indexOf(b.id); });
+  }
+  // saves a job into the home without touching rooms it does not edit
+  function storyCommitHome(q, ws){
+    var pid = q.property, old = story.data.homes[pid], mine = storyEditIds(q);
+    var rooms = ws.rooms.slice(), placed = ws.placed.filter(function(p){ return mine.indexOf(p.roomId) !== -1; });
+    if (old){
+      old.rooms.forEach(function(r){ if (!rooms.some(function(x){ return x.id === r.id; })) rooms.push(r); });
+      old.placed.forEach(function(p){ if (mine.indexOf(p.roomId) === -1) placed.push(p); });
+      ws.placed.forEach(function(p){ if (mine.indexOf(p.roomId) === -1 && !old.placed.some(function(o){ return o.roomId === p.roomId; })) placed.push(p); });
+    } else {
+      ws.placed.forEach(function(p){ if (mine.indexOf(p.roomId) === -1) placed.push(p); });
+    }
+    var counter = storyUniqUids(placed, Math.max(ws.uidCounter || 1, old ? old.uidCounter || 1 : 1));
+    story.data.homes[pid] = { rooms: storyOrderRooms(pid, rooms), placed: placed, uidCounter: counter };
+  }
+  // an older draft meets the flat as it is now: keep the draft's work in its own rooms only
+  function storyReconcileDraft(q, draft){
+    var base = storyBuildWorkspace(q.property, q), mine = storyEditIds(q);
+    base.rooms = base.rooms.map(function(r){
+      if (mine.indexOf(r.id) === -1) return r;
+      return draft.rooms.filter(function(x){ return x.id === r.id; })[0] || r;
+    });
+    var seen = {}; (draft.seenQ || []).forEach(function(id){ seen[id] = true; });
+    var mineDraft = draft.placed.filter(function(p){ return mine.indexOf(p.roomId) !== -1; });
+    // work that other jobs finished in the same room after the draft was started stays
+    var added = draft.seenQ ? base.placed.filter(function(p){ return mine.indexOf(p.roomId) !== -1 && p.q && p.q !== q.id && !seen[p.q]; }) : [];
+    var keep = base.placed.filter(function(p){ return mine.indexOf(p.roomId) === -1; });
+    base.placed = keep.concat(added, mineDraft);
+    base.uidCounter = storyUniqUids(base.placed, Math.max(base.uidCounter || 1, draft.uidCounter || 1));
+    base.focusedRoomId = draft.focusedRoomId; base.activeTime = draft.activeTime; base.isNight = draft.isNight;
+    return base;
   }
 
   /* ---------- building a workspace from a property ---------- */
@@ -6262,7 +6362,8 @@
     var placed = home ? JSON.parse(JSON.stringify(home.placed)).filter(function(p){
       return rooms.some(function(r){ return r.id === p.roomId; });
     }) : [];
-    return { rooms:rooms, placed:placed, uidCounter: home ? home.uidCounter : 1, focusedRoomId:null, activeTime:'day', isNight:false };
+    var counter = storyUniqUids(placed, home ? home.uidCounter : 1);
+    return { rooms:storyOrderRooms(propertyId, rooms), placed:placed, uidCounter:counter, focusedRoomId:null, activeTime:'day', isNight:false };
   }
   function storyApplyWorkspace(ws){
     state.rooms = ws.rooms;
@@ -6290,7 +6391,7 @@
   /* ---------- entering and leaving rooms ---------- */
   function storyStartQuest(qid){
     var q = Story.questById(qid);
-    var ws = story.data.drafts[qid] || storyBuildWorkspace(q.property, q);
+    var ws = story.data.drafts[qid] ? storyReconcileDraft(q, story.data.drafts[qid]) : storyBuildWorkspace(q.property, q);
     ws.rooms.forEach(function(r){ r.locked = q.edit.indexOf(r.key) === -1; });
     story.active = { mode:'quest', questId:qid, propertyId:q.property };
     document.body.classList.add('story-mode');
@@ -6603,8 +6704,7 @@
     var dayAfter = storyToday();
     if (dayAfter > dayBefore) story.data.lastJump = { from:dayBefore, to:dayAfter };
     var gain = rec.best - prevBest;
-    var ws = storyCaptureWorkspace();
-    story.data.homes[q.property] = { rooms: ws.rooms, placed: ws.placed, uidCounter: ws.uidCounter };
+    storyCommitHome(q, storyCaptureWorkspace());
     delete story.data.drafts[q.id];
     if (story.data.lastDraft === q.id) story.data.lastDraft = null;
     var afterGifts = storyEarned();
@@ -6812,7 +6912,9 @@
     bell:'<path d="M12 3.5a5 5 0 0 0-5 5c0 5-2 6-2 7.5h14c0-1.5-2-2.5-2-7.5a5 5 0 0 0-5-5zM10 18.5a2 2 0 0 0 4 0"/>',
     home:'<path d="M4 11l8-6.5 8 6.5M6.5 9.5v9.5h11V9.5M10 19v-5h4v5"/>',
     heart:'<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.2 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>',
-    mail:'<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.6 7 8.4 6.4L20.4 7"/>'
+    mail:'<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.6 7 8.4 6.4L20.4 7"/>',
+    pin:'<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+    check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>'
   };
   function storyIcon(name){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">' + (STORY_ICONS[name] || STORY_ICONS.flag) + '</svg>'; }
   function storyCap1(t){ return t.charAt(0).toUpperCase() + t.slice(1); }
@@ -6987,58 +7089,60 @@
   function storyEventForSpot(spotId){
     return Story.EVENTS.filter(function(e){ return e.spot === spotId && Story.eventPlay(e.id); })[0] || null;
   }
+  // what a shop has on its shelves right now: this season's pieces, plus anything already taken home
+  function storyShopRows(spotId){
+    var shop = Story.SHOP_STOCK[spotId], season = storySeason(), taken = story.data.shopTaken;
+    return shop ? shop.stock.filter(function(r){ return !r[2] || r[2] === season || taken[r[0]]; }) : [];
+  }
   function storyShopReady(spotId){
-    var shop = Story.SHOP_STOCK[spotId]; if (!shop || !storySpotOpen(spotId)) return 0;
-    var lvl = storyLevel(), n = 0;
-    shop.stock.forEach(function(r){ if (r[1] <= lvl && !story.data.shopTaken[r[0]]) n++; });
-    return n;
+    if (!Story.SHOP_STOCK[spotId] || !storySpotOpen(spotId)) return 0;
+    var lvl = storyLevel();
+    return storyShopRows(spotId).filter(function(r){ return r[1] <= lvl && !story.data.shopTaken[r[0]]; }).length;
   }
-  function storyPieceHtml(id, extra){
-    var it = getAsset(id); if (!it) return '';
-    return '<div class="shp-item ' + (extra.cls || '') + '"><img src="' + it.src + '" alt=""><b>' + storyEsc(it.name) + '</b><i>★' + Story.starsFor(it) + '</i>' + extra.tag + '</div>';
-  }
-  function storyOpenShop(spotId, keepScroll){
+  function storyOpenShop(spotId){
     var sp = Story.spotById(spotId), shop = Story.SHOP_STOCK[spotId]; if (!sp || !shop) return;
-    var lvl = storyLevel(), L = Story.RENOWN_LEVELS, taken = story.data.shopTaken;
-    var ready = storyShopReady(spotId), body = '';
-    for (var tier = 0; tier < L.length; tier++){
-      var rows = shop.stock.filter(function(r){ return r[1] === tier; });
-      if (!rows.length) continue;
-      var open = lvl >= tier;
-      body += '<div class="shp-tier ' + (open ? 'open' : 'shut') + '"><h4>' + (tier === 0 ? 'On the counter' : storyEsc(L[tier].title)) +
-        '<small>' + (open ? (tier === 0 ? 'ready from the day the doors opened' : 'set aside for you') : 'needs: ' + storyEsc(L[tier].title)) + '</small></h4><div class="shp-grid">' +
-        rows.map(function(r){
-          if (taken[r[0]]) return storyPieceHtml(r[0], { cls:'home', tag:'<span class="shp-tag">At home ✓</span>' });
-          if (open) return storyPieceHtml(r[0], { cls:'ready', tag:'<button class="shp-take" type="button" data-id="' + r[0] + '">Take home</button>' });
-          return storyPieceHtml(r[0], { cls:'shut', tag:'<span class="shp-tag lock">☆ ' + storyEsc(L[tier].title) + '</span>' });
-        }).join('') + '</div></div>';
-    }
-    if (shop.have && shop.have.length){
-      body += '<div class="shp-tier open have"><h4>Also on the shelves<small>you already have these</small></h4><div class="shp-grid">' +
-        shop.have.map(function(id){ return storyPieceHtml(id, { cls:'home', tag:'<span class="shp-tag">Already yours</span>' }); }).join('') + '</div></div>';
-    }
+    var L = Story.RENOWN_LEVELS, season = storySeason(), rows = storyShopRows(spotId);
     var ov = document.getElementById('storyShop'), scene = document.getElementById('storyShopScene');
-    var prevScroll = 0, old = scene.querySelector('.shp-scroll'); if (old && keepScroll) prevScroll = old.scrollTop;
-    var status = lvl >= L.length - 1 ? 'You are a ' + L[lvl].title + ': every shelf is open to you.' : 'You are a ' + L[lvl].title + '. The more the town knows you, the more gets set aside.';
-    scene.innerHTML = '<div class="lt-sheet ev-sheet ev-shop shp-sheet show' + (ov.classList.contains('active') ? '' : ' arriving') + ' ready" id="storyShopCard" style="--rot:' + (ov.classList.contains('active') ? '0deg' : storyRot()) + '"><div class="lt-paper">' +
-      '<div class="ev-top"></div><div class="shp-head"><span class="ev-ribbon">' + storyEsc(sp.name) + '</span><p class="shp-blurb">' + storyEsc(sp.blurb) + '</p><p class="shp-status">' + storyEsc(status) + '</p></div>' +
-      '<div class="shp-scroll">' + body + '</div>' +
-      '<div class="lt-actions">' + (ready ? '<button class="lt-btn" id="shAll" type="button">Take home everything I can (' + ready + ')</button>' : '') + '<button class="lt-btn primary" id="shClose" type="button">' + (ready ? 'Later' : 'Thanks!') + '</button></div></div></div>';
-    if (!ov.classList.contains('active')) storyShowOverlay('storyShop');
-    var sc = scene.querySelector('.shp-scroll'); if (sc && prevScroll) sc.scrollTop = prevScroll;
-    var sheet = document.getElementById('storyShopCard');
+    var items = rows.map(function(r){
+      var it = getAsset(r[0]); if (!it) return '';
+      return '<button class="shp-it" type="button" data-id="' + r[0] + '" data-tier="' + r[1] + '" style="--i:' + rows.indexOf(r) + '"><span class="shp-circle"><img src="' + it.src + '" alt="">' +
+        (r[1] ? '<span class="shp-badge" title="' + storyEsc(L[r[1]].title) + '">' + r[1] + '</span>' : '') + '<span class="shp-tick">✓</span></span><b>' + storyEsc(it.name) + '</b><small></small></button>';
+    }).join('');
+    var imgUrl = 'story/shops/' + spotId + '.jpg';
+    scene.innerHTML = '<div class="shp-room" id="storyShopCard"><div class="shp-shade"></div>' +
+      '<div class="shp-top"><span class="shp-name">' + storyEsc(sp.name) + '</span><span class="shp-season s-' + season + '">' + storyCap1(season) + ' shelves</span></div>' +
+      '<p class="shp-status" id="shStatus"></p><div class="shp-circles"><div class="shp-grid" data-n="' + (rows.length <= 5 ? 5 : rows.length <= 8 ? 8 : rows.length <= 12 ? 12 : 16) + '">' + items + '</div></div>' +
+      '<div class="shp-bar"><button class="ev-act" id="shAll" type="button"><span class="ev-ai">' + storyIcon('check') + '</span><b></b></button><button class="ev-act main" id="shClose" type="button"><span class="ev-ai">' + storyIcon('home') + '</span><b></b></button></div></div>';
+    var room = document.getElementById('storyShopCard');
+    room.style.backgroundImage = 'url("' + imgUrl + '")';
+    var probe = new Image(); probe.onerror = function(){ room.classList.add('noimg'); }; probe.src = imgUrl;
+    function state(btn){
+      var id = btn.dataset.id, tier = +btn.dataset.tier;
+      return story.data.shopTaken[id] ? 'home' : (storyLevel() >= tier ? 'ready' : 'shut');
+    }
+    function paint(){
+      var lvl = storyLevel(), ready = 0;
+      scene.querySelectorAll('.shp-it').forEach(function(b){
+        var st = state(b), tier = +b.dataset.tier;
+        b.className = 'shp-it ' + st; if (st === 'ready') ready++;
+        b.querySelector('small').textContent = st === 'home' ? 'At home' : (st === 'shut' ? L[tier].title : 'Take home');
+      });
+      document.getElementById('shStatus').textContent = ready ? ready + (ready === 1 ? ' piece is' : ' pieces are') + ' set aside for you.' : (scene.querySelector('.shp-it.shut') ? 'The number is the reputation a piece needs.' : 'Everything on these shelves is yours.');
+      var all = document.getElementById('shAll'); all.hidden = !ready; all.querySelector('b').textContent = 'Take everything (' + ready + ')';
+      document.getElementById('shClose').querySelector('b').textContent = ready ? 'Later' : 'Thanks!';
+    }
     function take(ids){
       ids.forEach(function(id){ story.data.shopTaken[id] = true; });
-      storySaveData(); storyRefreshTrayStates();
-      storyOpenShop(spotId, true);
+      storySaveData(); storyRefreshTrayStates(); paint();
       storyToast(ids.length > 1 ? ids.length + ' pieces are now in your tray.' : 'It is now in your tray.');
     }
-    scene.querySelectorAll('.shp-take').forEach(function(b){ b.addEventListener('click', function(){ take([b.dataset.id]); }); });
-    var all = document.getElementById('shAll');
-    if (all) all.addEventListener('click', function(){
-      take(shop.stock.filter(function(r){ return r[1] <= lvl && !story.data.shopTaken[r[0]]; }).map(function(r){ return r[0]; }));
+    scene.querySelectorAll('.shp-it').forEach(function(b){ b.addEventListener('click', function(){ if (b.classList.contains('ready')) take([b.dataset.id]); }); });
+    document.getElementById('shAll').addEventListener('click', function(){
+      take(storyShopRows(spotId).filter(function(r){ return r[1] <= storyLevel() && !story.data.shopTaken[r[0]]; }).map(function(r){ return r[0]; }));
     });
-    document.getElementById('shClose').addEventListener('click', function(){ storyDismissSheet('storyShop', sheet); });
+    document.getElementById('shClose').addEventListener('click', function(){ storyDismissSheet('storyShop', room); });
+    paint();
+    storyShowOverlay('storyShop');
   }
 
   /* ---------- playing an event: three things to do, three ways to answer ---------- */
@@ -7055,22 +7159,25 @@
       var rec = story.data.play[eid] || {}, it = getAsset(pl.prize);
       if (!it) return '';
       var score = storyPlayScore(eid);
-      if (rec.won) return '<div class="pl-prize won"><img src="' + it.src + '" alt=""><div><b>' + storyEsc(it.name) + '</b><span>' + storyEsc(pl.prizeSay) + '</span><em>' + (just ? 'Yours now — it’s in your tray!' : 'In your tray') + '</em></div></div>';
-      return '<div class="pl-prize"><img class="locked" src="' + it.src + '" alt=""><div><b>A keepsake from today</b><span>Get ' + Story.EVENT_NEED + ' of the 3 right and it’s yours.</span><em>' + score + ' of 3 so far</em></div></div>';
+      if (rec.won) return '<div class="pl-prize won"><img src="' + it.src + '" alt=""><div><b>' + storyEsc(it.name) + '</b><span>' + (just ? 'Yours now — it’s in your tray!' : 'In your tray') + '</span></div></div>';
+      var pips = '';
+      for (var k = 0; k < 3; k++) pips += '<i class="' + (k < score ? 'on' : '') + '"></i>';
+      return '<div class="pl-prize"><img class="locked" src="' + it.src + '" alt=""><div><b>A keepsake from today</b><span>Get ' + Story.EVENT_NEED + ' of 3 right</span></div><div class="pl-pips" aria-label="' + score + ' of 3">' + pips + '</div></div>';
+    }
+    function sheet(inner, actions, arriving){
+      return '<div class="lt-sheet ev-sheet ev-happening pl-sheet show ' + (arriving ? 'arriving ' : '') + 'ready" id="storyPlayCard" style="--rot:' + (arriving ? storyRot() : '0deg') + '"><div class="lt-paper"><div class="ev-top"></div><div class="ev-body">' + inner + '</div><div class="lt-actions">' + actions + '</div></div></div>';
     }
     function hub(){
-      var rec = story.data.play[eid] || { r:{} }, done = storyPlayScore(eid);
+      var rec = story.data.play[eid] || { r:{} }, full = storyPlayScore(eid) === 3;
       var stations = pl.st.map(function(s, i){
         var ok = rec.r && rec.r[i];
-        return '<button class="pl-st' + (ok ? ' ok' : '') + '" type="button" data-i="' + i + '">' + av(s, 'pl-av') + '<span class="pl-who"><b>' + storyEsc(s.who) + '</b><small>' + storyEsc(s.role) + '</small></span><span class="pl-mark">' + (ok ? '✓' : '?') + '</span></button>';
+        return '<button class="pl-st' + (ok ? ' ok' : '') + '" type="button" data-i="' + i + '"><span class="pl-mark">' + (ok ? '✓' : '?') + '</span>' + av(s, 'pl-av') + '<b>' + storyEsc(s.who) + '</b><small>' + storyEsc(s.role) + '</small></button>';
       }).join('');
-      var full = done === 3;
-      scene.innerHTML = '<div class="lt-sheet ev-sheet ev-happening pl-sheet show ' + (scene.dataset.open === '1' ? '' : 'arriving ') + 'ready" id="storyPlayCard" style="--rot:' + (scene.dataset.open === '1' ? '0deg' : storyRot()) + '"><div class="lt-paper"><div class="ev-top"></div><div class="ev-body">' +
+      var lead = rec.won ? (full ? 'Full marks — the whole day went right.' : 'A good day. One more person could still use your help.') : 'Who will you help first?';
+      scene.innerHTML = sheet(
         '<div class="ev-kicker">' + storyEsc(Story.monthOf(e.day).label) + (live ? ' · on now' : ' · a memory') + '</div><h3 class="ev-title">' + storyEsc(e.title) + '</h3>' +
-        '<p class="pl-intro">' + storyEsc((e.lines && e.lines[0]) || '') + '</p>' +
-        '<p class="pl-lead">' + (rec.won ? (full ? 'Full marks — the whole day went right.' : 'A good day. There is one more thing you could still help with.') : 'Three things need doing. Pick one.') + '</p>' +
-        '<div class="pl-stations">' + stations + '</div>' + prizeHtml() +
-        '</div><div class="lt-actions"><button class="lt-btn primary" id="plClose" type="button">' + (rec.won ? 'Lovely' : 'Back to the map') + '</button></div></div></div>';
+        '<p class="pl-lead">' + lead + '</p><div class="pl-stations">' + stations + '</div>' + prizeHtml(),
+        '<button class="lt-btn primary" id="plClose" type="button">' + (rec.won ? 'Lovely' : 'Back to the map') + '</button>', scene.dataset.open !== '1');
       scene.dataset.open = '1';
       scene.querySelectorAll('.pl-st').forEach(function(b){ b.addEventListener('click', function(){ talk(+b.dataset.i); }); });
       document.getElementById('plClose').addEventListener('click', close);
@@ -7084,13 +7191,12 @@
         if (solved && picked < 0){
           body += '<div class="pl-reply good"><b>All sorted ✓</b>' + storyEsc(s.o[0][1]) + '</div>';
         } else if (picked < 0){
-          body += '<div class="pl-opts">' + opts.map(function(oi){ return '<button class="pl-opt" type="button" data-o="' + oi + '">' + storyEsc(s.o[oi][0]) + '</button>'; }).join('') + '</div>';
+          body += '<div class="pl-opts">' + opts.map(function(oi, n){ return '<button class="pl-opt" type="button" data-o="' + oi + '"><i>' + 'ABC'.charAt(n) + '</i><span>' + storyEsc(s.o[oi][0]) + '</span></button>'; }).join('') + '</div>';
         } else {
-          body += '<div class="pl-opts done">' + opts.map(function(oi){ return '<div class="pl-opt ' + (oi === picked ? (picked === 0 ? 'right' : 'wrong') : 'off') + '">' + storyEsc(s.o[oi][0]) + '</div>'; }).join('') + '</div>' +
+          body += '<div class="pl-opts done">' + opts.map(function(oi, n){ return '<div class="pl-opt ' + (oi === picked ? (picked === 0 ? 'right' : 'wrong') : 'off') + '"><i>' + 'ABC'.charAt(n) + '</i><span>' + storyEsc(s.o[oi][0]) + '</span></div>'; }).join('') + '</div>' +
             '<div class="pl-reply ' + (picked === 0 ? 'good' : 'meh') + '"><b>' + (picked === 0 ? 'That did it ✓' : 'Hmm. Not quite') + '</b>' + storyEsc(s.o[picked][1]) + '</div>';
         }
-        scene.innerHTML = '<div class="lt-sheet ev-sheet ev-happening pl-sheet show ready" id="storyPlayCard" style="--rot:0deg"><div class="lt-paper"><div class="ev-top"></div><div class="ev-body">' +
-          '<div class="ev-kicker">' + storyEsc(e.title) + '</div>' + body + '</div><div class="lt-actions"><button class="lt-btn primary" id="plBack" type="button">' + (picked >= 0 ? (picked === 0 ? 'On we go' : 'Back') : 'Back') + '</button></div></div></div>';
+        scene.innerHTML = sheet(body, '<button class="lt-btn primary" id="plBack" type="button">' + (picked === 0 ? 'On we go' : 'Back') + '</button>', false);
         scene.querySelectorAll('.pl-opt[data-o]').forEach(function(b){ b.addEventListener('click', function(){ choose(+b.dataset.o); }); });
         document.getElementById('plBack').addEventListener('click', hub);
       }
@@ -7215,7 +7321,7 @@
   /* ---------- event cards: invitations, new homes, shops, happenings ---------- */
   function storyEventHtml(e){
     var di = Story.monthOf(e.day), who = e.who ? Story.CHARACTERS[e.who] : null;
-    var lines = (e.lines || []).map(function(t){ return '<p>' + storyEsc(t) + '</p>'; }).join('');
+    var lines = e.lines && e.lines[0] ? '<p class="ev-lead">' + storyEsc(e.lines[0]) + '</p>' : '';  
     var sp = e.spot ? Story.spotById(e.spot) : null;
     var top = '', body = '';
     if (e.kind === 'invite'){
@@ -7224,12 +7330,12 @@
         '<div class="ev-orn">✦</div><p class="ev-sign">' + storyEsc(e.sign || '') + '</p>';
     } else if (e.kind === 'shop'){
       top = '<div class="ev-top"></div>';
-      body = '<span class="ev-ribbon">Now open</span><h3 class="ev-title">' + storyEsc(e.title) + '</h3>' + lines + (sp && sp.soon ? '<p class="ev-when">' + storyEsc(sp.soon) + '</p>' : '');
+      body = '<div class="ev-icon">' + storyIcon(sp && sp.icon || 'flag') + '</div><span class="ev-ribbon">Now open</span><h3 class="ev-title">' + storyEsc(e.title) + '</h3>' + lines;
     } else if (e.kind === 'happening'){
       top = '<div class="ev-top"></div>';
       var live = !!(e.spot && storySpotEls[e.spot]);
-      body = '<div class="ev-kicker">' + storyEsc(di.label) + '</div><h3 class="ev-title">' + storyEsc(e.title) + '</h3>' + lines +
-        '<p class="ev-when">' + (live ? 'On now — see the map' : 'Already over — the Courier has the story') + '</p>';
+      body = '<div class="ev-icon">' + storyIcon(sp && sp.icon || 'flag') + '</div><div class="ev-kicker">' + storyEsc(di.label) + '</div><h3 class="ev-title">' + storyEsc(e.title) + '</h3>' + lines +
+        '<p class="ev-when">' + (live ? 'On now' : 'Already over') + '</p>';
     } else if (e.kind === 'birth'){
       body = '<div class="ev-icon">' + storyIcon('heart') + '</div><div class="ev-kicker">A little announcement</div><h3 class="ev-title">' + storyEsc(e.title) + '</h3>' + lines + '<p class="ev-sign">— ' + storyEsc(e.sign || '') + '</p>';
     } else if (e.kind === 'home'){
@@ -7252,7 +7358,7 @@
       if (!c || !first || !done[first.id]) return;
       out.push('<li><span class="ev-rav" style="--pin:' + c.color + '">' + storyEsc(c.name.charAt(0)) + '</span><span class="ev-rtx"><b>' + storyEsc(c.name) + '</b> ' + storyEsc(r[1]) + '</span></li>');
     });
-    return out.length ? '<ul class="ev-react">' + out.slice(0, 3).join('') + '</ul>' : '';
+    return out.length ? '<ul class="ev-react">' + out.slice(0, 1).join('') + '</ul>' : '';
   }
   function storyShowEvent(e, next){
     var scene = document.getElementById('storyEventScene');
@@ -7262,8 +7368,10 @@
     if (e.kind === 'home') focus = function(){ storyFocusPin(e.home); };
     else if (e.spot && Story.spotById(e.spot) && storySpotEls[e.spot]) focus = function(){ storyFocusSpot(e.spot); };
     var canPlay = !!Story.eventPlay(e.id);
-    acts.innerHTML = (canPlay ? '<button class="lt-btn" id="evPlay" type="button">' + (e.kind === 'invite' ? 'Help get ready' : 'Join in') + '</button>' : '') + (focus ? '<button class="lt-btn" id="evMap" type="button">Show me on the map</button>' : '') +
-      '<button class="lt-btn primary" id="evOk" type="button">' + (e.kind === 'invite' ? 'I\'ll be there!' : (e.kind === 'birth' ? 'Congratulations!' : 'Lovely')) + '</button>';
+    function tile(id, icon, label, cls){ return '<button class="ev-act' + (cls ? ' ' + cls : '') + '" id="' + id + '" type="button"><span class="ev-ai">' + storyIcon(icon) + '</span><b>' + label + '</b></button>'; }
+    acts.className = 'lt-actions ev-acts';
+    acts.innerHTML = (canPlay ? tile('evPlay', 'flag', e.kind === 'invite' ? 'Help get ready' : 'Join in') : '') + (focus ? tile('evMap', 'pin', 'Show me on the map') : '') +
+      tile('evOk', e.kind === 'birth' ? 'heart' : 'check', e.kind === 'invite' ? 'I\'ll be there!' : (e.kind === 'birth' ? 'Congratulations!' : 'Lovely'), 'main');
     storyShowOverlay('storyEvent');
     setTimeout(function(){ sheet.classList.add('ready'); }, storyReduced() ? 20 : 700);
     document.getElementById('evOk').addEventListener('click', function(){ storyDismissSheet('storyEvent', sheet, next); });
@@ -7833,7 +7941,7 @@
     }
   }
   // small read-only handle for testing from the browser console
-  window.__rsStory = { lock:storyItemLock, play:storyOpenPlay, score:storyPlayScore, data:function(){ return story.data; }, level:storyLevel, start:storyStartQuest };
+  window.__rsStory = { season:storySeason, lock:storyItemLock, play:storyOpenPlay, score:storyPlayScore, data:function(){ return story.data; }, level:storyLevel, start:storyStartQuest };
 
 
   /* ---------------- init ---------------- */
@@ -7877,7 +7985,7 @@
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   // version check: shows which build of each file is live, so a stale upload or cache is obvious
   (function(){
-    var want = '0.11.1', box = document.getElementById('titleFiles');
+    var want = '0.11.2', box = document.getElementById('titleFiles');
     var d = (typeof DATA_FILE_VERSION !== 'undefined') ? DATA_FILE_VERSION : null;
     var st = (typeof STORY_FILE_VERSION !== 'undefined') ? STORY_FILE_VERSION : null;
     var stale = [];
@@ -7887,7 +7995,7 @@
       box.className = 'title-files stale';
       box.textContent = 'Not up to date: ' + stale.join(', ') + '. Upload it, then refresh.';
     } else {
-      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 13:44';
+      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 15:54';
     }
   })();
   renderRoomGrid();

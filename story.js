@@ -12,7 +12,7 @@
    are matched by item id / category below. If an item is added or renamed in
    data.js, only the KINDS table has to learn about it.
    ========================================================================== */
-var STORY_FILE_VERSION = '0.11.1'; // stamped by the build, shown on the title screen
+var STORY_FILE_VERSION = '0.11.2'; // stamped by the build, shown on the title screen
 var Story = (function(){
 
   /* ------------------------------------------------------------------ town */
@@ -947,14 +947,16 @@ var Story = (function(){
      (index into RENOWN_LEVELS: 0 Hobbyist, 1 Friend of the Street, 2 Local
      Favourite, 3 Pride of the Cove). Once you reach it you can go to the shop
      and take the piece home; it is yours for every job after that.
+     A row can carry a third entry, a season ('spring' | 'summer' | 'autumn' | 'winter'):
+     that piece is only on the shelves in that season (taken pieces stay yours).
      `have` = pieces the shop also stocks that are already on your shelves.
      (Free play ignores all of this: everything is there from the start.) */
   var SHOP_STOCK = {
     bakery: {
       stock: [
         ['food-bakedbread',0], ['food-bread-basket',0], ['food-bread-basket-baquettes',0], ['food-lemon-cake',0],
-        ['food-cookie-jar',1], ['food-muffin-tray',1], ['food-orange-cake',1], ['food-strawberry-cake',1],
-        ['food-bread-coolingrack',2], ['food-plum-cake',2], ['food-pistachio-cake',2], ['food-pecan-pie',2],
+        ['food-cookie-jar',1], ['food-muffin-tray',1], ['food-orange-cake',1,'winter'], ['food-strawberry-cake',1,'summer'],
+        ['food-bread-coolingrack',2], ['food-plum-cake',2,'autumn'], ['food-pistachio-cake',2,'spring'], ['food-pecan-pie',2,'autumn'],
         ['food-redvelvet-cake',3]
       ],
       have: ['food-cuttingboard-withdough','food-cuttingboards-wood','food-cuttingboards-marble','food-potcollection-copper']
@@ -962,8 +964,8 @@ var Story = (function(){
     flowers: {
       stock: [
         ['flowers-dara-blue',0], ['flowers-hilda-white',0],
-        ['flowers-lia-blue',1], ['flowers-nina-rosa',1], ['flowers-gina-brown',1], ['hangingplant-sulie',1],
-        ['flowers-mina-red',2], ['flowers-nadja-red',2], ['flowers-sia-green',2], ['monstera-tall',2], ['rubber-tree-alix',2], ['plant-kiki',2],
+        ['flowers-lia-blue',1,'summer'], ['flowers-nina-rosa',1,'spring'], ['flowers-gina-brown',1,'autumn'], ['hangingplant-sulie',1],
+        ['flowers-mina-red',2,'winter'], ['flowers-nadja-red',2,'autumn'], ['flowers-sia-green',2,'spring'], ['monstera-tall',2], ['rubber-tree-alix',2], ['plant-kiki',2],
         ['plant-hugo',3], ['plant-sala',3], ['zuzu-plant-tall',3]
       ],
       have: ['blooming-flowers','flowers-jutta-rosa','flowers-sia-rosa','flowers-lola-white','monstera-small','fiddle-leaf-small']
@@ -973,15 +975,15 @@ var Story = (function(){
         ['recordplayer-black',0], ['recordplayer-rosa',0],
         ['recordplayer-beige',1], ['piano-alexander-black',1], ['piano-alexander-brown',1],
         ['piano-beth-black',2], ['piano-beth-brown',2], ['piano-luther-white',2], ['marble-pillar-jutta',2],
-        ['grand-piano-riga-black',3], ['fireplace-marlo-marble-grey',3], ['fireplace-maka-beige',3]
+        ['grand-piano-riga-black',3], ['fireplace-marlo-marble-grey',3], ['fireplace-maka-beige',3,'winter']
       ],
       have: ['sideboard-lulu-darkwood','cabinet-luna-darkwood','armchair-bruno-green','wall-lamp-rita']
     },
     books: {
       stock: [
         ['book-collection-beige',0], ['books-stacked-white-small',0], ['books-leaning-white',0],
-        ['book-collection-earthy',1], ['book-collection-blue-22',1], ['books-stacked-thick-beige',1], ['bockstack-01',1],
-        ['book-collection-marblebookends-small',2], ['book-collection-marblebookends-wide',2], ['books-beige-stonebookends',2], ['books-stacked-thick-black',2],
+        ['book-collection-earthy',1,'autumn'], ['book-collection-blue-22',1,'summer'], ['books-stacked-thick-beige',1], ['bockstack-01',1],
+        ['book-collection-marblebookends-small',2], ['book-collection-marblebookends-wide',2], ['books-beige-stonebookends',2], ['books-stacked-thick-black',2,'winter'],
         ['book-collection-beige-thick',3], ['book-collection-blue-21',3]
       ],
       have: ['book-collection-big','book-collection-small','book-collection-orange','book-stack-standing','bockstack-02','books-blank-stack-white']
@@ -989,16 +991,16 @@ var Story = (function(){
     gallery: {
       stock: [
         ['painting-field-beige',0],
-        ['painting-polly-blue-beige',1], ['painting-rocks-beige-dark',1],
-        ['painting-shadow-fern-pink',2], ['painting-turner-pink',2], ['paiting-easel-karl',2],
+        ['painting-polly-blue-beige',1,'summer'], ['painting-rocks-beige-dark',1,'autumn'],
+        ['painting-shadow-fern-pink',2,'spring'], ['painting-turner-pink',2], ['paiting-easel-karl',2],
         ['painting-green-mist',3], ['modern-painting',3]
       ],
       have: ['painting-fern','painting-fern-blue','painting-livia','painting-polly-green-beige','painting-turner-beige','wallart-tulipa']
     }
   };
-  var SHOP_OWNER = {};   // item id -> { spot, level }
+  var SHOP_OWNER = {};   // item id -> { spot, level, season|null }
   Object.keys(SHOP_STOCK).forEach(function(spot){
-    SHOP_STOCK[spot].stock.forEach(function(r){ SHOP_OWNER[r[0]] = { spot:spot, level:r[1] }; });
+    SHOP_STOCK[spot].stock.forEach(function(r){ SHOP_OWNER[r[0]] = { spot:spot, level:r[1], season:r[2] || null }; });
   });
   function shopOf(itemId){ return SHOP_OWNER[itemId] || null; }
 
