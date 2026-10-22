@@ -12,7 +12,7 @@
    are matched by item id / category below. If an item is added or renamed in
    data.js, only the KINDS table has to learn about it.
    ========================================================================== */
-var STORY_FILE_VERSION = '0.8.0'; // stamped by the build, shown on the title screen
+var STORY_FILE_VERSION = '0.10.1'; // stamped by the build, shown on the title screen
 var Story = (function(){
 
   /* ------------------------------------------------------------------ town */
@@ -206,7 +206,7 @@ var Story = (function(){
   // Every item is worth 1-5 stars. Most things are 1-3; a few really special
   // pieces are 4-5 and only unlock as your renown grows.
   var STAR_RULES = [
-    [/^desk-/, 3], [/^grand-piano/, 4], [/^piano-/, 3], [/^drums-/, 2],
+    [/^desk-/, 3], [/^computer-/, 2], [/^laptop-/, 1], [/^poof-/, 1], [/^deskchair-/, 2], [/^grand-piano/, 4], [/^piano-/, 3], [/^drums-/, 2],
     [/^fireplace/, 4], [/^chandelier/, 3], [/^(couch|sofa)-/, 3], [/^armchair-/, 2], [/^chair-/, 2], [/^stool-/, 1],
     [/^bed-/, 2], [/^bedding-/, 2], [/^bedsidetable-/, 2], [/^sidetable-/, 1], [/couchtable/, 2], [/^diningtable-/, 3],
     [/^(sideboard|cabinet)-/, 3], [/^bookshelf-/, 3], [/^wallshelf-/, 2],
@@ -814,19 +814,20 @@ var Story = (function(){
 
   /* ----------------------------------------------------------- places & happenings */
   // Little places that appear on the map as the story goes on. Shops stay for
-  // good. Happenings are on for `len` days from `day`. (You can't buy anything
-  // in the shops yet — the shop cards say "coming soon".)
+  // good. Happenings are on for `len` days from `day`. There is no money in the
+  // Cove: shops set pieces aside by reputation (see SHOP_STOCK) and happenings
+  // have little things to do (see EVENT_PLAY).
   var SPOTS = [
     { id:'flowers',  kind:'shop', icon:'flower',  name:'Fennel & Fern',          x:54.3, y:54.3, day:58,
-      blurb:"A striped awning, buckets of dahlias and a very serious cat called Parsley.", soon:"Soon you'll be able to buy fresh flowers here." },
+      blurb:"A striped awning, buckets of dahlias and a very serious cat called Parsley.", soon:"Ask Parsley nicely: the best bunches get set aside for people the town knows." },
     { id:'antiques', kind:'shop', icon:'urn',     name:'Marigold & Moss Antiques', x:26.3, y:69.5, day:106,
-      blurb:"In the pink house with the porch, where the old Church Hill families send their attics. Chairs with stories, lamps with opinions, most of it very heavy.", soon:"Soon you'll be able to hunt for one-off pieces here." },
+      blurb:"In the pink house with the porch, where the old Church Hill families send their attics. Chairs with stories, lamps with opinions, most of it very heavy.", soon:"Marigold keeps her best pieces back for people the town trusts." },
     { id:'books',    kind:'shop', icon:'book',    name:'The Dog-Eared Bookshop',   x:27.0, y:22.0, day:236,
-      blurb:"A crooked little shop on Orchard Rise with a ladder on rails, a sleeping dog and a very good children's corner.", soon:"Soon you'll be able to browse the shelves here." },
+      blurb:"A crooked little shop on Orchard Rise with a ladder on rails, a sleeping dog and a very good children's corner.", soon:"The good shelves are kept for people who have earned a bit of a name." },
     { id:'gallery',  kind:'shop', icon:'frame',   name:'The Paper Moth Gallery',   x:95.2, y:40.5, day:322,
-      blurb:"Small prints, big frames, and a free glass of something fizzy on opening night.", soon:"Soon you'll be able to buy art for your rooms here." },
+      blurb:"Small prints, big frames, and a free glass of something fizzy on opening night.", soon:"The best prints are hung for people the town speaks well of." },
     { id:'bakery',   kind:'shop', icon:'loaf',    name:'Crumb & Crown Bakery',     x:41.5, y:56.5, day:140,
-      blurb:"Open at seven, sold out by eleven. The old baker is handing Theo every recipe he owns, one loaf at a time. A shop cat supervises.", soon:"Soon you'll be able to buy a warm loaf here." },
+      blurb:"Open at seven, sold out by eleven. The old baker is handing Theo every recipe he owns, one loaf at a time. A shop cat supervises.", soon:"The baker puts the best cakes aside for people the town knows." },
 
     { id:'fleamarket', kind:'happening', icon:'flag', name:'Flea Market on Orchard Green', x:46.0, y:19.5, day:40, len:8,
       blurb:"Tables of teapots, brass bells and one suspiciously large clock. Bring a bag." },
@@ -940,6 +941,306 @@ var Story = (function(){
     { id:'h_rosa', react:[['theo',"A neighbour up the lane! I'll bring bread. And Wren."],['mia',"Tea with a view of the bay. I'm bringing the lemon loaf."],['jules',"Ducks on the cushions? I can draw some. Don't tell her."]], after:'ROSA_03', kind:'home', who:'rosa', home:'ROSA_CABIN_A', second:true, title:'Rosa has bought a cabin',
       lines:["A little house on Lantern Lane, with a kitchen window that looks straight down to the bay.","She is keeping her flat in town. ‘I am not a monster, darling.’"] }
   ];
+  /* ------------------------------------------------------------------ shops
+     No money in the Cove, so the shops go by reputation instead: a shopkeeper
+     sets pieces aside for people the town trusts. Each shelf has a renown level
+     (index into RENOWN_LEVELS: 0 Hobbyist, 1 Friend of the Street, 2 Local
+     Favourite, 3 Pride of the Cove). Once you reach it you can go to the shop
+     and take the piece home; it is yours for every job after that.
+     `have` = pieces the shop also stocks that are already on your shelves.
+     (Free play ignores all of this: everything is there from the start.) */
+  var SHOP_STOCK = {
+    bakery: {
+      stock: [
+        ['food-bakedbread',0], ['food-bread-basket',0], ['food-bread-basket-baquettes',0], ['food-lemon-cake',0],
+        ['food-cookie-jar',1], ['food-muffin-tray',1], ['food-orange-cake',1], ['food-strawberry-cake',1],
+        ['food-bread-coolingrack',2], ['food-plum-cake',2], ['food-pistachio-cake',2], ['food-pecan-pie',2],
+        ['food-redvelvet-cake',3]
+      ],
+      have: ['food-cuttingboard-withdough','food-cuttingboards-wood','food-cuttingboards-marble','food-potcollection-copper']
+    },
+    flowers: {
+      stock: [
+        ['flowers-dara-blue',0], ['flowers-hilda-white',0],
+        ['flowers-lia-blue',1], ['flowers-nina-rosa',1], ['flowers-gina-brown',1], ['hangingplant-sulie',1],
+        ['flowers-mina-red',2], ['flowers-nadja-red',2], ['flowers-sia-green',2], ['monstera-tall',2], ['rubber-tree-alix',2], ['plant-kiki',2],
+        ['plant-hugo',3], ['plant-sala',3], ['zuzu-plant-tall',3]
+      ],
+      have: ['blooming-flowers','flowers-jutta-rosa','flowers-sia-rosa','flowers-lola-white','monstera-small','fiddle-leaf-small']
+    },
+    antiques: {
+      stock: [
+        ['recordplayer-black',0], ['recordplayer-rosa',0],
+        ['recordplayer-beige',1], ['piano-alexander-black',1], ['piano-alexander-brown',1],
+        ['piano-beth-black',2], ['piano-beth-brown',2], ['piano-luther-white',2], ['marble-pillar-jutta',2],
+        ['grand-piano-riga-black',3], ['fireplace-marlo-marble-grey',3], ['fireplace-maka-beige',3]
+      ],
+      have: ['sideboard-lulu-darkwood','cabinet-luna-darkwood','armchair-bruno-green','wall-lamp-rita']
+    },
+    books: {
+      stock: [
+        ['book-collection-beige',0], ['books-stacked-white-small',0], ['books-leaning-white',0],
+        ['book-collection-earthy',1], ['book-collection-blue-22',1], ['books-stacked-thick-beige',1], ['bockstack-01',1],
+        ['book-collection-marblebookends-small',2], ['book-collection-marblebookends-wide',2], ['books-beige-stonebookends',2], ['books-stacked-thick-black',2],
+        ['book-collection-beige-thick',3], ['book-collection-blue-21',3]
+      ],
+      have: ['book-collection-big','book-collection-small','book-collection-orange','book-stack-standing','bockstack-02','books-blank-stack-white']
+    },
+    gallery: {
+      stock: [
+        ['painting-field-beige',0],
+        ['painting-polly-blue-beige',1], ['painting-rocks-beige-dark',1],
+        ['painting-shadow-fern-pink',2], ['painting-turner-pink',2], ['paiting-easel-karl',2],
+        ['painting-green-mist',3], ['modern-painting',3]
+      ],
+      have: ['painting-fern','painting-fern-blue','painting-livia','painting-polly-green-beige','painting-turner-beige','wallart-tulipa']
+    }
+  };
+  var SHOP_OWNER = {};   // item id -> { spot, level }
+  Object.keys(SHOP_STOCK).forEach(function(spot){
+    SHOP_STOCK[spot].stock.forEach(function(r){ SHOP_OWNER[r[0]] = { spot:spot, level:r[1] }; });
+  });
+  function shopOf(itemId){ return SHOP_OWNER[itemId] || null; }
+
+  /* ------------------------------------------------------------------ playing the events
+     Every happening has three little things to do or people to talk to. Each
+     has three answers (the first one listed is the right one; the game shuffles
+     them). Get two of the three right and the town gives you a keepsake from
+     the day. The prizes below are stand-ins from the existing catalogue; swap
+     the id for a new seasonal piece whenever it exists. A wrong answer only
+     earns a funny line, and you can always try again. */
+  var EVENT_PLAY = {
+    e_street: { prize:'food-fruitbasket-miriam', prizeSay:"A basket of fruit nobody can remember bringing.", st:[
+      { who:'Sam', c:'sam', role:'Events producer', say:"The speaker is rattling the plates and everyone is shouting over it. Your call?", o:[
+        ["Turn it to face the street, away from the tables.", "Sam, quietly moved: “Angles. Nobody ever thinks about angles.”"],
+        ["Turn it down a notch.", "“Safe. Safe is… fine.” He doesn't look happy about safe."],
+        ["Turn it up. They'll adapt.", "Sam looks at you the way he looks at a double-booked hall."] ] },
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"I made two dozen lemon cookies and I'm hiding behind the tray. How do I get through an afternoon of strangers?", o:[
+        ["Hand the tray round. Everybody talks to the cookie person.", "“Oh. Oh, that's cheating. That's wonderful.”"],
+        ["Stay by the tray. People will come to you.", "“That worked once. In 2021. For about four minutes.”"],
+        ["Eat them all, quickly, in a doorway.", "“Tempting. No. Yes. Maybe a few.”"] ] },
+      { who:'Dennis', c:null, role:'Ham owner, No. 9', say:"I've brought a whole ham and there's a dog. Where does it go?", o:[
+        ["Dead centre of the tallest table.", "Dennis nods slowly. “The dog will be heartbroken. Excellent.”"],
+        ["On a chair, under a tea towel.", "“A chair. Under a towel. It'll look like a very small guest.”"],
+        ["Ask the dog politely to leave it.", "The dog looks at you. The ham looks at you. Neither is reassured."] ] }
+    ]},
+    e_bonfire: { prize:'cowhide-carrie-darkbrown', prizeSay:"Something warm to sit on, still smelling faintly of woodsmoke.", st:[
+      { who:'Sam', c:'sam', role:'Events producer', say:"Fire's built, sausages are ready. Where does everybody sit?", o:[
+        ["In a wide circle, facing the sea.", "“A view and a fire. See? Production.”"],
+        ["Wherever they like.", "“Chaos. Charming chaos. I'll allow it.”"],
+        ["As close to the flames as possible.", "“Warm. Briefly. Then very much not.”"] ] },
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"Someone's offered me a marshmallow stick. It's nearly nine, which is when I usually go home.", o:[
+        ["Take it, toast one, stay a little longer.", "“…One more. Just one more. Okay, three.”"],
+        ["Say thanks and head home.", "“Sensible. Slightly sad. Sensible.”"],
+        ["Toast the whole bag at once.", "A small fireball is reported. Nobody is hurt. Everybody is delighted."] ] },
+      { who:'Jules', c:'jules', role:'Illustration student', say:"I want to draw the fire, but all I have is a pencil. Ideas?", o:[
+        ["Take a burnt stick from the edge. Free charcoal.", "“A BURNT STICK. You get me.”"],
+        ["Borrow somebody's pen.", "“Fine, but pens don't smudge. I need smudge.”"],
+        ["Hold the pencil in the fire for effect.", "“Now I have a pencil stub and a legend.”"] ] }
+    ]},
+    e_kites: { prize:'deco-knot', prizeSay:"A tangled-string keepsake from the quay.", st:[
+      { who:'Theo', c:'theo', role:'Baker', say:"I built three kite frames. Elena says I'm not allowed to help. Which one flies?", o:[
+        ["The lightest one, with the longest tail.", "“Longest tail. Of course. Elena owes me a coffee.”"],
+        ["The strongest frame.", "“Strong, yes. Flies like a bread board, sadly.”"],
+        ["The one with the gears.", "“I did put gears on it. It was heavy. It's still the best.”"] ] },
+      { who:'Pip', c:null, role:'Kite owner, age 7', say:"My string is in a knot as big as my head!", o:[
+        ["Hold it loosely and work the knot out from the end.", "Pip pulls the last loop free. “You're a WIZARD.”"],
+        ["Cut it. Start again.", "“But it was my favourite string!” (it's a bit shorter now)"],
+        ["Pull harder.", "The knot is now the size of Pip's head AND a fist."] ] },
+      { who:'Sam', c:'sam', role:'Events producer', say:"Three kites are stuck in the clock tower. I'm supervising. What do I tell the council?", o:[
+        ["Ask the clock keeper for the key on Monday.", "“A key. A real key. I'm putting it on the list.”"],
+        ["Leave them. They look festive.", "“Festive. The council will adore that.”"],
+        ["Throw another kite at them.", "Four kites in the clock tower. Sam sits down."] ] }
+    ]},
+    e_apple: { prize:'plant-hector', prizeSay:"A little apple tree in a pot, tiny apples and all.", st:[
+      { who:'Judge Hollis', c:null, role:'Apple Day judge', say:"A shiny giant, a lumpy one with a lovely smell, or Theo's tiny one that's won before. Which takes the ribbon?", o:[
+        ["Theo's tiny one. It has the best story.", "“Same as last year. The town expects it.”"],
+        ["The shiny giant.", "“Handsome. Wooden inside, I'd wager.”"],
+        ["All of them, baked in one pie.", "“Disqualified for being delicious.”"] ] },
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"I'm baking apple tart for the competition. One big one, or more?", o:[
+        ["One for the table, one for the judge, one for emergencies.", "“Three! The emergency one is always the best one.”"],
+        ["One big one.", "“Big. Impressive. Very hard to slice quietly.”"],
+        ["Lemon. Obviously.", "“…It's an apple day. But I appreciate you.”"] ] },
+      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"The light on the orchard is pure gold. What should I wear to judge?", o:[
+        ["The mustard coat. It matches the leaves.", "“Matching the season is simply good manners.”"],
+        ["The green shawl.", "“Lovely, darling, but it argues with the trees.”"],
+        ["Her old rain mac.", "“I am not dressing as a bin bag.”"] ] }
+    ]},
+    e_bake: { prize:'stacked-plates-rosa', prizeSay:"A pile of cake plates, retired from the church hall.", st:[
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"I'm baking two lemon loaves. One for the sale, and one for…?", o:[
+        ["Emergencies.", "“EMERGENCIES. You know me.”"],
+        ["Yourself.", "“Tempting. But then who handles emergencies?”"],
+        ["The dog.", "“The dog is not allowed lemon. The dog has no taste.”"] ] },
+      { who:'Noor', c:'noor', role:'Architect', say:"The queue goes right round the steeple. How do I shorten it?", o:[
+        ["A serving table at each end.", "“Two ends. Parallel service. A tidy solution.”"],
+        ["Ask everybody to hurry.", "“Hurry does not shorten a queue. It only makes it grumpier.”"],
+        ["Add a second queue for the dog.", "The dog queue is very short and very hopeful."] ] },
+      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"I'm judging the buns. Gently. Mostly. What's my verdict style?", o:[
+        ["Kind, with one honest line.", "“Kindness with a spine. Exactly my style.”"],
+        ["Everyone wins.", "“Everyone wins. Which means no one remembers.”"],
+        ["Strictly by weight.", "“By weight. I shall bring the scales and my reading glasses.”"] ] }
+    ]},
+    e_studio: { prize:'standig-lamp-jens', prizeSay:"A tall studio lamp that someone left behind on the stairs.", st:[
+      { who:'Jules', c:'jules', role:'Illustration student', say:"Someone asked the price of the print by the door and I panicked. What do I say?", o:[
+        ["A small, honest price, and a smile.", "“Honest. Small. A smile. I can do a smile.”"],
+        ["“Whatever you like.”", "“Last time somebody paid me in biscuits.”"],
+        ["Triple it. Art is expensive.", "“Triple. I like your confidence. I do not like my rent.”"] ] },
+      { who:'Noor', c:'noor', role:'Architect', say:"The staircase is four millimetres off. Do I tell Jules?", o:[
+        ["Tell her you love it.", "“I do love it. That is the part I will say.”"],
+        ["Say nothing.", "“A silence. She'll know. They always know.”"],
+        ["Bring a spirit level.", "“…I did bring one. How did you know.”"] ] },
+      { who:'Jules', c:'jules', role:'Illustration student', say:"Whose name goes on the cake card? It was definitely baked by someone else.", o:[
+        ["Mia's, in nice letters. Credit where it's due.", "“Mia. In nice letters. She'll cry.”"],
+        ["No name. A mystery cake.", "“Mystery cake. People will ask. I'll lie.”"],
+        ["Yours, obviously.", "“Mine? She'd find out by the first bite.”"] ] }
+    ]},
+    e_tulips: { prize:'flowers-frida-rosa', prizeSay:"A free bunch of tulips, still cold from Parsley's bucket.", st:[
+      { who:'Jules', c:'jules', role:'Illustration student', say:"Tulips for my easel. Which colour sits between blue and orange?", o:[
+        ["Yellow.", "“Yellow. Of course. How did I not see it?”"],
+        ["Red.", "“Red fights with orange. Loudly.”"],
+        ["Purple with a bow.", "“A bow. On a tulip. I'm unwell.”"] ] },
+      { who:'Sam', c:'sam', role:'Events producer', say:"I walked past twice and then took one. How do I make this right?", o:[
+        ["Leave a thank-you note at the shop door.", "“A note! Production values! I'm going to cry a little.”"],
+        ["Put it back.", "“A tulip can't be put back. That's not how stems work.”"],
+        ["Take a second one so it balances.", "“It does not balance. Parsley is watching.”"] ] },
+      { who:'Parsley', c:null, role:'Shop cat', say:"Parsley sits between two buckets and stares at you. One is yellow, one is red.", o:[
+        ["Choose the bucket she's sitting beside.", "Parsley blinks slowly. The highest of honours."],
+        ["Choose the bigger bucket.", "Parsley closes her eyes. You have been dismissed."],
+        ["Ignore the cat.", "Parsley knocks a tulip into the street, with great intention."] ] }
+    ]},
+    e_eggs: { prize:'bowl-with-oranges', prizeSay:"A bowl of the last few eggs, found behind the hedge.", st:[
+      { who:'Theo', c:'theo', role:'Baker', say:"Wren is too small for eggs, but I'm hiding some anyway. Where?", o:[
+        ["Low in the hedge, where under-sevens reach.", "“Low. Of course. I keep forgetting I'm tall.”"],
+        ["On top of the church.", "“Even I can't reach that. The pigeons can.”"],
+        ["In the dachshund's bed.", "The dachshund is delighted. The eggs are… less so."] ] },
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"Egg-shaped cake. Don't judge me. What flavour?", o:[
+        ["Lemon.", "“LEMON. You never doubted me.”"],
+        ["Chocolate.", "“Chocolate. It's fine. It's a chocolate day.”"],
+        ["Sardine.", "“…Please never say that near a cake again.”"] ] },
+      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"Bunny ears for the little ones. How many pairs shall I make?", o:[
+        ["A few more than the number of children.", "“Spares. Always spares. Somebody sits on a pair.”"],
+        ["Exactly one pair each.", "“Exactly. And then Pip eats one.”"],
+        ["Just one pair. They can share.", "“Sharing ears. I suppose they do all hear the same story.”"] ] }
+    ]},
+    e_flea: { prize:'chair-victor', prizeSay:"A battered old chair that came home on your back.", st:[
+      { who:'Sam', c:'sam', role:'Events producer', say:"Fourteen stalls and not one with a proper sign. Where do I start?", o:[
+        ["A big sign at the entrance, with a hand-drawn map.", "“A map. Obvious. I'll draw it. Badly.”"],
+        ["Ask everyone where everything is.", "“Efficient. Exhausting. Mostly exhausting.”"],
+        ["Hang a sign that says ‘SIGN’.", "“…It's not wrong.”"] ] },
+      { who:'Jules', c:'jules', role:'Illustration student', say:"I came for nothing and found a teapot, a clock and a spoon. I can only carry one.", o:[
+        ["The teapot. You'll draw it forever.", "“It has a chip. It's perfect. I'll draw the chip.”"],
+        ["The clock.", "“Too big. Too loud. It ticks in a different time zone.”"],
+        ["The spoon.", "“A spoon is not a plan.”"] ] },
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"I brought a tin of lemon cookies, for research. Where do I put it?", o:[
+        ["On the stall next to the teapots. Tea needs cookies.", "“TEA NEEDS COOKIES. You're hired.”"],
+        ["Under the clock.", "“The clock's unsold. The cookies will be, too.”"],
+        ["Sell them for one euro each.", "“One euro? Do you know what butter costs?”"] ] }
+    ]},
+    e_regatta: { prize:'wall-lamp-bianca', prizeSay:"A little ship's lamp from the harbour master's shed.", st:[
+      { who:'Sam', c:'sam', role:'Events producer', say:"There's a prize for the most dramatic wobble. How do I win?", o:[
+        ["Wobble slowly, then recover at the last second.", "“The recovery. That's the thing. Always the recovery.”"],
+        ["Wobble the whole way.", "“Consistency, yes, but no arc.”"],
+        ["Capsize on purpose.", "“Tragic. Memorable. Wet.”"] ] },
+      { who:'Theo', c:'theo', role:'Baker', say:"Lovely boats, but they'd go faster with gears. Where would you put them?", o:[
+        ["By the rudder, quietly.", "“Quietly. So no one can prove it.”"],
+        ["On the mast, loudly.", "“Loudly. That's how they'd confiscate it.”"],
+        ["Inside the loaf. Of bread.", "“…A gear loaf. I'm writing that down.”"] ] },
+      { who:'Harbour Master Finn', c:null, role:'Harbour master', say:"I've been practising my ‘ahoy’ all week. Which one sounds best?", o:[
+        ["A long, rolling “a-HOY”.", "He closes his eyes. “Yes. That's the sea in a word.”"],
+        ["A short “ahoy”.", "“Efficient. Slightly rude. Fine.”"],
+        ["“Hello”.", "“The boats don't understand ‘hello’. Not yet.”"] ] }
+    ]},
+    e_lantern: { prize:'paper-lamp', prizeSay:"A paper lantern, still warm from the candle.", st:[
+      { who:'Theo', c:'theo', role:'Baker', say:"Hot chocolate for the whole lane, and Elena says we're hosting. How many mugs?", o:[
+        ["More than you think. The evening gets cold.", "“More than I think. That's most things in my life.”"],
+        ["Twelve.", "“Twelve. Wren will use three. Wren will use none.”"],
+        ["One, shared.", "“One mug. Shared. By forty people. Hmm.”"] ] },
+      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"Candlelight in the trees. I shall wear a shawl. Which?", o:[
+        ["The green one.", "“The green one. Of course. The trees will think I'm family.”"],
+        ["The black one.", "“Black in candlelight? I'd vanish. That's rather the point, but no.”"],
+        ["A cardigan.", "“A CARDIGAN. At my age. I've never been so insulted.”"] ] },
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"I'm baking for the whole lane, possibly twice. What first?", o:[
+        ["Something warm that travels: gingerbread.", "“Gingerbread. Warm. Tin. Done.”"],
+        ["A big cake.", "“Big cakes don't travel well in the dark.”"],
+        ["Ice cream.", "“It's a night for hot things. I'm very sorry.”"] ] }
+    ]},
+    e_harvest: { prize:'stacked-pots-white', prizeSay:"A stack of empty jam pots, scraped clean by the queue.", st:[
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"I'm entering the pumpkin loaf, quietly. Where do I put it on the table?", o:[
+        ["At the end of the row, where people walk slowest.", "“Where they walk slowest. You're ruthless. I like it.”"],
+        ["Right at the front.", "“Front. Loud. Visible. Terrifying.”"],
+        ["Behind the jam, so no one sees.", "“Behind the jam is where the best things hide.”"] ] },
+      { who:'Sam', c:'sam', role:'Events producer', say:"I'm not catering, I'm advising. Loudly. On what?", o:[
+        ["The queue at the jam stall.", "“The queue. Yes. I've drawn it. It has a spiral.”"],
+        ["The weather.", "“I can't control the weather. I've tried.”"],
+        ["Everything.", "“Everything. Always. That's the job.”"] ] },
+      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"Yellow everywhere. What shall I buy?", o:[
+        ["A yellow squash. It matches my shawl.", "“It matches! The squash and I are one.”"],
+        ["A red apple.", "“Red is fine. Red is brave. Red will fight the shawl.”"],
+        ["Something not yellow.", "“Not yellow? At a harvest market? I'm leaving.”"] ] }
+    ]},
+    e_soup: { prize:'pot-white', prizeSay:"A swapped soup pot, with the lid that fits.", st:[
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"Pumpkin and lemon soup. Don't ask. Do taste.", o:[
+        ["Taste it, with bread.", "“With BREAD. It's a different soup with bread.”"],
+        ["Pass politely.", "“Passing. I've been passed before. It's fine.”"],
+        ["Add more lemon.", "“More lemon? You're my favourite.”"] ] },
+      { who:'Noor', c:'noor', role:'Architect', say:"I need a pot with a lid that fits. How do I check?", o:[
+        ["Close it and tilt it gently.", "“Tilt. Of course. Gravity is honest.”"],
+        ["Look at it carefully.", "“Looking is not testing. I've looked at many lids.”"],
+        ["Taste the lid.", "“…I won't ask why.”"] ] },
+      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"I brought a ladle and an opinion. Which do I give first?", o:[
+        ["The ladle, then the opinion.", "“The ladle first. A soup needs a hand before it needs a view.”"],
+        ["The opinion first.", "“Opinion first? I've done that. It rarely goes well.”"],
+        ["Neither. Just stand there.", "“I do that well, too. But no.”"] ] }
+    ]},
+    e_lights: { prize:'standig-paper-lamp', prizeSay:"A tall paper light that glowed in a Church Hill window.", st:[
+      { who:'Sam', c:'sam', role:'Events producer', say:"The steeple star! Robin is holding the ladder. What do I check first?", o:[
+        ["That the ladder's feet are steady.", "“The feet. Yes. I'll remember the feet.”"],
+        ["That the star is straight.", "“Straight, yes. Not so useful if I fall.”"],
+        ["That the neighbours are watching.", "“Always. That's the whole job.”"] ] },
+      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"Little cloaks for the lantern children. What colour will glow best in candlelight?", o:[
+        ["Deep red.", "“Deep red. It will glow like a coal. Perfect.”"],
+        ["White.", "“White in candlelight just looks cold. I'd know.”"],
+        ["Black.", "“Black? They'd vanish. I'd lose half the children.”"] ] },
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"I'm carrying soup and bread up the hill. How?", o:[
+        ["Soup in the middle, bread in a basket on top.", "“The soup is the anchor. I needed that.”"],
+        ["Bread on the bottom, soup on top.", "“Soup on bread? A soggy tragedy.”"],
+        ["Carry the soup in my coat.", "“My coat is not a pot. It will be, soon.”"] ] }
+    ]},
+    e_spring: { prize:'mini-plant', prizeSay:"A seedling in a mug, already named.", st:[
+      { who:'Theo', c:'theo', role:'Baker', say:"Bread for the kids' stall. What's the safest roll to hand a seven-year-old?", o:[
+        ["A plain soft roll.", "“Soft. Plain. Smeared. A small one, then.”"],
+        ["A sourdough with seeds.", "“Seeds everywhere. Even the dog's ears.”"],
+        ["A baguette, used as a sword.", "“…Wren isn't allowed a baguette. Yet.”"] ] },
+      { who:'Jules', c:'jules', role:'Illustration student', say:"I'm selling prints next to the large clock. Nobody buy the clock. Where do I stand?", o:[
+        ["Right beside the clock, so people see the prints.", "“Beside the clock. It's a landmark. I'm a landmark.”"],
+        ["As far from the clock as possible.", "“Far from the clock. No one will find me. That's the dream.”"],
+        ["In front of the prints, blocking them.", "“Everyone sees me. No one sees the prints.”"] ] },
+      { who:'Mia', c:'mia', role:'Vet receptionist', say:"My seedlings are already named. Which do I sell first?", o:[
+        ["The one I've named least.", "“The least-named one. Oh, that hurts. Yes.”"],
+        ["The biggest.", "“The biggest is Gerald the Second. He's staying.”"],
+        ["None. They're family.", "“Family. But the stall is… empty. Hm.”"] ] }
+    ]},
+    e_wedding: { prize:'vase-amora-white', prizeSay:"A white vase left over from the church flowers.", st:[
+      { who:'Rosa', c:'rosa', role:'Retired costume maker', say:"I'm making Priya's veil and I mustn't tell her. Where do I hide it?", o:[
+        ["In a hatbox at the back of the church.", "“A hatbox. The one place a bride never looks.”"],
+        ["In the wardrobe.", "“That's where she keeps her dress. She'd see it.”"],
+        ["On a hat stand in the window.", "“In the WINDOW? Darling, the whole street would see.”"] ] },
+      { who:'Sam', c:'sam', role:'Events producer', say:"I've been told to stand quietly on the day. Where?", o:[
+        ["Beside the cake table, where you can see everything.", "“The cake table. See everything, say nothing. Perfect.”"],
+        ["In the pews, like a guest.", "“Pews are for guests. I have never been a guest.”"],
+        ["Under the pews.", "“…I'd fit, actually. But no.”"] ] },
+      { who:'Noor', c:'noor', role:'Architect', say:"I've measured the pews. I have a view. What shall I do with it?", o:[
+        ["Whisper it to the vicar after the wedding.", "“After. Of course. A view is a gift, not a surprise.”"],
+        ["Announce it during the vows.", "“During the vows? I'd be asked to leave. Rightly.”"],
+        ["Rebuild them overnight.", "“I've thought about it. I won't.”"] ] }
+    ]}
+  };
+  var EVENT_PRIZE = {};   // item id -> { event }
+  Object.keys(EVENT_PLAY).forEach(function(eid){ EVENT_PRIZE[EVENT_PLAY[eid].prize] = { event:eid }; });
+  function prizeOf(itemId){ return EVENT_PRIZE[itemId] || null; }
+  function eventPlay(eid){ return EVENT_PLAY[eid] || null; }
+  var EVENT_NEED = 2;   // right answers (out of three) that earn the keepsake
+
   var EVENT_BY_ID = {};
   EVENTS.forEach(function(e){
     EVENT_BY_ID[e.id] = e;
@@ -1296,7 +1597,7 @@ var Story = (function(){
     TOWN: TOWN, RENOWN_LEVELS: RENOWN_LEVELS, renownLevel: renownLevel,
     CHARACTERS: CHARACTERS, PROPERTIES: PROPERTIES, QUESTS: QUESTS, ROLES: ROLES, KINDS: KINDS, MOODS: MOODS,
     questById: questById, questsOf: questsOf, isUnlocked: isUnlocked,
-    QUIRKS: QUIRKS, giftsEarned: giftsEarned, giftOwner: giftOwner, REWARDS: REWARDS, VOICES: VOICES,
+    QUIRKS: QUIRKS, giftsEarned: giftsEarned, giftOwner: giftOwner, SHOP_STOCK: SHOP_STOCK, shopOf: shopOf, EVENT_PLAY: EVENT_PLAY, eventPlay: eventPlay, prizeOf: prizeOf, EVENT_NEED: EVENT_NEED, REWARDS: REWARDS, VOICES: VOICES,
     starsFor: starsFor, isKind: isKind,
     evaluate: evaluate, quality: quality, qualityDetail: qualityDetail, analyze: analyze, districtAt: districtAt, dateOf: dateOf, monthOf: monthOf, seasonOf: seasonOf, todayOf: todayOf, SPOTS: SPOTS, spotById: function(id){ return SPOT_BY_ID[id] || null; }, spotsAt: spotsAt, EVENTS: EVENTS, eventById: function(id){ return EVENT_BY_ID[id] || null; }, eventsDue: eventsDue, upcoming: upcoming, pastEvents: pastEvents, NEWS: NEWS, issuesAt: issuesAt, heartsFor: heartsFor, buildReply: buildReply
   };
