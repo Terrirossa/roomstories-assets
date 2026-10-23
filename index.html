@@ -2726,6 +2726,48 @@
 .district-tag.full{ max-width:320px; }
 .district-tag.full span{ font-size:13px; }
 
+/* diary: this story / free play switch */
+.dy-sw{display:flex;gap:6px;margin:0 0 12px}
+.dy-sw button{font:inherit;font-size:13px;padding:5px 14px;border-radius:999px;border:1px solid rgba(90,60,30,.25);background:rgba(255,255,255,.55);color:#5a4630;cursor:pointer}
+.dy-sw button.on{background:#7a8f6d;color:#fff;border-color:#7a8f6d}
+
+/* v0.14: shop pins are bigger and clearer; a click opens a small bubble with Enter */
+.town-spot.shop{ width:64px; height:64px; z-index:4; }
+.town-spot.shop .sp-badge{ width:60px; height:60px; border-width:4px; background:var(--spot); color:#fffaf0; border-color:#fffaf0; box-shadow:0 5px 14px rgba(15,30,40,.5), 0 0 0 3px var(--spot); }
+.town-spot.shop svg{ width:32px; height:32px; }
+.town-spot.shop .sp-label{ opacity:1; font-size:14.5px; padding:4px 13px 5px; margin-top:6px; background:#fffaf0; border:2px solid var(--spot); }
+.town-spot.shop:hover .sp-badge, .town-spot.shop.open .sp-badge{ transform:scale(1.1); }
+.town-spot .sp-pop{ position:absolute; bottom:calc(100% + 8px); left:50%; transform:translate(-50%,6px) scale(.9); opacity:0; pointer-events:none; z-index:9;
+  min-width:190px; padding:12px 16px 14px; border-radius:18px; background:#fffaf0; border:2px solid var(--spot); box-shadow:0 10px 26px rgba(15,30,40,.45);
+  display:flex; flex-direction:column; align-items:center; gap:2px; text-align:center; transition:opacity .16s ease, transform .16s ease; }
+.town-spot .sp-pop::after{ content:''; position:absolute; top:100%; left:50%; width:14px; height:14px; transform:translate(-50%,-7px) rotate(45deg); background:#fffaf0; border-right:2px solid var(--spot); border-bottom:2px solid var(--spot); }
+.town-spot .sp-pop b{ font-size:16px; color:var(--ink); white-space:nowrap; }
+.town-spot .sp-pop small{ font-size:12px; color:#8a735a; letter-spacing:.06em; text-transform:uppercase; font-weight:800; margin-bottom:8px; }
+.town-spot .sp-enter{ display:inline-block; padding:8px 26px; border-radius:999px; background:#6f8f66; color:#fff; font-weight:800; font-size:15px; cursor:pointer; box-shadow:0 3px 0 rgba(40,60,40,.35); }
+.town-spot .sp-enter:hover{ background:#5d7d55; }
+.town-spot.open{ z-index:12; }
+.town-spot.open .sp-pop{ opacity:1; transform:translate(-50%,0) scale(1); pointer-events:auto; }
+.town-spot.open .sp-label{ opacity:0; }
+.shp-it.gone{ opacity:0; transform:translateY(-14px) scale(.8); pointer-events:none; transition:opacity .4s ease, transform .4s ease; }
+.shp-it.shut .shp-circle img{ filter:grayscale(.55) brightness(.92); }
+.shp-it.shut .shp-circle{ box-shadow:0 0 0 3px rgba(111,71,112,.75), 0 0 26px 6px rgba(225,185,255,.55); }
+.shp-it.shut .shp-badge:not(:empty){ display:flex; }
+.shp-it.shut small{ background:rgba(90,52,92,.85); color:#fff; }
+.shp-badge{ width:auto; min-width:34px; padding:0 8px; border-radius:99px; font-size:16px; }
+.shp-badge:empty{ display:none; }
+.shp-it .shp-circle::after{ content:none; }
+
+/* v0.14: choosing the corner of the Cove for your own place */
+.own-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:10px 0 4px; }
+.own-d{ font:inherit; text-align:left; padding:9px 12px 10px; border-radius:12px; border:1.5px solid rgba(90,60,30,.28); background:rgba(255,255,255,.6); color:#4a3a28; cursor:pointer; display:flex; flex-direction:column; gap:1px; transition:transform .12s ease, background .12s ease, border-color .12s ease; }
+.own-d:hover{ background:#fffaf0; border-color:#7a8f6d; transform:translateY(-2px); }
+.own-d b{ font-size:15px; }
+.own-d small{ font-size:11.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#8a735a; }
+.own-d em{ font-style:normal; font-size:12.5px; opacity:.8; margin-top:2px; }
+@media (max-width:560px){ .own-grid{ grid-template-columns:1fr; } }
+.town-jumpbtn{ border-style:dashed !important; }
+.jmp-sel{ width:100%; box-sizing:border-box; padding:8px 10px; font:inherit; font-size:15px; color:#3a2d20; background:rgba(255,255,255,.8); border:1.5px solid rgba(90,60,30,.35); border-radius:10px; }
+
 </style>
 </head>
 <body>
@@ -2738,7 +2780,7 @@
   <div class="title-scrim"></div>
   <div class="title-card">
     <h1 class="title-mark">Roomstories</h1>
-    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.13.0 &middot; Three Years in the Cove</div>
+    <div class="title-version" id="titleVersion" title="Version of the game on this page">v0.14.0 &middot; Your Own Key</div>
     <p class="title-tag">A cozy little sandbox for styling rooms, one piece at a time.</p>
     <button class="btn-primary title-story-btn" id="titleStoryBtn" type="button" style="display:none;">Story mode</button>
     <button class="title-fresh-link title-newstory-link" id="titleNewStoryBtn" type="button" style="display:none;">Or begin a brand new story</button>
@@ -2831,15 +2873,12 @@
   <div class="town-topbar">
     <button class="btn-ghost btn-on-glass" id="townBackBtn" type="button">&larr; Title</button>
     <button class="btn-ghost btn-on-glass town-newbtn" id="townNewBtn" type="button" title="Begin a brand new story">New story</button>
+    <button class="btn-ghost btn-on-glass town-newbtn town-jumpbtn" id="townJumpBtn" type="button" title="Testing: jump to any job">&#9193; Jump (test)</button>
     <h2 class="town-name" id="townName">Pennywhistle Cove</h2>
     <button class="town-glass paused-chip" id="pausedChip" type="button"></button>
     <button class="town-glass date-chip" id="dateChip" type="button" title="Open the calendar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg>
       <span><b id="dateChipDay">Mon 2 June</b><small id="dateChipSeason">Summer</small></span>
-    </button>
-    <button class="town-glass news-btn" id="newsBtn" type="button" title="Read The Cove Courier">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M5 4.5h11.5a2 2 0 0 1 2 2V19a1.5 1.5 0 0 0 1.5 1.5H6.5A2.5 2.5 0 0 1 4 18V5.5z"/><path d="M7.5 8.5h8M7.5 12h8M7.5 15.5h5"/></svg>
-      <span>News</span><i class="news-dot"></i>
     </button>
     <button class="town-glass diary-btn" id="diaryBtn" type="button" title="Open my diary">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6.5 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M9 3.5v17M12 8h4M12 11.5h4"/></svg>
@@ -2861,7 +2900,6 @@
 <div class="lt-overlay" id="storyIntro"><div class="lt-scene" id="storyIntroScene"></div></div>
 <div class="lt-overlay" id="storyResult"><div class="lt-scene" id="storyResultScene"></div></div>
 <div class="lt-overlay" id="storyEvent"><div class="lt-scene" id="storyEventScene"></div></div>
-<div class="lt-overlay" id="storyNews"><div class="lt-scene" id="storyNewsScene"></div></div>
 <div class="lt-overlay" id="storyDiary"><div class="lt-scene" id="storyDiaryScene"></div></div>
 <div class="lt-overlay" id="storyShop"><div class="lt-scene" id="storyShopScene"></div></div>
 <div class="lt-overlay" id="storyPlay"><div class="lt-scene" id="storyPlayScene"></div></div>
@@ -3025,8 +3063,8 @@
   </div>
 </div>
 
-<script src="data.js?v=0.13.0"></script>
-<script src="story.js?v=0.13.0"></script>
+<script src="data.js?v=0.14.0"></script>
+<script src="story.js?v=0.14.0"></script>
 <script>
 (function(){
   "use strict";
@@ -4597,9 +4635,23 @@
     }catch(e){ return Promise.resolve(null); }
   }
 
-  // The diary's own storage: separate from the story save, so photos can
-  // never push the story save over the browser's size limit.
+  // The diary keeps its photo list in localStorage (small) and the photos themselves in
+  // IndexedDB, which has far more room. That way photos can never crowd out the story save:
+  // a full localStorage used to make the story save fail silently.
   var DIARY_KEY = 'roomstories_diary_v1', DIARY_FREE_MAX = 40, diaryData = null;
+  var diaryIdb = null, diaryStored = {}, diaryHydrated = false;
+  function diaryOpenIdb(){
+    return new Promise(function(res){
+      try{
+        if (!window.indexedDB) return res(null);
+        var rq = indexedDB.open('roomstories_diary', 1);
+        rq.onupgradeneeded = function(){ rq.result.createObjectStore('imgs'); };
+        rq.onsuccess = function(){ res(rq.result); };
+        rq.onerror = function(){ res(null); };
+        rq.onblocked = function(){ res(null); };
+      }catch(e){ res(null); }
+    });
+  }
   function diaryLoad(){
     if (diaryData) return diaryData;
     var d = null;
@@ -4607,8 +4659,55 @@
     if (!d || !Array.isArray(d.entries)) d = { version:1, entries:[] };
     return (diaryData = d);
   }
+  // fills the photos back in from IndexedDB (and moves any old inline photos over); safe to call once at start
+  function diaryHydrate(){
+    return diaryOpenIdb().then(function(db){
+      diaryIdb = db;
+      var d = diaryLoad();
+      if (!db){ diaryHydrated = true; return d; }
+      return new Promise(function(res){
+        try{
+          var tx = db.transaction('imgs', 'readwrite'), st = tx.objectStore('imgs'), all = st.getAll(), keys = st.getAllKeys();
+          tx.oncomplete = function(){
+            var map = {}; keys.result.forEach(function(k, i){ map[k] = all.result[i]; diaryStored[k] = true; });
+            var moved = false;
+            d.entries.forEach(function(e){
+              var imgs = map[e.id];
+              (e.shots || []).forEach(function(sh, i){
+                if (sh.img){ moved = true; }                       // an inline photo from an older version
+                else if (imgs && imgs[i]) sh.img = imgs[i];
+              });
+            });
+            // entries whose photos are gone cannot be shown
+            d.entries = d.entries.filter(function(e){ return (e.shots || []).length && e.shots.every(function(sh){ return !!sh.img; }); });
+            diaryHydrated = true;
+            if (moved) diarySave();
+            res(d);
+          };
+          tx.onerror = tx.onabort = function(){ diaryIdb = null; diaryHydrated = true; res(d); };
+        }catch(e){ diaryIdb = null; diaryHydrated = true; res(d); }
+      });
+    });
+  }
   function diarySave(){
     var d = diaryLoad();
+    if (diaryIdb){
+      try{
+        var tx = diaryIdb.transaction('imgs', 'readwrite'), st = tx.objectStore('imgs'), live = {};
+        d.entries.forEach(function(e){
+          live[e.id] = true;
+          if (!diaryStored[e.id]){ st.put((e.shots || []).map(function(sh){ return sh.img; }), e.id); diaryStored[e.id] = true; }
+        });
+        Object.keys(diaryStored).forEach(function(k){ if (!live[k]){ st.delete(k); delete diaryStored[k]; } });
+        var meta = { version:1, entries:d.entries.map(function(e){
+          var c = {}; for (var k in e) if (k !== 'shots') c[k] = e[k];
+          c.shots = (e.shots || []).map(function(sh){ return { label:sh.label || '' }; });
+          return c;
+        }) };
+        localStorage.setItem(DIARY_KEY, JSON.stringify(meta));
+        return true;
+      }catch(e){ /* fall through to the old way */ }
+    }
     for (var i = 0; i < 80; i++){
       try{ localStorage.setItem(DIARY_KEY, JSON.stringify(d)); return true; }catch(e){
         if (!d.entries.length) return false;
@@ -4632,8 +4731,10 @@
     return ok && d.entries.indexOf(entry) !== -1;
   }
   function diaryRemove(id){ var d = diaryLoad(); d.entries = d.entries.filter(function(e){ return e.id !== id; }); diarySave(); }
-  function diaryClearStory(){ var d = diaryLoad(); d.entries = d.entries.filter(function(e){ return e.kind !== 'story' || e.old; }); diarySave(); }
+  // a new story starts with an empty diary: only the photos of the current save are ever shown
+  function diaryClearStory(keepSave){ var d = diaryLoad(); d.entries = d.entries.filter(function(e){ return e.kind !== 'story' || (keepSave && e.save === keepSave); }); diarySave(); }
   function diaryHas(key){ return diaryLoad().entries.some(function(e){ return e.key === key; }); }
+  diaryHydrate();
 
   function addPiece(item, xPct, yPct, roomId, opts){
     opts = opts || {};
@@ -6263,20 +6364,18 @@
   ===================================================================== */
   var STORY_KEY = 'roomstories_story_v2', STORY_KEY_OLD = 'roomstories_story_v1', storyHadOld = false;
   // The story grew into three years (v0.13), so it starts afresh under a new key. The first story is
-  // left where it was; only its diary photos are tucked away so they cannot be mistaken for new ones.
+  // left where it was; its diary photos are not shown any more (the diary only ever shows the current save).
   function storyMigrateOld(){
     try{
       if (localStorage.getItem(STORY_KEY) || !localStorage.getItem(STORY_KEY_OLD)) return;
       storyHadOld = true;
-      var d = diaryLoad(), n = 0;
-      d.entries.forEach(function(e){ if (e.kind === 'story' && !e.old){ e.old = true; e.key = 'old:' + (e.key || e.id); e.day = null; n++; } });
-      if (n) diarySave();
     }catch(err){}
   }
   var storyAvailable = (typeof Story !== 'undefined');
   var story = { inStory:false, active:null, data:null, hudCollapsed:false, hudAway:false, lastSig:'', selectedPin:null, selectedSpot:null, newsIdx:null, announce:[], earned:{}, earnedSig:'', idle:{} };
 
-  function storyDefaultData(){ return { version:2, quests:{}, homes:{}, drafts:{}, discovered:[], seenPrologue:false, seenLetters:[], seenEvents:[], seenNews:[], learned:{}, playerName:'', lastDraft:null, shopTaken:{}, play:{} }; }
+  function storyNewSaveId(){ return 's' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36); }
+  function storyDefaultData(){ return { version:2, saveId:storyNewSaveId(), quests:{}, homes:{}, drafts:{}, discovered:[], seenPrologue:false, seenLetters:[], seenEvents:[], seenNews:[], learned:{}, playerName:'', lastDraft:null, shopTaken:{}, shelves:{}, play:{}, own:null }; }
   function storyLoadData(){
     storyMigrateOld();
     try{
@@ -6284,7 +6383,8 @@
       if (raw){
         var d = JSON.parse(raw);
         if (d && d.version === 2){
-          d.quests = d.quests || {}; d.homes = d.homes || {}; d.drafts = d.drafts || {}; d.discovered = d.discovered || []; d.seenLetters = d.seenLetters || []; d.seenEvents = d.seenEvents || []; d.seenNews = d.seenNews || []; d.learned = d.learned || {}; d.playerName = d.playerName || ''; d.lastDraft = d.lastDraft || null; d.shopTaken = d.shopTaken || {}; d.play = d.play || {};
+          d.quests = d.quests || {}; d.homes = d.homes || {}; d.drafts = d.drafts || {}; d.discovered = d.discovered || []; d.seenLetters = d.seenLetters || []; d.seenEvents = d.seenEvents || []; d.seenNews = d.seenNews || []; d.learned = d.learned || {}; d.playerName = d.playerName || ''; d.lastDraft = d.lastDraft || null; d.shopTaken = d.shopTaken || {}; d.shelves = d.shelves || {}; d.play = d.play || {}; d.own = d.own || null;
+          if (!d.saveId){ d.saveId = storyNewSaveId(); try{ localStorage.setItem(STORY_KEY, JSON.stringify(d)); }catch(e2){} }
           return d;
         }
       }
@@ -6293,7 +6393,16 @@
   }
   // (skips the write when nothing changed, since the autosave runs every few seconds)
   var storyLastSaved = '';
-  function storySaveData(){ try{ var s = JSON.stringify(story.data); if (s === storyLastSaved) return; localStorage.setItem(STORY_KEY, s); storyLastSaved = s; }catch(err){} }
+  var storySaveWarned = false;
+  function storySaveData(){
+    var s; try{ s = JSON.stringify(story.data); }catch(err){ return; }
+    if (s === storyLastSaved) return;
+    try{ localStorage.setItem(STORY_KEY, s); storyLastSaved = s; storySaveWarned = false; }
+    catch(err){
+      // the browser's storage is full: say so instead of quietly losing work
+      if (!storySaveWarned){ storySaveWarned = true; try{ storyToast('Your browser has no room left to save. Please free some space (browser settings, site data) before you carry on.'); }catch(e){} }
+    }
+  }
 
   // the player's name (asked for when a new story begins); {you} in a letter becomes it
   function storyName(){ return (story.data && story.data.playerName) || ''; }
@@ -6311,9 +6420,17 @@
     for (var i = 1; i <= 5; i++) s += i <= n ? '♥' : '<span class="empty">♥</span>';
     return '<span class="hearts">' + s + '</span>';
   }
+  function storyGlyph(c){ return c.glyph || c.name.charAt(0); }
   function storyAvatar(cid, cls){
     var c = Story.CHARACTERS[cid];
-    return '<div class="' + cls + '" style="--pin:' + c.color + '">' + c.name.charAt(0) + '</div>';
+    return '<div class="' + cls + '" style="--pin:' + c.color + '">' + storyGlyph(c) + '</div>';
+  }
+  /* ---------- the last key: your own flat (the final job) ---------- */
+  function storyOwnFlat(){ return story.data && story.data.own ? 'OWN_' + story.data.own : null; }
+  // the final job's home is wherever the player chose; until then it points at a harmless default
+  function storySyncFinal(){
+    var fq = Story.questById('COVE_FINAL'); if (!fq) return;
+    fq.property = storyOwnFlat() || 'OWN_oldtown';
   }
   function storyEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function storyVoice(cid){ return Story.CHARACTERS[cid].voice || { paper:'town', hi:'Hello,', replyBye:'', ask:'', idle:[] }; }
@@ -6336,12 +6453,11 @@
     var sh = Story.shopOf(itemId);
     if (sh){
       if (story.data.shopTaken && story.data.shopTaken[itemId]) return null;
-      var sp = Story.spotById(sh.spot), need = Story.SHOP_TIERS[sh.level];
-      var txt;
+      var sp = Story.spotById(sh.spot), txt;
       if (!storySpotOpen(sh.spot)) txt = "This one is sold at " + sp.name + ", which opens later in the story.";
-      else if (storyShopTier() < sh.level) txt = sp.name + " is keeping this for a " + need.title + ". The town will get to know you.";
+      else if (storyRenown() < sh.need) txt = sp.name + " is keeping this one for when you are better known: " + sh.need + " renown.";
       else if (sh.season && sh.season !== storySeason()) txt = sp.name + " stocks this one in " + sh.season + ". It's back on the shelves then.";
-      else txt = "It's waiting for you at " + sp.name + ". Pop in and take it home.";
+      else txt = sp.name + " puts this on the shelves from time to time. Pop in and see if it is there.";
       return { kind:'shop', chip:'shop', text:txt };
     }
     var pz = Story.prizeOf(itemId);
@@ -6354,6 +6470,8 @@
   }
   function storySeason(){ return Story.seasonOf(storyToday()); }
   function storyShopTier(){ return Story.shopTier(storyRenown()); }
+  function storyMonthIdx(){ var c = Story.TOWN.calendar; return Story.monthOf(storyToday()).key - (c.year * 12 + c.month); }
+  function storyHashStr(t){ var h = 7; for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) % 99991; return h; }
   function storyRand(n){ return Math.floor(Math.random() * n); }
   function storyReduced(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 
@@ -6376,7 +6494,21 @@
     return all.filter(function(q){ return keep[q.id]; });
   }
   function storyOpenIds(){ var m = {}; storyOpenQuests().forEach(function(q){ m[q.id] = true; }); return m; }
-  function storyToday(){ return Story.todayOf(storyDoneMap(), storyRenown()); }
+  // The town's date moves on one month at a time, whichever order the jobs are done in, so no season is ever skipped.
+  function storyToday(){
+    var d = story.data;
+    if (d && typeof d.today === 'number') return d.today;
+    return Story.todayOf(storyDoneMap(), storyRenown());
+  }
+  function storyNextMonthDay(day){ for (var k = 0; k < 60; k++){ var x = Story.D(k); if (x > day) return x; } return day; }
+  function storyAdvanceToday(from){
+    // time moves one month per finished job, never past the latest job you have done (and never waits on a letter you have not answered)
+    var done = storyDoneMap(), target = 0;
+    Story.QUESTS.forEach(function(q){ if (done[q.id] && q.day > target) target = q.day; });
+    var cur = typeof story.data.today === 'number' ? story.data.today : from;
+    if (target > cur) cur = Math.min(target, storyNextMonthDay(cur));
+    story.data.today = cur;
+  }
 
   /* ---------- star budget ---------- */
   function storyIsEditableRoom(roomId){ var r = getRoom(roomId); return !!r && !r.locked; }
@@ -6568,7 +6700,7 @@
     storyApplyWorkspace(ws);
     var firstEdit = state.rooms.filter(function(r){ return !r.locked; })[0];
     if (firstEdit) state.focusedRoomId = firstEdit.id;
-    finishBtn.textContent = 'Hand it over';
+    finishBtn.textContent = q.final ? 'Move in' : 'Hand it over';
     renderRooms();
     storyAddStarters(q);
     deselect();
@@ -6616,7 +6748,7 @@
     setTimeout(function(){ storyRunEvents(function(){ if (ids.length) setTimeout(function(){ storyAnnounce(ids); }, 350); }); }, 650);
   }
   function storyHideOverlays(){
-    ['storyIntro','storyResult','storyDialog','storyEvent','storyNews','storyDiary','storyShop','storyPlay'].forEach(function(id){ var o = document.getElementById(id); o.classList.remove('active', 'closing'); });
+    ['storyIntro','storyResult','storyDialog','storyEvent','storyDiary','storyShop','storyPlay'].forEach(function(id){ var o = document.getElementById(id); o.classList.remove('active', 'closing'); });
   }
   // restore whatever free play had; used whenever the player returns to it
   function storyLeaveForFreePlay(){
@@ -6651,6 +6783,13 @@
       var prop = Story.PROPERTIES[story.active.propertyId];
       var owner = Story.CHARACTERS[prop.owner];
       hud.className = storyHudPaper(prop.owner);
+      if (prop.own){
+        hud.innerHTML = '<div class="sh-tape"></div><div class="sh-head" style="cursor:default">' + storyAvatar(prop.owner, 'sh-av') + '<div><div class="sh-from">Home</div><h3 class="sh-title">' + storyEsc(prop.name) + '</h3></div></div>' +
+          '<p class="sh-visit">Your own place. Have a wander. To rearrange anything, use Redecorate on the map.</p>' +
+          '<button class="sh-pause" id="shBack" type="button">' + MAP_ICON + ' Back to the map</button>';
+        document.getElementById('shBack').addEventListener('click', storyExitToTown);
+        return;
+      }
       hud.innerHTML =
         '<div class="sh-tape"></div>' +
         '<div class="sh-head" style="cursor:default">' + storyAvatar(prop.owner, 'sh-av') + '<div><div class="sh-from">Visiting</div><h3 class="sh-title">' + storyEsc(prop.name) + '</h3></div></div>' +
@@ -6660,6 +6799,16 @@
       return;
     }
     var c = Story.CHARACTERS[q.char];
+    if (q.final){
+      hud.className = storyHudPaper('town') + (story.hudAway ? ' sh-away' : '');
+      hud.innerHTML =
+        '<div class="sh-tape"></div>' +
+        '<div class="sh-head" style="cursor:default">' + storyAvatar('town', 'sh-av') + '<div><div class="sh-from">Your own place</div><h3 class="sh-title">' + storyEsc(Story.PROPERTIES[q.property].name) + '</h3></div></div>' +
+        '<p class="sh-visit">No brief, no hearts, no star budget. Make it exactly yours. When it feels like home, press <b>Move in</b> at the top.</p>' +
+        '<button class="sh-pause" id="shBack" type="button" title="Your work is saved automatically">' + MAP_ICON + ' Pause &amp; open the map</button>';
+      document.getElementById('shBack').addEventListener('click', storyExitToTown);
+      return;
+    }
     var spent = storySpent(), left = q.allowance - spent;
     var pct = Math.max(0, Math.min(100, spent / q.allowance * 100));
     function group(tier, label){
@@ -6708,6 +6857,10 @@
   function storyTick(force){
     if (!story.active || story.active.mode !== 'quest') return;
     var q = storyCurrentQuest(); if (!q) return;
+    if (q.final){
+      if (force || story.lastSig !== 'final'){ story.lastSig = 'final'; storyRenderHud(q, null); storyRefreshTrayStates(); }
+      return;
+    }
     var ev = Story.evaluate(q, storyGatherPieces(), getAsset, story.data.learned);
     var sig = JSON.stringify([ev.reqs.map(function(r){ return (r.met ? 1 : 0) + r.progress; }), ev.quirks.map(function(r){ return (r.known ? 'k' : 'u') + (r.met ? 1 : 0); }), storySpent(), story.hudCollapsed, story.hudAway, storyCap()]);
     if (!force && sig === story.lastSig) return;
@@ -6765,25 +6918,28 @@
     var giftIds = q.reward ? q.reward.items : [];
     var giftLine = done ? 'Gifts from this one:' : 'A little thank-you is tucked inside' + (q.reward && q.reward.bonus.length ? ' (and something extra for five hearts)' : '') + '.';
     var goLabel = draft ? 'Pick it up again' : (done ? 'Redecorate' : 'Yes, I’ll take it');
+    if (q.final) goLabel = draft ? 'Pick it up again' : (done ? 'Redecorate' : (storyOwnFlat() ? 'Carry on' : 'Choose my corner of the Cove'));
 
     var env =
       '<button class="lt-envelope env-' + v.paper + ' idle" id="introEnv" type="button" style="--seal:' + c.color + '" aria-label="Open the letter from ' + storyEsc(c.name) + '">' +
         '<div class="env-body"></div><div class="env-fold l"></div><div class="env-fold r"></div><div class="env-fold b"></div>' +
         '<div class="env-flap"></div><div class="env-seal">' + storyEsc(c.name.charAt(0)) + '</div>' +
         '<div class="env-postmark">Pennywhistle<br>Cove</div>' +
-        '<div class="env-address">' + (storyName() ? 'For ' + storyEsc(storyName()) : 'For whoever does the rooms') + '<small>from ' + storyEsc(c.name) + ', ' + storyEsc(prop.name) + '</small></div>' +
+        '<div class="env-address">' + (storyName() ? 'For ' + storyEsc(storyName()) : 'For whoever does the rooms') + '<small>' + (q.final ? 'from the whole street' : 'from ' + storyEsc(c.name) + ', ' + storyEsc(prop.name)) + '</small></div>' +
         '<div class="env-hint">tap to open</div>' +
       '</button>';
     var sheet =
       '<div class="lt-sheet" id="storyIntroCard" style="--rot:' + storyRot() + ';--accent:' + c.color + '">' +
         '<div class="lt-paper paper paper-' + v.paper + '"><div class="lt-scroll">' +
-          '<div class="lt-from">' + storyEsc(prop.name) + ' · ' + storyEsc(Story.monthOf(Math.max(q.day || 0, storyToday())).label) + '</div>' +
+          '<div class="lt-from">' + storyEsc(q.final ? 'Pennywhistle Cove' : prop.name) + ' · ' + storyEsc(Story.monthOf(Math.max(q.day || 0, storyToday())).label) + '</div>' +
           '<p class="lt-hello">' + storyEsc(storyFill(L.hello)) + '</p>' +
           L.body.map(function(t){ return '<p>' + storyEsc(storyFill(t)) + '</p>'; }).join('') +
           '<p class="lt-bye">' + storyEsc(L.bye || '') + '</p><p class="lt-sign">' + storyEsc(v.sign || c.name) + '</p>' +
           (L.ps ? '<p class="lt-ps">P.S. ' + storyEsc(L.ps) + '</p>' : '') +
         '</div>' +
         '<div class="lt-actions"><button class="lt-btn" id="introLater" type="button">Not right now</button><button class="lt-btn primary" id="introGo" type="button">' + goLabel + '</button></div></div>' +
+        (q.final ? '<aside class="lt-note"><h4>Your own place</h4><div class="ln-rooms">Living room + bedroom + kitchen + a room of your own</div>' +
+          '<ul><li>No brief and no hearts</li><li>No star budget: use anything you have earned</li><li>You choose the neighbourhood</li><li>Rearrange it any time</li></ul></aside>' :
         '<aside class="lt-note"><h4>What ' + storyEsc(c.name) + ' is hoping for</h4><div class="ln-rooms">' + storyEsc(rooms) + '</div>' +
           '<div class="ln-h">Needs</div><ul>' + items('must') + '</ul>' +
           '<div class="ln-h">Would love</div><ul class="likes">' + items('like') + '</ul>' +
@@ -6791,7 +6947,7 @@
           storyKnownNote(q) +
           '<div class="ln-stars">★ <b>' + q.allowance + '</b> stars enclosed for supplies</div>' +
           '<div class="lt-gifts">' + storyGiftImgs(giftIds, earned) + '<span>' + giftLine + '</span></div>' +
-        '</aside>' +
+        '</aside>') +
       '</div>';
     var scene = document.getElementById('storyIntroScene');
     scene.innerHTML = env + sheet;
@@ -6807,7 +6963,78 @@
     }
     envEl.addEventListener('click', open);
     document.getElementById('introLater').addEventListener('click', function(){ storyDismissSheet('storyIntro', sheetEl); });
-    document.getElementById('introGo').addEventListener('click', function(){ storyDismissSheet('storyIntro', sheetEl, function(){ storyStartQuest(qid); }); });
+    document.getElementById('introGo').addEventListener('click', function(){
+      storyDismissSheet('storyIntro', sheetEl, function(){
+        if (q.final && !storyOwnFlat() && !done && !draft) storyChooseCorner(); else storyStartQuest(qid);
+      });
+    });
+  }
+
+  /* ---------- the last key: choosing a neighbourhood, moving in ---------- */
+  function storyChooseCorner(){
+    var ds = Story.TOWN.districts.filter(function(d){ return Story.PROPERTIES['OWN_' + d.id]; });
+    var html = '<h3>Which corner of the Cove is yours?</h3><p>You can visit all the others whenever you like. Pick the one that feels like home.</p>' +
+      '<div class="own-grid">' + ds.map(function(d){
+        return '<button type="button" class="own-d" data-d="' + d.id + '"><b>' + storyEsc(d.name) + '</b><small>' + storyEsc(d.homes || '') + '</small><em>' + storyEsc(d.blurb) + '</em></button>';
+      }).join('') + '</div>';
+    storyDialog(html, [ { label:'Not just yet', cls:'btn-ghost' } ], 'town');
+    document.querySelectorAll('#storyDialogScene .own-d').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.dataset.d, sheet = document.getElementById('storyDialogCard');
+        storyDismissSheet('storyDialog', sheet, function(){ storyConfirmCorner(id); });
+      });
+    });
+  }
+  function storyConfirmCorner(id){
+    var d = Story.TOWN.districts.filter(function(x){ return x.id === id; })[0];
+    storyDialog('<h3>' + storyEsc(d.name) + '?</h3><p>' + storyEsc(d.reason || d.blurb) + '</p><p style="opacity:.85">The homes here: ' + storyEsc((d.homes || 'a mix of everything').toLowerCase()) + '. Yours has the front door you pick.</p>',
+      [ { label:'Choose another', cls:'btn-ghost', fn:storyChooseCorner },
+        { label:'This one is mine', cls:'btn-primary', fn:function(){
+          story.data.own = id; storySyncFinal(); storySaveData();
+          storyRenderTown();
+          storyStartQuest('COVE_FINAL');
+        } } ], 'town');
+  }
+  function storyHandInFinal(force){
+    var q = storyCurrentQuest();
+    var mine = storyGatherPieces().filter(function(p){ return q.edit.indexOf(p.roomKey) !== -1 && !p.starter; });
+    if (mine.length < 8 && !force){
+      storyDialog('<h3>It still looks a little empty</h3><p>There are only ' + mine.length + ' pieces in your place so far. There is no rush at all: you can move in whenever it feels right, and carry on rearranging after that.</p>',
+        [ { label:'Keep decorating', cls:'btn-ghost' }, { label:'Move in anyway', cls:'btn-primary', fn:function(){ storyHandInFinal(true); } } ], 'town');
+      return;
+    }
+    var rec = story.data.quests[q.id] || {};
+    var dayBefore = storyToday();
+    rec.done = true; rec.hearts = 0; rec.best = 0;
+    story.data.quests[q.id] = rec;
+    storyAdvanceToday(dayBefore);
+    storyCommitHome(q, storyCaptureWorkspace());
+    delete story.data.drafts[q.id];
+    if (story.data.lastDraft === q.id) story.data.lastDraft = null;
+    storySaveData();
+    storyShowMovedIn(q);
+  }
+  function storyShowMovedIn(q){
+    var lines = [
+      'The street turns up at six, exactly as promised. Mia brings cake. Sam brings a seating plan nobody asked for. Theo brings bread, still warm, and Jules a drawing of your front door (mostly pigeons).',
+      'Noor stands in the middle of the living room for a full minute without saying anything. Then: “The shelf is exactly right.” Rosa looks around, lifts one eyebrow, and says “darling” in a way that means everything.',
+      'Three years ago you were somebody with a measuring tape and a few opinions about rugs. Now a whole street keeps a spare key to your place, and every room in the Cove has a bit of you in it.'
+    ];
+    storyDialog('<h3>Welcome home, ' + storyEsc(storyName() || 'friend') + '</h3>' + lines.map(function(t){ return '<p>' + storyEsc(t) + '</p>'; }).join('') +
+      '<p style="opacity:.85">Your place is yours to keep changing. Letters may still arrive, but they are only ever notes, never briefs.</p>',
+      [ { label:'Keep tinkering', cls:'btn-ghost' },
+        { label:'Pin a photo in my diary', cls:'btn-ghost', fn:function(){
+            var ids = q.edit.map(function(k){ return storyRoomId(q.property, k); });
+            Promise.all(ids.map(function(id){ return capturePhoto(id); })).then(function(imgs){
+              var shots = [];
+              imgs.forEach(function(img, i){ if (img){ var r = getRoom(ids[i]); shots.push({ label: r && r.label ? r.label : '', img: img }); } });
+              var ok = shots.length && diaryPut({ kind:'story', save:story.data.saveId, key:'q:' + q.id, qid:q.id, char:q.char, who:'You', title:'Your place', hearts:0, day:storyToday(), shots:shots });
+              if (ok) storyRefreshTitle();
+              storyToast(ok ? 'Pinned into your diary.' : 'The photo didn’t work this time. Your place is safe.');
+              storyExitToTown();
+            });
+          } },
+        { label:'Back to the map', cls:'btn-primary', fn:storyExitToTown } ], 'town');
   }
 
   /* ---------- small paper notes (welcome, "are you sure?") ---------- */
@@ -6836,6 +7063,7 @@
     var a = story.active;
     if (!a || a.mode !== 'quest') return;
     var q = storyCurrentQuest(), c = Story.CHARACTERS[q.char], v = storyVoice(q.char);
+    if (q.final){ storyHandInFinal(false); return; }
     var pieces = storyGatherPieces();
     var editPieces = pieces.filter(function(p){ return q.edit.indexOf(p.roomKey) !== -1; });
     if (!editPieces.length){
@@ -6870,6 +7098,7 @@
     var dayBefore = storyToday();
     rec.done = true; rec.hearts = hearts; rec.best = Math.max(prevBest, hearts);
     story.data.quests[q.id] = rec;
+    storyAdvanceToday(dayBefore);
     var dayAfter = storyToday();
     if (dayAfter > dayBefore) story.data.lastJump = { from:dayBefore, to:dayAfter };
     var gain = rec.best - prevBest;
@@ -7051,7 +7280,7 @@
         Promise.all(ids.map(function(id){ return capturePhoto(id); })).then(function(imgs){
           var shots = [];
           imgs.forEach(function(img, i){ if (img){ var r = getRoom(ids[i]); shots.push({ label: r && r.label ? r.label : '', img: img }); } });
-          var ok = shots.length && diaryPut({ kind:'story', key:'q:' + q.id, qid:q.id, char:q.char, who:c.name, title:q.title, hearts:hearts, day:storyToday(), shots:shots });
+          var ok = shots.length && diaryPut({ kind:'story', save:story.data.saveId, key:'q:' + q.id, qid:q.id, char:q.char, who:c.name, title:q.title, hearts:hearts, day:storyToday(), shots:shots });
           row.innerHTML = ok ? '<span class="rp-done">✓ Pinned into your diary</span>' : '<span>The photo didn’t work this time. Your room is safe.</span>';
           if (ok) storyRefreshTitle();
         });
@@ -7094,13 +7323,17 @@
   function storyTownEntries(){
     var done = storyDoneMap(), open = storyOpenIds(), entries = {};
     Object.keys(Story.CHARACTERS).forEach(function(cid){
+      if (cid === 'town' && !storyOwnFlat()) return;     // your own flat only gets a pin once you have chosen where it is
       var chain = Story.questsOf(cid), cur = null, lastHome = null, lastWork = null;
       chain.forEach(function(q){ if (!cur && !done[q.id]) cur = q; });
       chain.forEach(function(q){ if (done[q.id]){ if (Story.PROPERTIES[q.property].work) lastWork = q; else lastHome = q; } });
       var letter = (cur && open[cur.id]) ? cur : null;
       var curWork = !!cur && !!Story.PROPERTIES[cur.property].work;
       // home: where they live now. Work (an office, a bakery, a workroom) gets a pin of its own.
-      var homePid = lastHome ? lastHome.property : ((letter && !curWork) ? cur.property : null);
+      // a move (or a second home) shows up as soon as its letter arrives: the new place carries the envelope,
+      // the old one turns into a past home. Nobody's pin waits for the decorating to be done first.
+      var moving = !!letter && !curWork && (!lastHome || cur.property !== lastHome.property);
+      var homePid = moving ? cur.property : (lastHome ? lastHome.property : null);
       if (homePid) entries[homePid] = { pid:homePid, resident:cid, letter:(letter && !curWork) ? letter : null, busy:!!cur && !letter, past:false };
       var workPid = lastWork ? lastWork.property : ((letter && curWork) ? cur.property : null);
       if (workPid) entries[workPid] = { pid:workPid, resident:cid, letter:(letter && curWork) ? letter : null, busy:false, past:false, work:true };
@@ -7115,7 +7348,7 @@
     });
     return entries;
   }
-  var ENV_COL = { mia:['#f6f1de','#e3ead0','#3a2d20'], jules:['#d9c3a0','#c5ab82','#2d2a4a'], sam:['#3a4a68','#2a3550','#f0e6cc'], noor:['#f6f8f8','#dfe6ea','#26394d'], theo:['#c9a572','#b48d58','#3a2a14'], rosa:['#7a3a5c','#5a2742','#f4e3b8'] };
+  var ENV_COL = { mia:['#f6f1de','#e3ead0','#3a2d20'], jules:['#d9c3a0','#c5ab82','#2d2a4a'], sam:['#3a4a68','#2a3550','#f0e6cc'], noor:['#f6f8f8','#dfe6ea','#26394d'], theo:['#c9a572','#b48d58','#3a2a14'], rosa:['#7a3a5c','#5a2742','#f4e3b8'], town:['#f1e6cb','#e0cfa8','#5a4730'] };
   function storyPausedQid(){
     var d = story.data.drafts, last = story.data.lastDraft;
     if (last && d[last] && Story.questById(last)) return last;
@@ -7127,8 +7360,9 @@
   function storyPinHtml(e, prop, c, hasDraft, idx){
     var dn = storyDistrictName(prop), sub;
     if (e.past) sub = (dn ? dn + ' · ' : '') + (e.kept ? c.name + ' keeps this one' : c.name + ' used to live here');
+    else if (prop.own) sub = (dn ? dn + ' · ' : '') + 'yours';
     else sub = (dn ? dn + ' · ' : '') + c.name;
-    return '<div class="pin-bob" style="--bobdelay:' + (-(idx * 0.7)).toFixed(1) + 's"><div class="town-pin-avatar" style="--pin:' + c.color + '">' + (e.past ? '' : c.name.charAt(0)) +
+    return '<div class="pin-bob" style="--bobdelay:' + (-(idx * 0.7)).toFixed(1) + 's"><div class="town-pin-avatar" style="--pin:' + c.color + '">' + (e.past ? '' : storyGlyph(c)) +
       (hasDraft ? '<span class="town-pin-paused">✎</span>' : (e.letter ? '<span class="town-pin-mail">✉</span>' : '')) + '</div>' +
       '<div class="town-pin-tail"></div><div class="town-pin-label"><b>' + storyEsc(prop.name) + '</b><span>' + storyEsc(sub) + '</span></div></div>';
   }
@@ -7169,8 +7403,6 @@
     var today = storyToday(), di = Story.dateOf(today);
     document.getElementById('dateChipDay').textContent = Story.monthOf(today).label;
     document.getElementById('dateChipSeason').textContent = storyCap1(Story.seasonOf(today));
-    var unread = Story.issuesAt(today).filter(function(n){ return story.data.seenNews.indexOf(n.day) === -1; }).length;
-    document.getElementById('newsBtn').classList.toggle('has-new', unread > 0);
     // renown chip
     var ren = storyRenown(), lvl = storyLevel(), L = Story.RENOWN_LEVELS;
     var nextAt = L[lvl + 1] ? L[lvl + 1].at : null;
@@ -7192,7 +7424,7 @@
     var panel = document.getElementById('lettersPanel');
     panel.innerHTML = (open.length ? open.map(function(q){
       var c = Story.CHARACTERS[q.char], col = ENV_COL[q.char] || ENV_COL.mia, draft = !!story.data.drafts[q.id];
-      return '<button class="letter-row" data-q="' + q.id + '" type="button" style="--pin:' + c.color + ';--env1:' + col[0] + ';--env2:' + col[1] + ';color:' + col[2] + '"><span class="lr-av">' + c.name.charAt(0) + '</span>' +
+      return '<button class="letter-row" data-q="' + q.id + '" type="button" style="--pin:' + c.color + ';--env1:' + col[0] + ';--env2:' + col[1] + ';color:' + col[2] + '"><span class="lr-av">' + storyGlyph(c) + '</span>' +
         '<span class="lr-txt"><span class="lr-who">from ' + storyEsc(c.name) + (draft ? ' ✎' : '') + '</span><span class="lr-title">' + storyEsc(Story.PROPERTIES[q.property].name) + '</span></span></button>';
     }).join('') : '<div class="letters-empty">No post today.<br>Finish a job — word travels fast in Pennywhistle Cove.</div>') +
       (waiting > 0 ? '<div class="letters-more">More neighbours would like to write. Their letters arrive as you answer these.</div>' : '');
@@ -7212,15 +7444,37 @@
         b = document.createElement('button'); b.type = 'button';
         b.className = 'town-spot ' + sp.kind + ' enter';
         b.style.left = sp.x + '%'; b.style.top = sp.y + '%'; b.style.animationDelay = (0.3 + i * 0.06) + 's';
-        b.innerHTML = '<span class="sp-badge">' + storyIcon(sp.icon) + '</span><span class="sp-label">' + storyEsc(sp.name) + '</span>';
+        var dnm = (Story.districtAt(sp.x, sp.y) || {}).name || '';
+        b.innerHTML = '<span class="sp-badge">' + storyIcon(sp.icon) + '</span><span class="sp-label">' + storyEsc(sp.name) + '</span>' +
+          (sp.kind === 'shop' && Story.SHOP_STOCK[sp.id] ? '<span class="sp-pop"><b>' + storyEsc(sp.name) + '</b><small>' + storyEsc(dnm) + '</small><span class="sp-enter" role="button" tabindex="0">Enter</span></span>' : '');
         b.setAttribute('aria-label', sp.name);
         b.addEventListener('animationend', function(ev){ if (ev.target === b) b.classList.remove('enter'); });
-        (function(id){ b.addEventListener('click', function(ev){ ev.stopPropagation(); storyHideDistrictTag(); storyOpenSpotCard(id); }); })(sp.id);
+        (function(id, isShop){ b.addEventListener('click', function(ev){
+          ev.stopPropagation(); storyHideDistrictTag();
+          if (isShop){
+            if (ev.target.closest && ev.target.closest('.sp-enter')){ storyCloseShopPop(); storyOpenShop(id); return; }
+            storyCloseCard(true); storyToggleShopPop(id); return;
+          }
+          storyCloseShopPop(); storyOpenSpotCard(id);
+        }); })(sp.id, sp.kind === 'shop' && !!Story.SHOP_STOCK[sp.id]);
         layer.appendChild(b); storySpotEls[sp.id] = b;
       }
       b.classList.toggle('selected', story.selectedSpot === sp.id);
     });
     Object.keys(storySpotEls).forEach(function(id){ if (!keep[id]){ var el = storySpotEls[id]; if (el.parentNode) el.parentNode.removeChild(el); delete storySpotEls[id]; } });
+  }
+  // a shop pin opens a small bubble with one button, Enter: no card, no extra window
+  var storyPopShop = null;
+  function storyCloseShopPop(){
+    if (!storyPopShop) return;
+    var el = storySpotEls[storyPopShop]; if (el) el.classList.remove('open');
+    storyPopShop = null;
+  }
+  function storyToggleShopPop(id){
+    var was = storyPopShop; storyCloseShopPop();
+    if (was === id) return;
+    var el = storySpotEls[id]; if (!el) return;
+    el.classList.add('open'); storyPopShop = id;
   }
   function storyCloseCard(silent){
     var was = story.selectedPin || story.selectedSpot;
@@ -7234,7 +7488,6 @@
     var sp = Story.spotById(id); if (!sp) return;
     story.selectedPin = null; story.selectedSpot = id;
     var dn = (Story.districtAt(sp.x, sp.y) || {}).name || '';
-    var issue = Story.issuesAt(storyToday()).filter(function(n){ return n.lead.spot === id; })[0];
     var spEv = sp.kind === 'shop' ? null : storyEventForSpot(id);
     var html = '<div class="tc-head"><div class="tc-av" style="--pin:' + (sp.kind === 'shop' ? '#c9714a' : '#d9a441') + '">' + storyIcon(sp.icon).replace('<svg', '<svg style="width:24px;height:24px"') + '</div>' +
       '<div><div class="tc-name">' + storyEsc(sp.name) + '</div><div class="tc-sub">' + (sp.kind === 'shop' ? 'Shop' : 'Happening') + (dn ? ' · ' + storyEsc(dn) : '') + '</div></div>' +
@@ -7244,11 +7497,10 @@
       (sp.kind === 'shop' && Story.SHOP_STOCK[id] ? '<div class="tc-soon">' + (storyShopReady(id) ? storyShopReady(id) + ' thing' + (storyShopReady(id) > 1 ? 's' : '') + ' set aside for you.' : 'Ask about what is on the shelves.') + '</div>' : (sp.soon && !Story.SHOP_STOCK[id] ? '<div class="tc-soon">' + storyEsc(sp.soon) + '</div>' : '')) +
       '<div class="tc-actions">' + (sp.kind === 'shop' && Story.SHOP_STOCK[id] ? '<button class="btn-primary tc-mini" id="tcShop" type="button">Browse the shelves</button>' : '') +
       (spEv ? '<button class="btn-primary tc-mini" id="tcPlay" type="button">' + storyPlayLabel(spEv.id) + '</button>' : '') +
-      (issue ? '<button class="btn-ghost tc-mini" id="tcNews" type="button">Read about it in the Courier</button>' : '') + '</div>';
+      '</div>';
     var card = document.getElementById('townCard');
     card.innerHTML = html; card.classList.add('open');
     document.getElementById('tcClose').addEventListener('click', function(){ storyCloseCard(); });
-    var nb = document.getElementById('tcNews'); if (nb) nb.addEventListener('click', function(){ storyOpenNews(issue.day); });
     var sb = document.getElementById('tcShop'); if (sb) sb.addEventListener('click', function(){ storyOpenShop(id); });
     var pb = document.getElementById('tcPlay'); if (pb) pb.addEventListener('click', function(){ storyOpenPlay(spEv.id); });
     storyRenderTown();
@@ -7263,56 +7515,83 @@
     return Story.EVENTS.filter(function(e){ return e.spot === spotId && Story.eventPlay(e.id); })[0] || null;
   }
   // what a shop has on its shelves right now: this season's pieces, plus anything already taken home
-  function storyShopRows(spotId){
-    var shop = Story.SHOP_STOCK[spotId], season = storySeason(), taken = story.data.shopTaken;
-    return shop ? shop.stock.filter(function(r){ return !r[2] || r[2] === season || taken[r[0]]; }) : [];
+  // What is on a shelf this month: two pieces you can have, and one you cannot have yet (the nearest
+  // one above your renown), so there is always something to look forward to. The pick is kept for the
+  // month and changes when the calendar moves on. Taken pieces never come back.
+  function storyShopShelf(spotId){
+    var shop = Story.SHOP_STOCK[spotId]; if (!shop) return [];
+    var d = story.data; d.shelves = d.shelves || {};
+    var season = storySeason(), m = storyMonthIdx(), ren = storyRenown(), taken = d.shopTaken;
+    var rec = d.shelves[spotId];
+    var byId = {}; shop.stock.forEach(function(r){ byId[r[0]] = r; });
+    if (rec && rec.m === m && rec.season === season){
+      return rec.ids.filter(function(id){ return byId[id] && !taken[id]; }).map(function(id){ return byId[id]; });
+    }
+    var pool = shop.stock.filter(function(r){ return r[2] === season && !taken[r[0]]; }).sort(function(a, b){ return a[1] - b[1]; });
+    var ok = pool.filter(function(r){ return r[1] <= ren; }), up = pool.filter(function(r){ return r[1] > ren; });
+    var pick = [];
+    if (ok.length){
+      var start = (m * 2 + storyHashStr(spotId)) % ok.length;
+      for (var k = 0; k < Math.min(2, ok.length); k++) pick.push(ok[(start + k) % ok.length]);
+    }
+    if (up.length) pick.push(up[0]);
+    var rest = pool.filter(function(r){ return pick.indexOf(r) === -1; });
+    while (pick.length < 3 && rest.length) pick.push(rest.shift());
+    pick.sort(function(a, b){ return a[1] - b[1]; });
+    d.shelves[spotId] = { m:m, season:season, ids:pick.map(function(r){ return r[0]; }) };
+    storySaveData();
+    return pick;
   }
+  function storyShopRows(spotId){ return storyShopShelf(spotId); }
   function storyShopReady(spotId){
     if (!Story.SHOP_STOCK[spotId] || !storySpotOpen(spotId)) return 0;
-    var lvl = storyShopTier();
-    return storyShopRows(spotId).filter(function(r){ return r[1] <= lvl && !story.data.shopTaken[r[0]]; }).length;
+    var ren = storyRenown();
+    return storyShopShelf(spotId).filter(function(r){ return r[1] <= ren && !story.data.shopTaken[r[0]]; }).length;
   }
   function storyOpenShop(spotId){
     var sp = Story.spotById(spotId), shop = Story.SHOP_STOCK[spotId]; if (!sp || !shop) return;
-    var L = Story.SHOP_TIERS, season = storySeason(), rows = storyShopRows(spotId);
+    var season = storySeason(), rows = storyShopRows(spotId);
     var ov = document.getElementById('storyShop'), scene = document.getElementById('storyShopScene');
-    var items = rows.map(function(r){
+    var items = rows.map(function(r, n){
       var it = getAsset(r[0]); if (!it) return '';
-      return '<button class="shp-it" type="button" data-id="' + r[0] + '" data-tier="' + r[1] + '" style="--i:' + rows.indexOf(r) + '"><span class="shp-circle"><img src="' + it.src + '" alt="">' +
-        (r[1] ? '<span class="shp-badge" title="' + storyEsc(L[r[1]].title) + '">' + r[1] + '</span>' : '') + '<span class="shp-tick">✓</span></span><b>' + storyEsc(it.name) + '</b><small></small></button>';
+      return '<button class="shp-it" type="button" data-id="' + r[0] + '" data-need="' + r[1] + '" style="--i:' + n + '"><span class="shp-circle"><img src="' + it.src + '" alt="">' +
+        '<span class="shp-badge"></span></span><b>' + storyEsc(it.name) + '</b><small></small></button>';
     }).join('');
     var imgUrl = 'story/shops/' + spotId + '.jpg';
     scene.innerHTML = '<div class="shp-room" id="storyShopCard"><div class="shp-shade"></div>' +
       '<div class="shp-top"><span class="shp-name">' + storyEsc(sp.name) + '</span><span class="shp-season s-' + season + '">' + storyCap1(season) + ' shelves</span></div>' +
-      '<p class="shp-status" id="shStatus"></p><div class="shp-circles"><div class="shp-grid" data-n="' + (rows.length <= 5 ? 5 : rows.length <= 8 ? 8 : rows.length <= 12 ? 12 : 16) + '">' + items + '</div></div>' +
+      '<p class="shp-status" id="shStatus"></p><div class="shp-circles"><div class="shp-grid" data-n="5">' + items + '</div></div>' +
       '<div class="shp-bar"><button class="ev-act" id="shAll" type="button"><span class="ev-ai">' + storyIcon('check') + '</span><b></b></button><button class="ev-act main" id="shClose" type="button"><span class="ev-ai">' + storyIcon('home') + '</span><b></b></button></div></div>';
     var room = document.getElementById('storyShopCard');
     room.style.backgroundImage = 'url("' + imgUrl + '")';
     var probe = new Image(); probe.onerror = function(){ room.classList.add('noimg'); }; probe.src = imgUrl;
-    function state(btn){
-      var id = btn.dataset.id, tier = +btn.dataset.tier;
-      return story.data.shopTaken[id] ? 'home' : (storyShopTier() >= tier ? 'ready' : 'shut');
-    }
     function paint(){
-      var ready = 0;
+      var ren = storyRenown(), ready = 0, shut = 0;
       scene.querySelectorAll('.shp-it').forEach(function(b){
-        var st = state(b), tier = +b.dataset.tier;
-        b.className = 'shp-it ' + st; if (st === 'ready') ready++;
-        b.querySelector('small').textContent = st === 'home' ? 'At home' : (st === 'shut' ? L[tier].title : 'Take home');
+        var need = +b.dataset.need, open = ren >= need;
+        b.className = 'shp-it ' + (open ? 'ready' : 'shut'); if (open) ready++; else shut++;
+        b.querySelector('small').textContent = open ? 'Take home' : 'Needs ' + need + ' renown';
+        b.querySelector('.shp-badge').textContent = open ? '' : need;
       });
-      document.getElementById('shStatus').textContent = ready ? (ready === 1 ? 'One piece is' : ready + ' pieces are') + ' set aside for you.' : (scene.querySelector('.shp-it.shut') ? 'Some things are kept for people the town knows better.' : 'You have taken everything that was set aside for you.');
-      var all = document.getElementById('shAll'); all.hidden = !ready; all.querySelector('b').textContent = 'Take everything (' + ready + ')';
+      var left = scene.querySelectorAll('.shp-it').length;
+      document.getElementById('shStatus').textContent = !left ? 'The shelves are bare for now. New things come in with the months.' :
+        (ready ? (ready === 1 ? 'One piece is' : ready + ' pieces are') + ' set aside for you.' : 'Nothing you can take today.') + (shut ? ' One is still out of reach.' : '');
+      var all = document.getElementById('shAll'); all.hidden = ready < 2; all.querySelector('b').textContent = 'Take everything (' + ready + ')';
       document.getElementById('shClose').querySelector('b').textContent = ready ? 'Later' : 'Thanks!';
     }
     function take(ids){
-      ids.forEach(function(id){ story.data.shopTaken[id] = true; });
-      storySaveData(); storyRefreshTrayStates(); paint();
+      ids.forEach(function(id){
+        story.data.shopTaken[id] = true;
+        var el = scene.querySelector('.shp-it[data-id="' + id + '"]');
+        if (el){ el.classList.add('gone'); (function(n){ setTimeout(function(){ if (n.parentNode) n.parentNode.removeChild(n); paint(); }, storyReduced() ? 10 : 420); })(el); }
+      });
+      storySaveData(); storyRefreshTrayStates();
       var say = Story.SHOP_SAY[spotId] || { one:'Thanks for stopping by!', many:'Thanks for stopping by!' };
       storyToast(ids.length > 1 ? say.many : say.one);
     }
-    scene.querySelectorAll('.shp-it').forEach(function(b){ b.addEventListener('click', function(){ if (b.classList.contains('ready')) take([b.dataset.id]); }); });
+    scene.querySelectorAll('.shp-it').forEach(function(b){ b.addEventListener('click', function(){ if (b.classList.contains('ready') && !b.classList.contains('gone')) take([b.dataset.id]); }); });
     document.getElementById('shAll').addEventListener('click', function(){
-      take(storyShopRows(spotId).filter(function(r){ return r[1] <= storyShopTier() && !story.data.shopTaken[r[0]]; }).map(function(r){ return r[0]; }));
+      var ids = []; scene.querySelectorAll('.shp-it.ready').forEach(function(b){ ids.push(b.dataset.id); }); take(ids);
     });
     document.getElementById('shClose').addEventListener('click', function(){ storyDismissSheet('storyShop', room); });
     paint();
@@ -7406,10 +7685,36 @@
     el.classList.add('pop'); setTimeout(function(){ el.classList.remove('pop'); }, 4200);
   }
 
+  function storyOwnCard(pid, e, prop, c){
+    var done = storyDoneMap(), fq = Story.questById('COVE_FINAL'), isDone = !!done[fq.id], hasDraft = !!story.data.drafts[fq.id];
+    var html = '<div class="tc-head">' + storyAvatar('town', 'tc-av') +
+      '<div><div class="tc-name">Your place</div><div class="tc-sub">Home sweet home</div>' +
+      (storyDistrictName(prop) ? '<div class="tc-where">' + storyEsc(storyDistrictName(prop)) + '</div>' : '') + '</div>' +
+      '<button class="tc-close" id="tcClose" type="button" aria-label="Close">&times;</button></div>';
+    if (isDone){
+      html += '<p class="tc-note">Yours, exactly as you like it. Rearrange it whenever you feel like it.</p>' +
+        '<div class="tc-actions"><button class="btn-primary tc-mini" data-redo="' + fq.id + '" type="button">Redecorate</button><button class="btn-ghost tc-mini" id="tcVisit" type="button">Visit the rooms</button></div>';
+    } else if (hasDraft){
+      html += '<div class="tc-letter"><b>✎ Paused: ' + storyEsc(fq.title) + '</b>Everything is exactly where you left it.</div>' +
+        '<div class="tc-actions"><button class="btn-primary tc-mini" id="tcResume" type="button">Continue decorating</button></div>';
+    } else {
+      html += '<div class="tc-letter"><b>✉ The street has written</b>Your own key is waiting.</div>' +
+        '<div class="tc-actions"><button class="btn-primary tc-mini" id="tcRead" type="button">Open the letter</button></div>';
+    }
+    var card = document.getElementById('townCard');
+    card.innerHTML = html; card.classList.add('open');
+    document.getElementById('tcClose').addEventListener('click', function(){ storyCloseCard(); });
+    var read = document.getElementById('tcRead'); if (read) read.addEventListener('click', function(){ storyShowIntro(fq.id); });
+    var resume = document.getElementById('tcResume'); if (resume) resume.addEventListener('click', function(){ storyStartQuest(fq.id); });
+    var visit = document.getElementById('tcVisit'); if (visit) visit.addEventListener('click', function(){ storyStartVisit(pid); });
+    card.querySelectorAll('[data-redo]').forEach(function(b){ b.addEventListener('click', function(){ storyShowIntro(b.dataset.redo); }); });
+    storyRenderTown();
+  }
   function storyOpenCard(pid){
     story.selectedPin = pid; story.selectedSpot = null;
     var entries = storyTownEntries(), e = entries[pid]; if (!e) return;
     var prop = Story.PROPERTIES[pid], c = Story.CHARACTERS[e.resident], v = storyVoice(e.resident);
+    if (prop.own){ storyOwnCard(pid, e, prop, c); return; }
     var done = storyDoneMap(), earned = storyEarned();
     var doneHere = Story.QUESTS.filter(function(q){ return q.property === pid && done[q.id]; });
     var html =
@@ -7431,7 +7736,7 @@
     }
     if (e.letter){
       var hasDraft = !!story.data.drafts[e.letter.id];
-      var moving = e.letter.property !== pid;
+      var moving = !doneHere.length && Story.questsOf(e.resident).some(function(q){ return done[q.id]; });
       if (hasDraft){
         html += '<div class="tc-letter"><b>✎ Paused: ' + storyEsc(e.letter.title) + '</b>Everything is exactly where you left it.</div>' +
           '<div class="tc-actions"><button class="btn-primary tc-mini" id="tcResume" type="button">Continue decorating</button><button class="btn-ghost tc-mini" id="tcRead" type="button">Read the letter again</button></div>';
@@ -7564,7 +7869,7 @@
   // show what has just come due (at most three cards per visit; older news waits in the paper)
   function storyRunEvents(done){
     if (!story.data){ if (done) done(); return; }
-    var due = Story.eventsDue(storyToday(), storyDoneMap(), story.data.seenEvents);
+    var due = Story.eventsDue(storyToday(), storyDoneMap(), story.data.seenEvents, storyOpenIds());
     if (!due.length){ if (done) done(); return; }
     var show = due.slice(-3), quiet = due.slice(0, due.length - show.length);
     quiet.forEach(function(e){ story.data.seenEvents.push(e.id); });
@@ -7590,7 +7895,7 @@
   };
   function storyMonthSeason(m){ return (m === 11 || m <= 1) ? 'winter' : (m <= 4 ? 'spring' : (m <= 7 ? 'summer' : 'autumn')); }
   function storyCalendarBuild(sel){
-    var today = storyToday(), done = storyDoneMap(), c = Story.TOWN.calendar;
+    var today = storyToday(), done = storyDoneMap(), open = storyOpenIds(), c = Story.TOWN.calendar;
     var startIdx = c.year * 12 + c.month, cur = Story.monthOf(today), curIdx = cur.key;
     if (typeof sel === 'number') storyCalSel = sel; else if (storyCalSel == null) storyCalSel = curIdx;
     var count = Math.max(12, curIdx - startIdx + 1);
@@ -7598,7 +7903,7 @@
     var seen = {}, soon = {};
     Story.EVENTS.forEach(function(e){
       var k = Story.monthOf(e.day).key;
-      var known = e.after ? !!done[e.after] : e.day <= today;
+      var known = Story.eventKnown(e, today, done, open);
       if (known) (seen[k] = seen[k] || []).push(e);
       else if (e.tease && e.day <= today + 60) (soon[k] = soon[k] || []).push(e);
     });
@@ -7633,8 +7938,11 @@
   }
   /* ---------- the diary book ---------- */
   var storyDiaryTab = 'rooms', storyDiaryView = null;
+  var storyDiaryFree = false;
+  function storyDiaryHasAny(){ var id = story.data && story.data.saveId; return diaryLoad().entries.some(function(e){ return e.kind === 'free' || e.save === id; }); }
   function storyDiaryEntries(){
-    return diaryLoad().entries.slice().sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+    var id = story.data && story.data.saveId;
+    return diaryLoad().entries.filter(function(e){ return storyDiaryFree ? e.kind === 'free' : (e.kind === 'story' && e.save === id); }).sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
   }
   function storyDiaryDate(e){
     if (e.kind === 'story' && e.day != null) return Story.monthOf(e.day).label;
@@ -7649,17 +7957,18 @@
         var e = list[i], si = Math.min(storyDiaryView.shot || 0, e.shots.length - 1), sh = e.shots[si];
         var cap = e.kind === 'story' ? storyEsc(e.title) + '<small>' + storyEsc(e.who) + ' · ' + storyEsc(storyDiaryDate(e)) + '</small>' + (e.hearts ? '<span class="dy-h">' + storyHeartsHtml(e.hearts) + '</span>' : '') :
           storyEsc(e.title) + '<small>Free play · ' + storyEsc(storyDiaryDate(e)) + (e.score ? ' · ' + e.score + '/100' : '') + '</small>';
-        return '<div class="dy-view"><div class="dy-frame"><img src="' + sh.img + '" alt="' + storyEsc(e.title) + '"></div>' +
+        return '<div class="dy-view"><div class="dy-frame"><img src="' + (sh.img || '') + '" alt="' + storyEsc(e.title) + '"></div>' +
           (e.shots.length > 1 ? '<div class="dy-shots">' + e.shots.map(function(s, k){ return '<button type="button" class="' + (k === si ? 'on' : '') + '" data-shot="' + k + '">' + storyEsc(s.label || ('Room ' + (k + 1))) + '</button>'; }).join('') + '</div>' : (sh.label && e.kind === 'story' ? '<div class="dy-shots"><span>' + storyEsc(sh.label) + '</span></div>' : '')) +
           '<div class="dy-cap">' + cap + '</div>' +
           '<div class="dy-nav"><button type="button" id="dyPrev"' + (i >= list.length - 1 ? ' disabled' : '') + '>← Older</button><button type="button" id="dyList">All photos</button><button type="button" id="dyNext"' + (i <= 0 ? ' disabled' : '') + '>Newer →</button></div>' +
           '<div class="dy-del"><button type="button" id="dyDel">Take this photo out of the diary</button></div></div>';
       }
     }
-    if (!list.length) return '<div class="dy-empty"><b>No photos yet</b>When you finish a room you are proud of, choose “Add a photo to my diary”. It will be pinned here.</div>';
-    return '<div class="dy-grid">' + list.map(function(e, i){
+    var sw = '<div class="dy-sw"><button type="button" data-free="0" class="' + (storyDiaryFree ? '' : 'on') + '">This story</button><button type="button" data-free="1" class="' + (storyDiaryFree ? 'on' : '') + '">Free play</button></div>';
+    if (!list.length) return sw + (storyDiaryFree ? '<div class="dy-empty"><b>No free-play photos</b>Photos you take in free play are pinned here.</div>' : '<div class="dy-empty"><b>No photos yet</b>When you finish a room you are proud of, choose “Add a photo to my diary”. It will be pinned here.</div>');
+    return sw + '<div class="dy-grid">' + list.map(function(e, i){
       var rot = (((i * 37) % 7) - 3) * 0.7;
-      return '<button type="button" class="dy-pol ' + e.kind + '" data-id="' + e.id + '" style="--r:' + rot.toFixed(2) + 'deg"><span class="dy-tape"></span><img src="' + e.shots[0].img + '" alt="">' +
+      return '<button type="button" class="dy-pol ' + e.kind + '" data-id="' + e.id + '" style="--r:' + rot.toFixed(2) + 'deg"><span class="dy-tape"></span><img src="' + (e.shots[0].img || '') + '" alt="">' +
         '<b>' + storyEsc(e.title) + '</b><small>' + (e.kind === 'story' ? storyEsc(e.who) + ' · ' : 'Free play · ') + storyEsc(storyDiaryDate(e)) + '</small>' +
         (e.kind === 'story' && e.hearts ? '<span class="dy-h">' + storyHeartsHtml(e.hearts) + '</span>' : '') + '</button>';
     }).join('') + '</div>';
@@ -7667,6 +7976,7 @@
   function storyDiaryPeople(){
     var done = storyDoneMap(), open = storyOpenIds(), out = '', ents = storyTownEntries();
     Object.keys(Story.CHARACTERS).forEach(function(cid){
+      if (Story.CHARACTERS[cid].hidden) return;
       var chain = Story.questsOf(cid);
       if (!chain.some(function(q){ return done[q.id] || open[q.id]; })) return;
       var c = Story.CHARACTERS[cid], jobs = chain.filter(function(q){ return done[q.id]; });
@@ -7686,7 +7996,7 @@
   }
   function storyDiaryEvents(){
     var today = storyToday(), done = storyDoneMap();
-    var known = Story.EVENTS.filter(function(e){ return e.after ? !!done[e.after] : e.day <= today; }).sort(function(a, b){ return a.day - b.day; });
+    var known = Story.EVENTS.filter(function(e){ return Story.eventKnown(e, today, done, storyOpenIds()); }).sort(function(a, b){ return a.day - b.day; });
     var joined = [], waiting = [];
     known.forEach(function(e){
       var pl = Story.eventPlay(e.id); if (!pl) return;
@@ -7707,7 +8017,7 @@
     return out || '<div class="dy-empty"><b>No events yet</b>When the town has something going on, it will be noted here, and you can join in.</div>';
   }
   function storyOpenDiary(tab){
-    if (!story.data) story.data = storyLoadData();
+    if (!story.data){ story.data = storyLoadData(); storySyncFinal(); }
     if (tab && tab !== storyDiaryTab){ storyDiaryTab = tab; storyDiaryView = null; }
     var ov = document.getElementById('storyDiary'), scene = document.getElementById('storyDiaryScene');
     var isOpen = ov.classList.contains('active') && ov.dataset.open === '1';
@@ -7734,6 +8044,7 @@
     sheet.querySelectorAll('.cal-m').forEach(function(b){ b.addEventListener('click', function(){ storyCalendarBuild(+b.dataset.idx); again(); }); });
     function toPlay(eid){ ov.dataset.open = ''; storyDismissSheet('storyDiary', sheet, function(){ storyOpenPlay(eid); }); }
     sheet.querySelectorAll('.cal-play, .dy-evb').forEach(function(b){ b.addEventListener('click', function(){ toPlay(b.dataset.ev); }); });
+    sheet.querySelectorAll('.dy-sw button').forEach(function(b){ b.addEventListener('click', function(){ storyDiaryFree = b.dataset.free === '1'; storyDiaryView = null; again(); }); });
     sheet.querySelectorAll('.dy-pol').forEach(function(b){ b.addEventListener('click', function(){ storyDiaryView = { id:b.dataset.id, shot:0 }; again(); }); });
     sheet.querySelectorAll('.dy-shots button').forEach(function(b){ b.addEventListener('click', function(){ storyDiaryView.shot = +b.dataset.shot; again(); }); });
     var list = storyDiaryEntries(), idx = storyDiaryView ? list.map(function(e){ return e.id; }).indexOf(storyDiaryView.id) : -1;
@@ -7747,37 +8058,6 @@
   document.getElementById('diaryBtn').addEventListener('click', function(e){ e.stopPropagation(); storyOpenDiary(); });
   document.getElementById('titleDiaryBtn').addEventListener('click', function(){ storyOpenDiary(); });
   window.rsDiaryReady = storyAvailable;
-
-  /* ---------- the newspaper ---------- */
-  function storyOpenNews(wantDay){
-    var today = storyToday(), issues = Story.issuesAt(today);
-    var ov = document.getElementById('storyNews');
-    var idx = 0;
-    if (wantDay != null){ issues.forEach(function(n, i){ if (n.day === wantDay) idx = i; }); }
-    else if (story.newsIdx != null && ov.dataset.open === '1') idx = Math.min(story.newsIdx, issues.length - 1);
-    story.newsIdx = idx;
-    var n = issues[idx], di = n ? Story.monthOf(n.day) : Story.monthOf(today);
-    if (n && story.data.seenNews.indexOf(n.day) === -1){ story.data.seenNews.push(n.day); storySaveData(); document.getElementById('newsBtn').classList.toggle('has-new', issues.some(function(x){ return story.data.seenNews.indexOf(x.day) === -1; })); }
-    var spotOn = n && n.lead.spot && storySpotEls[n.lead.spot];
-    var inner = n ?
-      '<div class="news-scroll"><div class="news-lead"><h3>' + storyEsc(n.lead.h) + '</h3><p>' + storyEsc(n.lead.t) + '</p>' + (spotOn ? '<button class="news-where" id="newsWhere" type="button">Show me on the map</button>' : '') + '</div>' +
-        '<div class="news-cols">' + n.items.map(function(it){ return '<article><h4>' + storyEsc(it.h) + '</h4><p>' + storyEsc(it.t) + '</p></article>'; }).join('') + '</div>' +
-        '<div class="news-notice">' + storyEsc(n.notice) + '</div></div>' : '<div class="news-empty">No news yet.</div>';
-    document.getElementById('storyNewsScene').innerHTML =
-      '<div class="lt-sheet news-sheet show' + (ov.dataset.open === '1' ? '' : ' arriving') + ' ready" id="storyNewsCard" style="--rot:' + (ov.dataset.open === '1' ? '0deg' : storyRot()) + '"><div class="lt-paper">' +
-        '<div class="news-mast"><h2>The Cove Courier</h2><div class="nm-sub"><span>No. ' + (n ? n.no : 1) + '</span><span>' + storyEsc(di.label) + '</span><span>' + storyEsc(storyCap1(Story.seasonOf(n ? n.day : today))) + ' edition</span></div></div>' +
-        inner +
-        '<div class="news-nav"><button id="newsOlder" type="button"' + (idx >= issues.length - 1 ? ' disabled' : '') + '>← Older</button><span>' + (n ? 'Issue ' + (issues.length - idx) + ' of ' + issues.length : '') + '</span><button id="newsNewer" type="button"' + (idx <= 0 ? ' disabled' : '') + '>Newer →</button><button class="nn-close" id="newsClose" type="button">Close</button></div>' +
-      '</div></div>';
-    if (!ov.classList.contains('active')) storyShowOverlay('storyNews');
-    ov.dataset.open = '1';
-    document.getElementById('newsOlder').addEventListener('click', function(){ storyOpenNews(issues[idx + 1].day); });
-    document.getElementById('newsNewer').addEventListener('click', function(){ storyOpenNews(issues[idx - 1].day); });
-    var sheet = document.getElementById('storyNewsCard');
-    document.getElementById('newsClose').addEventListener('click', function(){ ov.dataset.open = ''; storyDismissSheet('storyNews', sheet); });
-    var wh = document.getElementById('newsWhere');
-    if (wh) wh.addEventListener('click', function(){ ov.dataset.open = ''; storyDismissSheet('storyNews', sheet, function(){ storyFocusSpot(n.lead.spot); }); });
-  }
 
   /* ---------- new post arriving ---------- */
   function storyAnnounce(ids){
@@ -7805,7 +8085,6 @@
   document.getElementById('townBackBtn').addEventListener('click', function(){ showScreen('title'); });
   document.getElementById('storyMapBtn').addEventListener('click', storyExitToTown);
   document.getElementById('dateChip').addEventListener('click', function(e){ e.stopPropagation(); storyCalSel = null; storyDiaryTab = 'year'; storyDiaryView = null; storyOpenDiary('year'); });
-  document.getElementById('newsBtn').addEventListener('click', function(e){ e.stopPropagation(); story.newsIdx = 0; storyOpenNews(); });
   document.addEventListener('keydown', function(e){
     if ((e.key !== 'm' && e.key !== 'M') || e.ctrlKey || e.metaKey || e.altKey) return;
     var t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
@@ -8058,6 +8337,7 @@
     });
     stage.addEventListener('mouseleave', function(){ storyHideDistrictTag(true); });
     stage.addEventListener('click', function(e){
+      storyCloseShopPop();
       if (e.target.closest && e.target.closest('.town-pin')){ storyHideDistrictTag(); return; }
       storyShowDistrictAt(e.clientX, e.clientY, true);
     });
@@ -8074,10 +8354,65 @@
       '<p style="opacity:.85">Free play isn\'t touched.</p>',
       [ { label:'Keep my story', cls:'btn-ghost' }, { label:'Start a new story', cls:'btn-primary', fn:storyNewGame } ], 'town');
   }
-  function storyNewGame(){
-    story.data = storyDefaultData();
+
+  /* ---------- playtest: jump ahead (set STORY_PLAYTEST to false before release; it hides the button) ---------- */
+  var STORY_PLAYTEST = true;
+  // k = how many jobs count as finished (0..37). Their rooms exist but are empty; the town, letters, shops and season are as they would be.
+  function storyJumpTo(k, hearts){
+    var old = story.data || {}, d = storyDefaultData();
+    d.playerName = old.playerName || 'Tester'; d.seenPrologue = true;
+    k = Math.max(0, Math.min(37, k | 0)); hearts = Math.max(1, Math.min(5, hearts | 0 || 4));
+    var qs = Story.QUESTS.filter(function(q){ return q.n < k; });
+    if (k >= 37) d.own = 'oldtown';
+    var fq = Story.questById('COVE_FINAL'); if (fq) fq.property = d.own ? 'OWN_' + d.own : 'OWN_oldtown';
+    var homes = {};
+    qs.forEach(function(q){
+      var h = q.final ? 0 : hearts;
+      d.quests[q.id] = { done:true, hearts:h, best:h };
+      d.seenLetters.push(q.id);
+      (q.quirks || []).forEach(function(x){ d.learned[x.id] = true; });
+      var prop = Story.PROPERTIES[q.property], home = homes[q.property] || (homes[q.property] = { rooms:[], placed:[], uidCounter:1 });
+      q.edit.forEach(function(key){
+        var def = prop.rooms.filter(function(r){ return r.key === key; })[0]; if (!def) return;
+        var id = storyRoomId(q.property, key);
+        if (!home.rooms.some(function(r){ return r.id === id; })) home.rooms.push({ id:id, backgroundId:prop.family, architectureId:def.arch, key:key, label:def.label, locked:true });
+      });
+    });
+    Object.keys(homes).forEach(function(pid){ homes[pid].rooms = storyOrderRooms(pid, homes[pid].rooms); });
+    d.homes = homes;
+    if (k > 0) d.today = Story.D(k - 1);
+    // the town is as quiet as it would be: whatever started before today is old news
+    var doneMap = {}; qs.forEach(function(q){ doneMap[q.id] = true; });
+    var today = typeof d.today === 'number' ? d.today : 0;
+    Story.EVENTS.forEach(function(e){
+      if (Story.eventKnown(e, today, doneMap, {}) && (e.day || 0) < today) d.seenEvents.push(e.id);
+    });
+    storyNewGame(d);
+  }
+  function storyOpenJump(){
+    var opts = Story.QUESTS.slice().sort(function(a, b){ return a.n - b.n; }).map(function(q){
+      var c = Story.CHARACTERS[q.char], m = Story.monthOf(q.day);
+      return '<option value="' + q.n + '">' + (q.n + 1) + ' · ' + storyEsc(q.final ? 'The final job: your own place' : c.name + ' · ' + q.title) + ' (' + storyEsc(m.name.slice(0, 3) + ' ' + m.year) + ')</option>';
+    }).join('') + '<option value="37">After the final job (you have moved in)</option>';
+    storyDialog('<h3>Jump ahead <small style="opacity:.6;font-size:13px">(testing)</small></h3>' +
+      '<p>Pick the job you want to start at. Every earlier job counts as finished, with empty rooms, so the neighbours, letters, shops and season are as they would be by then.</p>' +
+      '<p style="margin:12px 0 4px;font-weight:700">Start at</p><select class="jmp-sel" id="jmpJob">' + opts + '</select>' +
+      '<p style="margin:12px 0 4px;font-weight:700">Hearts earned on the earlier jobs</p><select class="jmp-sel" id="jmpHearts"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option></select>' +
+      '<p style="opacity:.8;margin-top:12px">This replaces your current story. Free play is not touched.</p>',
+      [ { label:'Cancel', cls:'btn-ghost' }, { label:'Jump', cls:'btn-primary',
+          pre:function(){ story._jump = { k:+document.getElementById('jmpJob').value, h:+document.getElementById('jmpHearts').value }; },
+          fn:function(){ var j = story._jump; story._jump = null; if (j) storyJumpTo(j.k, j.h); } } ], 'town');
+  }
+  (function(){
+    var b = document.getElementById('townJumpBtn'); if (!b) return;
+    if (!STORY_PLAYTEST){ b.style.display = 'none'; return; }
+    b.addEventListener('click', storyOpenJump);
+  })();
+
+  function storyNewGame(prepared){
+    story.data = (prepared && prepared.quests) ? prepared : storyDefaultData(); storySyncFinal();
     storySaveData();
-    diaryClearStory();
+    diaryClearStory(story.data.saveId);
     story.active = null; story.selectedPin = null; story.selectedSpot = null; story.announce = []; story.lastSig = ''; story.idle = {}; story.newsIdx = null; storyFx.season = null;
     storyEarnedCache.sig = null;
     Object.keys(storyPinEls).forEach(function(pid){ var el = storyPinEls[pid]; if (el.parentNode) el.parentNode.removeChild(el); });
@@ -8099,12 +8434,12 @@
     sBtn.textContent = any ? 'Story mode · continue' : 'Story mode';
     if (nBtn) nBtn.style.display = any ? 'block' : 'none';
     var dBtn = document.getElementById('titleDiaryBtn');
-    if (dBtn) dBtn.style.display = (any || diaryLoad().entries.length) ? 'block' : 'none';
+    if (dBtn) dBtn.style.display = (any || storyDiaryHasAny()) ? 'block' : 'none';
   }
 
   function storyEnter(){
     if (!storyAvailable) return;
-    if (!story.data) story.data = storyLoadData();
+    if (!story.data){ story.data = storyLoadData(); storySyncFinal(); }
     if (!story.inStory){
       story.inStory = true;
     }
@@ -8118,7 +8453,7 @@
       var lines = Story.TOWN.prologue.map(function(t){ return '<p>' + storyEsc(t) + '</p>'; }).join('');
       storyDialog('<h3>Welcome to ' + storyEsc(Story.TOWN.name) + '</h3>' + lines +
         '<p class="name-ask">What should the neighbours call you?</p><input class="name-input" id="storyNameInput" type="text" maxlength="18" placeholder="Your name" autocomplete="off" spellcheck="false">' +
-        (storyHadOld ? '<p style="opacity:.85">The Cove has a longer story this time: three years, six neighbours. Your old photos are still in the diary.</p>' : '') +
+        (storyHadOld ? '<p style="opacity:.85">The Cove has a longer story this time: three years, six neighbours.</p>' : '') +
         '<p style="opacity:.85">There\'s something in the mailbox with your name on it.</p>',
         [ { label:'Check the mailbox', cls:'btn-primary', pre:function(){
             var inp = document.getElementById('storyNameInput');
@@ -8138,7 +8473,7 @@
     // test helpers: put a piece in a room of the current job, clear the editable rooms, hand in
     place:function(assetId, x, y, roomKey){ var q = storyCurrentQuest(); var item = getAsset(assetId); if (!q || !item) return false; addPiece(item, x, y, storyRoomId(q.property, roomKey), { silent:true }); return true; },
     clear:function(){ state.placed = state.placed.filter(function(p){ return p.starter || !storyIsEditableRoom(p.roomId); }); renderRooms(); },
-    submit:function(){ storySubmit(true); }, spent:storySpent, pieces:storyGatherPieces, open:storyOpenIds, entries:storyTownEntries };
+    submit:function(){ storySubmit(true); }, exit:storyExitToTown, visit:storyStartVisit, jump:storyJumpTo, placedNow:function(){ return state.placed.map(function(p){ return p.roomId + '|' + p.assetId; }); }, spent:storySpent, pieces:storyGatherPieces, open:storyOpenIds, entries:storyTownEntries };
 
 
   /* ---------------- init ---------------- */
@@ -8173,7 +8508,7 @@
     document.getElementById('titleFreshBtn').style.display = 'block';
   }
   if (storyAvailable){
-    story.data = storyLoadData();
+    story.data = storyLoadData(); storySyncFinal();
     var sBtn = document.getElementById('titleStoryBtn');
     sBtn.style.display = 'block';
     storyRefreshTitle();
@@ -8182,7 +8517,7 @@
   document.querySelector('.title-bg').style.backgroundImage = "url('"+bgThumbSrc(BACKGROUNDS[0])+"')";
   // version check: shows which build of each file is live, so a stale upload or cache is obvious
   (function(){
-    var want = '0.13.0', box = document.getElementById('titleFiles');
+    var want = '0.14.0', box = document.getElementById('titleFiles');
     var d = (typeof DATA_FILE_VERSION !== 'undefined') ? DATA_FILE_VERSION : null;
     var st = (typeof STORY_FILE_VERSION !== 'undefined') ? STORY_FILE_VERSION : null;
     var stale = [];
@@ -8192,7 +8527,7 @@
       box.className = 'title-files stale';
       box.textContent = 'Not up to date: ' + stale.join(', ') + '. Upload it, then refresh.';
     } else {
-      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 22 Oct, 18:04';
+      box.textContent = 'index ' + want + ' \u00b7 data ' + d + ' \u00b7 story ' + st + ' \u00b7 built 23 Oct, 14:03';
     }
   })();
   renderRoomGrid();
